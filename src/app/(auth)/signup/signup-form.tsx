@@ -7,7 +7,7 @@ import { Alert } from '@/components/alert';
 import { TextField } from '@/components/text-field';
 import { ApiRequestError, postJson } from '@/lib/http';
 import { signupSchema } from '@/modules/auth/auth.schema';
-import type { PublicUser } from '@/modules/users/user.model';
+import type { PublicUser } from '@/modules/users/user.constants';
 
 export function SignupForm() {
   const router = useRouter();

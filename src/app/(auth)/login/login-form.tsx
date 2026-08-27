@@ -7,7 +7,7 @@ import { Alert } from '@/components/alert';
 import { TextField } from '@/components/text-field';
 import { ApiRequestError, postJson } from '@/lib/http';
 import { loginSchema } from '@/modules/auth/auth.schema';
-import type { PublicUser } from '@/modules/users/user.model';
+import type { PublicUser } from '@/modules/users/user.constants';
 
 /** Where each role lands after a successful sign-in. */
 function defaultDestination(role: PublicUser['role']): string {

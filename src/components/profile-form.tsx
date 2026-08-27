@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { Alert } from '@/components/alert';
 import { TextField } from '@/components/text-field';
 import { ApiRequestError, patchJson } from '@/lib/http';
-import type { PublicUser } from '@/modules/users/user.model';
+import type { PublicUser } from '@/modules/users/user.constants';
 import { updateProfileSchema } from '@/modules/users/user.schema';
 
 export function ProfileForm({ user }: { user: PublicUser }) {

@@ -1,7 +1,9 @@
 import { Schema, model, models, type HydratedDocument, type Model, type Types } from 'mongoose';
 
-export const USER_ROLES = ['HR', 'CANDIDATE'] as const;
-export type UserRole = (typeof USER_ROLES)[number];
+import { USER_ROLES, type PublicUser, type UserRole } from '@/modules/users/user.constants';
+
+export { USER_ROLES };
+export type { PublicUser, UserRole };
 
 export interface UserAttributes {
   email: string;
@@ -40,17 +42,6 @@ const userSchema = new Schema<UserAttributes>(
 
 export const User: Model<UserAttributes> =
   (models.User as Model<UserAttributes>) ?? model<UserAttributes>('User', userSchema);
-
-/** Shape safe to send to a client — excludes the password hash entirely. */
-export type PublicUser = {
-  id: string;
-  email: string;
-  role: UserRole;
-  name: string;
-  phone: string | null;
-  headline: string | null;
-  skills: string[];
-};
 
 export function toPublicUser(user: UserDocument | (UserAttributes & { _id: Types.ObjectId })): PublicUser {
   return {

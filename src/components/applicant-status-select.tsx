@@ -6,15 +6,9 @@ import { useState } from 'react';
 import { patchJson } from '@/lib/http';
 import {
   APPLICATION_STATUSES,
+  APPLICATION_STATUS_LABELS,
   type ApplicationStatus,
-} from '@/modules/applications/application.model';
-
-const STATUS_LABELS: Record<ApplicationStatus, string> = {
-  APPLIED: 'Applied',
-  REVIEWED: 'Reviewed',
-  SHORTLISTED: 'Shortlisted',
-  REJECTED: 'Rejected',
-};
+} from '@/modules/applications/application.constants';
 
 /** Inline status control on the applicants table. */
 export function ApplicantStatusSelect({
@@ -61,7 +55,7 @@ export function ApplicantStatusSelect({
       >
         {APPLICATION_STATUSES.map((value) => (
           <option key={value} value={value}>
-            {STATUS_LABELS[value]}
+            {APPLICATION_STATUS_LABELS[value]}
           </option>
         ))}
       </select>

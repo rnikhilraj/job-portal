@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 import { optionalSearchTerm, paginationSchema } from '@/lib/validation';
-import { APPLICATION_STATUSES } from '@/modules/applications/application.model';
+import { APPLICATION_STATUSES } from '@/modules/applications/application.constants';
 
 /**
  * The resume itself is validated in resume.storage.ts, which inspects the bytes

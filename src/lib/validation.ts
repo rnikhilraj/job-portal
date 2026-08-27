@@ -1,10 +1,17 @@
-import { Types } from 'mongoose';
 import { z } from 'zod';
 
-/** Rejects malformed ids at the edge so Mongoose never raises a CastError. */
+/**
+ * Rejects malformed ids at the edge so Mongoose never raises a CastError.
+ *
+ * Matched with a regex rather than `Types.ObjectId.isValid` so this module stays
+ * free of Mongoose: it is imported by the zod schemas that client components
+ * share, and pulling the driver in would ship it to the browser.
+ */
+const OBJECT_ID_PATTERN = /^[0-9a-fA-F]{24}$/;
+
 export const objectIdSchema = z
   .string()
-  .refine((value) => Types.ObjectId.isValid(value), 'Invalid identifier.');
+  .regex(OBJECT_ID_PATTERN, 'Invalid identifier.');
 
 /**
  * Escapes every regex metacharacter so a search term is matched literally.

@@ -1,18 +1,16 @@
 import { Schema, model, models, type HydratedDocument, type Model, type Types } from 'mongoose';
 
-export const JOB_TYPES = ['FULL_TIME', 'PART_TIME', 'CONTRACT', 'INTERNSHIP', 'REMOTE'] as const;
-export type JobType = (typeof JOB_TYPES)[number];
+import {
+  JOB_STATUSES,
+  JOB_TYPES,
+  JOB_TYPE_LABELS,
+  type JobStatus,
+  type JobType,
+  type PublicJob,
+} from '@/modules/jobs/job.constants';
 
-export const JOB_STATUSES = ['OPEN', 'CLOSED'] as const;
-export type JobStatus = (typeof JOB_STATUSES)[number];
-
-export const JOB_TYPE_LABELS: Record<JobType, string> = {
-  FULL_TIME: 'Full time',
-  PART_TIME: 'Part time',
-  CONTRACT: 'Contract',
-  INTERNSHIP: 'Internship',
-  REMOTE: 'Remote',
-};
+export { JOB_STATUSES, JOB_TYPES, JOB_TYPE_LABELS };
+export type { JobStatus, JobType, PublicJob };
 
 export interface JobAttributes {
   title: string;
@@ -47,18 +45,6 @@ jobSchema.index({ postedBy: 1, createdAt: -1 });
 
 export const Job: Model<JobAttributes> =
   (models.Job as Model<JobAttributes>) ?? model<JobAttributes>('Job', jobSchema);
-
-export type PublicJob = {
-  id: string;
-  title: string;
-  description: string;
-  location: string;
-  jobType: JobType;
-  status: JobStatus;
-  postedBy: string;
-  createdAt: string;
-  updatedAt: string;
-};
 
 export function toPublicJob(job: JobDocument): PublicJob {
   return {

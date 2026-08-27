@@ -6,20 +6,16 @@ import { Pagination } from '@/components/pagination';
 import { AppError } from '@/lib/api/errors';
 import { buildPageHref, toQueryRecord, type RawSearchParams } from '@/lib/query';
 import { objectIdSchema } from '@/lib/validation';
-import { APPLICATION_STATUSES } from '@/modules/applications/application.model';
+import {
+  APPLICATION_STATUSES,
+  APPLICATION_STATUS_LABELS,
+} from '@/modules/applications/application.constants';
 import { applicantsQuerySchema } from '@/modules/applications/application.schema';
 import { listApplicantsForJob } from '@/modules/applications/application.service';
 import { requirePageUser } from '@/modules/auth/session';
 import { findOwnedJobOrFail } from '@/modules/jobs/job.service';
 
 export const metadata = { title: 'Applicants · Job Application Tracker' };
-
-const STATUS_LABELS: Record<string, string> = {
-  APPLIED: 'Applied',
-  REVIEWED: 'Reviewed',
-  SHORTLISTED: 'Shortlisted',
-  REJECTED: 'Rejected',
-};
 
 export default async function ApplicantsPage({
   params,
@@ -85,7 +81,7 @@ export default async function ApplicantsPage({
             <option value="">Any</option>
             {APPLICATION_STATUSES.map((status) => (
               <option key={status} value={status}>
-                {STATUS_LABELS[status]}
+                {APPLICATION_STATUS_LABELS[status]}
               </option>
             ))}
           </select>

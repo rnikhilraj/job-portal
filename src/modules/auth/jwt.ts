@@ -2,7 +2,7 @@ import { SignJWT, jwtVerify } from 'jose';
 import { z } from 'zod';
 
 import { getEnv } from '@/lib/env';
-import { USER_ROLES, type UserRole } from '@/modules/users/user.model';
+import { USER_ROLES, type UserRole } from '@/modules/users/user.constants';
 
 const JWT_ALGORITHM = 'HS256';
 const JWT_ISSUER = 'job-application-tracker';

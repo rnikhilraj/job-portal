@@ -1,6 +1,6 @@
 import Link from 'next/link';
 
-import { JOB_TYPE_LABELS, type PublicJob } from '@/modules/jobs/job.model';
+import { JOB_TYPE_LABELS, type PublicJob } from '@/modules/jobs/job.constants';
 
 function summarise(description: string, maxLength = 180): string {
   if (description.length <= maxLength) return description;

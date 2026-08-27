@@ -1,6 +1,6 @@
 import Link from 'next/link';
 
-import { JOB_STATUSES } from '@/modules/jobs/job.model';
+import { JOB_STATUSES } from '@/modules/jobs/job.constants';
 
 const STATUS_LABELS: Record<string, string> = { OPEN: 'Open', CLOSED: 'Closed' };
 

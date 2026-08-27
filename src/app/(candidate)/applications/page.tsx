@@ -3,20 +3,16 @@ import Link from 'next/link';
 import { Pagination } from '@/components/pagination';
 import { StatusBadge } from '@/components/status-badge';
 import { buildPageHref, toQueryRecord, type RawSearchParams } from '@/lib/query';
-import { APPLICATION_STATUSES } from '@/modules/applications/application.model';
+import {
+  APPLICATION_STATUSES,
+  APPLICATION_STATUS_LABELS,
+} from '@/modules/applications/application.constants';
 import { myApplicationsQuerySchema } from '@/modules/applications/application.schema';
 import { listApplicationsForCandidate } from '@/modules/applications/application.service';
 import { requirePageUser } from '@/modules/auth/session';
 import { JOB_TYPE_LABELS } from '@/modules/jobs/job.model';
 
 export const metadata = { title: 'My applications · Job Application Tracker' };
-
-const STATUS_LABELS: Record<string, string> = {
-  APPLIED: 'Applied',
-  REVIEWED: 'Reviewed',
-  SHORTLISTED: 'Shortlisted',
-  REJECTED: 'Rejected',
-};
 
 export default async function MyApplicationsPage({
   searchParams,
@@ -45,7 +41,7 @@ export default async function MyApplicationsPage({
             <option value="">Any</option>
             {APPLICATION_STATUSES.map((status) => (
               <option key={status} value={status}>
-                {STATUS_LABELS[status]}
+                {APPLICATION_STATUS_LABELS[status]}
               </option>
             ))}
           </select>

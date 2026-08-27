@@ -13,7 +13,7 @@ import {
   type JobStatus,
   type JobType,
   type PublicJob,
-} from '@/modules/jobs/job.model';
+} from '@/modules/jobs/job.constants';
 import { createJobSchema } from '@/modules/jobs/job.schema';
 
 const STATUS_LABELS: Record<JobStatus, string> = {

@@ -1,6 +1,6 @@
 import Link from 'next/link';
 
-import { JOB_TYPES, JOB_TYPE_LABELS } from '@/modules/jobs/job.model';
+import { JOB_TYPES, JOB_TYPE_LABELS } from '@/modules/jobs/job.constants';
 
 type JobFiltersProps = {
   q?: string;

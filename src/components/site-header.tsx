@@ -1,7 +1,7 @@
 import Link from 'next/link';
 
 import { LogoutButton } from '@/components/logout-button';
-import type { PublicUser } from '@/modules/users/user.model';
+import type { PublicUser } from '@/modules/users/user.constants';
 
 const HR_LINKS = [{ href: '/hr/jobs', label: 'My listings' }];
 

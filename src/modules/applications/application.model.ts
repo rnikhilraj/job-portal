@@ -1,7 +1,12 @@
 import { Schema, model, models, type HydratedDocument, type Model, type Types } from 'mongoose';
 
-export const APPLICATION_STATUSES = ['APPLIED', 'REVIEWED', 'SHORTLISTED', 'REJECTED'] as const;
-export type ApplicationStatus = (typeof APPLICATION_STATUSES)[number];
+import {
+  APPLICATION_STATUSES,
+  type ApplicationStatus,
+} from '@/modules/applications/application.constants';
+
+export { APPLICATION_STATUSES };
+export type { ApplicationStatus };
 
 /** Metadata about the stored resume. The file itself lives on the uploads volume. */
 export interface ResumeFile {

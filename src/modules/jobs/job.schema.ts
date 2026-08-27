@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 import { optionalSearchTerm, paginationSchema } from '@/lib/validation';
-import { JOB_STATUSES, JOB_TYPES } from '@/modules/jobs/job.model';
+import { JOB_STATUSES, JOB_TYPES } from '@/modules/jobs/job.constants';
 
 export const createJobSchema = z.object({
   title: z.string().trim().min(3, 'Title must be at least 3 characters.').max(140),
