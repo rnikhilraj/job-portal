@@ -1,4 +1,5 @@
 import { cookies } from 'next/headers';
+import { redirect } from 'next/navigation';
 import type { NextRequest, NextResponse } from 'next/server';
 
 import { ForbiddenError, UnauthorizedError } from '@/lib/api/errors';
@@ -88,4 +89,21 @@ export async function getCurrentUser(): Promise<UserDocument | null> {
 
   await connectToDatabase();
   return User.findById(session.userId);
+}
+
+/**
+ * Page-level guard for server components. Unlike requireUser() this redirects
+ * instead of throwing, because a browser navigating to a protected page should
+ * land on the login form rather than see a JSON error.
+ */
+export async function requirePageUser(role?: UserRole): Promise<UserDocument> {
+  const user = await getCurrentUser();
+  if (!user) redirect('/login');
+
+  if (role && user.role !== role) {
+    // Send them to their own role's home rather than leaking that the page exists.
+    redirect(user.role === 'HR' ? '/hr/jobs' : '/jobs');
+  }
+
+  return user;
 }
