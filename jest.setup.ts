@@ -1,3 +1,4 @@
+import { Blob as NodeBlob, File as NodeFile } from 'node:buffer';
 import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
@@ -7,6 +8,16 @@ import mongoose from 'mongoose';
 
 import { connectToDatabase, disconnectFromDatabase } from '@/lib/db';
 import { resetEnvCache } from '@/lib/env';
+
+/**
+ * Node 18 exposes File and Blob from `node:buffer` but does not install them as
+ * globals until Node 20, while the route handlers (and undici's multipart
+ * parsing) expect the global. The container runs Node 20, so this only bridges
+ * the gap for local test runs.
+ */
+const globalScope = globalThis as Record<string, unknown>;
+globalScope.File ??= NodeFile;
+globalScope.Blob ??= NodeBlob;
 
 /**
  * Each test file gets its own ephemeral MongoDB and its own uploads directory,
@@ -37,6 +48,11 @@ beforeAll(async () => {
 afterEach(async () => {
   const { collections } = mongoose.connection;
   await Promise.all(Object.values(collections).map((collection) => collection.deleteMany({})));
+
+  // Uploaded resumes are state too — a leftover file would make the next test's
+  // assertions about the uploads directory meaningless.
+  const files = await fs.readdir(uploadsDir).catch(() => []);
+  await Promise.all(files.map((file) => fs.rm(path.join(uploadsDir, file), { force: true })));
 });
 
 afterAll(async () => {
