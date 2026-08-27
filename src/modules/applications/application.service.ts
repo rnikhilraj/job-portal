@@ -136,6 +136,19 @@ function isDuplicateKeyError(error: unknown): boolean {
   );
 }
 
+/** Used by the job detail page to swap the apply form for an "applied" notice. */
+export async function findCandidateApplicationForJob(
+  jobId: string,
+  candidateId: Types.ObjectId,
+): Promise<{ id: string; status: ApplicationStatus } | null> {
+  const application = await Application.findOne({ job: jobId, candidate: candidateId }).select(
+    'status',
+  );
+  if (!application) return null;
+
+  return { id: String(application._id), status: application.status };
+}
+
 export async function listApplicationsForCandidate(
   candidateId: Types.ObjectId,
   query: MyApplicationsQuery,

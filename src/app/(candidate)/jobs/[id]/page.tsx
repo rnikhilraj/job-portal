@@ -1,9 +1,12 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
+import { ApplyForm } from '@/components/apply-form';
 import { StatusBadge } from '@/components/status-badge';
 import { NotFoundError } from '@/lib/api/errors';
+import { getEnv } from '@/lib/env';
 import { objectIdSchema } from '@/lib/validation';
+import { findCandidateApplicationForJob } from '@/modules/applications/application.service';
 import { requirePageUser } from '@/modules/auth/session';
 import { JOB_TYPE_LABELS } from '@/modules/jobs/job.model';
 import { findJobForViewer } from '@/modules/jobs/job.service';
@@ -23,6 +26,11 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
     if (error instanceof NotFoundError) notFound();
     throw error;
   }
+
+  const isCandidate = user.role === 'CANDIDATE';
+  const existingApplication = isCandidate
+    ? await findCandidateApplicationForJob(job.id, user._id)
+    : null;
 
   return (
     <article>
@@ -50,6 +58,32 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
           {job.description}
         </p>
       </section>
+
+      {isCandidate ? (
+        <section className="card mt-6">
+          <h2 className="text-lg font-semibold">Apply for this role</h2>
+
+          {existingApplication ? (
+            <div className="mt-3 space-y-3">
+              <p className="text-sm text-slate-700">
+                You have already applied to this job. Current status:{' '}
+                <StatusBadge status={existingApplication.status} />
+              </p>
+              <Link href="/applications" className="btn-secondary">
+                View my applications
+              </Link>
+            </div>
+          ) : job.status === 'OPEN' ? (
+            <div className="mt-4">
+              <ApplyForm jobId={job.id} maxResumeBytes={getEnv().MAX_RESUME_BYTES} />
+            </div>
+          ) : (
+            <p className="mt-3 text-sm text-slate-600">
+              This listing is closed and is no longer accepting applications.
+            </p>
+          )}
+        </section>
+      ) : null}
     </article>
   );
 }
