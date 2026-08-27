@@ -5,7 +5,7 @@ import path from 'node:path';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import mongoose from 'mongoose';
 
-import { disconnectFromDatabase } from '@/lib/db';
+import { connectToDatabase, disconnectFromDatabase } from '@/lib/db';
 import { resetEnvCache } from '@/lib/env';
 
 /**
@@ -28,6 +28,10 @@ beforeAll(async () => {
   process.env.MAX_RESUME_BYTES = String(1024 * 1024);
   process.env.SEED_ON_BOOT = 'false';
   resetEnvCache();
+
+  // Connect up front so factories can write fixtures before the first handler
+  // call, which is what would otherwise open the connection.
+  await connectToDatabase();
 });
 
 afterEach(async () => {
