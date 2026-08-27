@@ -4,10 +4,11 @@ import type { NextRequest, NextResponse } from 'next/server';
 import { ForbiddenError, UnauthorizedError } from '@/lib/api/errors';
 import { connectToDatabase } from '@/lib/db';
 import { getEnv, isProduction } from '@/lib/env';
+import { SESSION_COOKIE_NAME } from '@/modules/auth/cookie';
 import { signSessionToken, verifySessionToken, type SessionPayload } from '@/modules/auth/jwt';
 import { User, type UserDocument, type UserRole } from '@/modules/users/user.model';
 
-export const SESSION_COOKIE_NAME = 'session';
+export { SESSION_COOKIE_NAME };
 
 function cookieOptions() {
   return {
