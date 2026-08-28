@@ -153,11 +153,15 @@ src/
 │   └── api/               route handlers only — no business logic
 │
 ├── modules/
+│   │                      Each domain owns a dependency-free *.constants.ts
+│   │                      holding its enums and wire types, so client
+│   │                      components can import them without pulling Mongoose
+│   │                      into the browser bundle.
 │   ├── auth/              auth.schema · auth.service · password · jwt · session · cookie
-│   ├── users/             user.model · user.schema · user.service
-│   ├── jobs/              job.model · job.schema · job.service
+│   ├── users/             user.model · user.schema · user.service · user.constants
+│   ├── jobs/              job.model · job.schema · job.service · job.constants
 │   └── applications/      application.model · application.schema · application.service
-│                          · resume.storage
+│                          · application.constants
 │
 ├── lib/
 │   ├── api/               errors (typed AppError hierarchy) · respond (JSON envelope)
@@ -166,10 +170,15 @@ src/
 │   ├── env.ts             lazily parsed, zod-validated environment
 │   ├── validation.ts      shared pagination, ObjectId and regex-escaping helpers
 │   ├── rate-limit.ts      fixed-window limiter for credential endpoints
+│   ├── resume-storage.ts  PDF validation and on-disk storage — in lib/ because
+│   │                      both applications and user profiles embed a resume
+│   ├── query.ts           search-param normalisation for the list pages
+│   ├── http.ts            client-side fetch wrapper over the JSON envelope
 │   └── seed.ts            idempotent demo data
 │
-├── components/            shared UI
-├── instrumentation.ts     boot hook: validate env, seed
+├── components/            shared UI, including the pipeline rail, hero and funnel
+├── instrumentation.ts     boot hook, Edge-safe: defers to instrumentation.node
+├── instrumentation.node.ts validate env, seed — Node runtime only
 └── middleware.ts          cookie-presence redirects (UX only — see Security notes)
 ```
 
@@ -549,6 +558,10 @@ Every gate runs on push and pull request via `.github/workflows/ci.yml`, which
 has two jobs: one running typecheck, lint, tests and build, and one booting the
 Compose stack from scratch to prove the README's single-command claim.
 
+Config lives in `eslint.config.mjs` (ESLint 9 flat config), `jest.config.mjs`
+(two projects — Node for the API suites, jsdom for components) and the two
+setup files `jest.setup.ts` and `jest.setup.components.ts`.
+
 Other quality gates:
 
 ```bash
@@ -729,6 +742,10 @@ Things deliberately left out or simplified, and what they would take to fix.
   storage (S3 or equivalent) with signed, short-lived URLs is the production shape.
 - **Search uses escaped regular expressions**, which cannot use an index and will not scale to a
   large collection. A MongoDB text index or a dedicated search service would replace it.
+- **`job.service` and `application.service` import each other.** Deleting a job cascades to its
+  applications, and reading applicants needs the job's owner, so the two services reference one
+  another. It resolves only because ESM hoists the bindings. Extracting the shared ownership
+  check into its own module would break the cycle properly.
 - **Applicant name search runs two queries** rather than one aggregation with `$lookup`. It is
   scoped to the applicants for that listing, so it is bounded, but it is not the most efficient
   shape.
@@ -757,7 +774,10 @@ Things deliberately left out or simplified, and what they would take to fix.
 - **`Secure` cookies over `http://localhost`** work because browsers treat localhost as a
   trustworthy origin. Deploying to any other host over plain HTTP would break sign-in — put the
   app behind TLS.
-- **No automated browser tests.** Coverage is at the API and unit level; the UI was verified
-  manually against the running container.
+- **No automated browser tests.** There are component tests now, running against jsdom, but
+  nothing drives a real browser. Every claim about how the app *looks* — responsive behaviour
+  at each breakpoint, motion, focus rings — was verified by reading served HTML and compiled
+  CSS, not by looking at it. Playwright would close that gap and is the most valuable test
+  work left.
 - **Seeded credentials are documented in this file and default in `.env.example`.** That is
   deliberate for review purposes and must not be carried into a real deployment.
