@@ -49,8 +49,15 @@ is not on `PATH`, so compose fails with a credentials error. Prefix it:
 export PATH="$PATH:/Applications/Docker.app/Contents/Resources/bin"
 ```
 
-Node 22 is the floor everywhere — local, CI and the image. Local Node is pinned
-by a `PATH` line in `~/.zshrc`.
+Node 22 is the floor everywhere — local, CI, the image and `engines`. `.nvmrc`
+pins it and `.npmrc` sets `engine-strict`, so `npm install` refuses an older
+runtime by name instead of letting it fail later.
+
+**Do not trust the shell's default `node`.** This machine has several Homebrew
+versions and `node@18` has resolved ahead of the `~/.zshrc` line before now. On
+18 the suite fails ~50 times with `ReferenceError: File is not defined`, because
+the global `File` the upload tests need only exists from Node 20. Check `node -v`
+before drawing any conclusion from a red run.
 
 ## Architecture
 
@@ -71,7 +78,10 @@ that the model, the schema and the client component all import.
 
 `tests/client-bundle-boundary.test.ts` walks the real import graph from every
 client entry point and fails on `mongoose`, `bcryptjs`, `jose` or a `node:`
-builtin. **Add new client components to its entry list.**
+builtin. **Add new client components to its entry list.** A component is only
+covered if it is listed or reachable from something listed, so one whose sole
+importer is a *server* component is guarded by nothing — that is how
+`delete-job-button.tsx` sat outside the walk.
 
 **2. `isSearchable` is the single source of truth for recruiter visibility.**
 Every recruiter-facing read starts from `optedInCandidateFilter()`, and
@@ -95,6 +105,12 @@ status, Mongo `E11000 → 409`, anything else → a logged, generic 500. Throw a
 
 Success is always `{ data, meta? }`, failure always `{ error: { code, message, details? } }`.
 
+On the client, every component calling `apiFetch` catches and distinguishes an
+`ApiRequestError` — show the server's own message — from a transport failure —
+say the request never landed and nothing changed. Swallowing the error, or
+navigating as though the call succeeded, is the bug: `LogoutButton` did exactly
+that and left people signed in while reporting nothing.
+
 ### Authorization
 
 - `requireUser` / `requireRole` — API routes. Throw 401/403. Both re-read the
@@ -103,6 +119,13 @@ Success is always `{ data, meta? }`, failure always `{ error: { code, message, d
 - `src/middleware.ts` — cookie *presence* only, and **not** a security boundary.
   It runs on Edge, where verifying the JWT would mean shipping the signing secret
   into that bundle. A forged cookie passes it and hits a 401 downstream.
+
+Rate limiting picks its bucket from whatever is trustworthy at that point:
+`clientKey()` keys on IP for endpoints that run *before* authentication (login,
+signup), and `userKey()` keys on the verified user id for ones that run after
+(both resume uploads). Prefer `userKey` whenever a session is already in hand —
+`X-Forwarded-For` is attacker-controlled with nothing trusted in front. Counters
+live in module state, so `jest.setup.ts` clears them between tests.
 
 ## Gotchas that have cost real time
 
@@ -118,7 +141,11 @@ produces a dirty tree after the next build. Leave it in Next's shape.
 
 **`coverageThreshold` glob keys behave differently from directory keys.** A glob
 applies the numbers per-file *and* removes those files from the global pool. Use
-directory keys (`'./src/modules/'`) to threshold a group.
+directory keys to threshold a group — `'./src/modules/'`, `'./src/lib/api/'` and
+`'./src/components/'` each have one, which leaves `global` covering only
+`src/app/api/` plus the non-api files in `src/lib/`. That is why the `global`
+numbers look unrelated to the summary row, and why `seed.ts` at 0% drags the
+global branch floor so far below the others.
 
 **jsdom has no global `Response`.** Constructing one in a component test throws a
 `ReferenceError` that `apiFetch` reports as a transport failure — which silently
@@ -128,6 +155,27 @@ exposing `status`, `ok` and `json()`.
 **`userEvent.upload` honours the input's `accept` attribute.** A non-PDF is
 refused before the component's own check runs. Pass `{ applyAccept: false }` to
 exercise the fallback.
+
+**`jest.mock()` does not resolve the `@/` alias.** `next/jest` maps it for
+ordinary imports but not for the path handed to `jest.mock` or
+`jest.requireActual`, which fail with "Cannot find module '@/…'". Use a relative
+path (`jest.mock('../src/lib/resume-storage')`). It still intercepts the module
+the code under test imported by alias, because both resolve to the same file.
+
+**`undefined` does not survive `JSON.stringify`.** A zod schema that maps a
+cleared form field to `undefined` loses the difference between "clear this" and
+"not mentioned" the moment the client sends its parsed output over the wire: the
+key is dropped and the server sees an absent field. Map cleared values to `null`
+and branch on the value, never on `'key' in input`. This shipped as a real bug
+on `experienceLevel` — the save reported success and the old value survived.
+
+**A `next.config` header overrides one set inside a route handler**, and among
+config rules the *later* match wins. The resume routes set their own
+`default-src 'none'; sandbox`, which the app-wide policy silently replaced until
+a more specific rule was added *below* the catch-all. Note also that the app-wide
+`script-src` carries `'unsafe-inline'` and is therefore not the XSS control —
+render-time escaping is. See the security section of README.md before describing
+it as anything stronger.
 
 ## Design system
 
@@ -148,6 +196,10 @@ Tokens live in `tailwind.config.ts`; motion vocabulary and component classes in
 - API suites invoke App Router handlers directly with a real `NextRequest`, a
   genuinely signed cookie and an ephemeral MongoDB. No mocking of auth.
 - Prove a new test is not vacuous: break the thing it guards and watch it fail.
-  Two tests in this repo passed with the bug present before being rewritten.
+  Three tests in this repo have passed with the bug present before being
+  rewritten. The latest drove a raw `{experienceLevel: ''}` body that the browser
+  never sends, and so missed that the real client path dropped the field
+  entirely — when a handler is exercised directly, check the fixture matches what
+  the UI actually puts on the wire.
 - `tests/api-envelope.test.ts` asserts the 500 body **exactly**, on purpose, so
   that copy can only change deliberately.
