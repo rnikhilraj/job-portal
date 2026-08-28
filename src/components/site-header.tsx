@@ -3,7 +3,10 @@ import Link from 'next/link';
 import { LogoutButton } from '@/components/logout-button';
 import type { PublicUser } from '@/modules/users/user.constants';
 
-const HR_LINKS = [{ href: '/hr/jobs', label: 'My listings' }];
+const HR_LINKS = [
+  { href: '/hr/jobs', label: 'My listings' },
+  { href: '/hr/candidates', label: 'Candidate search' },
+];
 
 const CANDIDATE_LINKS = [
   { href: '/jobs', label: 'Browse jobs' },

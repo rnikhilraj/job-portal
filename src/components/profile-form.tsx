@@ -5,7 +5,12 @@ import { useState } from 'react';
 import { Alert } from '@/components/alert';
 import { TextField } from '@/components/text-field';
 import { ApiRequestError, patchJson } from '@/lib/http';
-import type { PublicUser } from '@/modules/users/user.constants';
+import {
+  EXPERIENCE_LEVELS,
+  EXPERIENCE_LEVEL_LABELS,
+  type ExperienceLevel,
+  type PublicUser,
+} from '@/modules/users/user.constants';
 import { updateProfileSchema } from '@/modules/users/user.schema';
 
 export function ProfileForm({ user }: { user: PublicUser }) {
@@ -13,6 +18,12 @@ export function ProfileForm({ user }: { user: PublicUser }) {
   const [phone, setPhone] = useState(user.phone ?? '');
   const [headline, setHeadline] = useState(user.headline ?? '');
   const [skills, setSkills] = useState(user.skills.join(', '));
+  const [isSearchable, setIsSearchable] = useState(user.isSearchable);
+  const [experienceLevel, setExperienceLevel] = useState<ExperienceLevel | ''>(
+    user.experienceLevel ?? '',
+  );
+
+  const isCandidate = user.role === 'CANDIDATE';
 
   const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({});
   const [formError, setFormError] = useState<string | null>(null);
@@ -24,7 +35,15 @@ export function ProfileForm({ user }: { user: PublicUser }) {
     setFormError(null);
     setSavedAt(null);
 
-    const parsed = updateProfileSchema.safeParse({ name, phone, headline, skills });
+    // The opt-in fields are candidate-only; the API rejects them from an HR
+    // account, so they are not sent from one either.
+    const parsed = updateProfileSchema.safeParse({
+      name,
+      phone,
+      headline,
+      skills,
+      ...(isCandidate ? { isSearchable, experienceLevel } : {}),
+    });
     if (!parsed.success) {
       setFieldErrors(parsed.error.flatten().fieldErrors as Record<string, string[]>);
       return;
@@ -39,6 +58,8 @@ export function ProfileForm({ user }: { user: PublicUser }) {
       setPhone(updated.phone ?? '');
       setHeadline(updated.headline ?? '');
       setSkills(updated.skills.join(', '));
+      setIsSearchable(updated.isSearchable);
+      setExperienceLevel(updated.experienceLevel ?? '');
       setSavedAt(new Date().toLocaleTimeString());
     } catch (error) {
       if (error instanceof ApiRequestError) {
@@ -108,6 +129,70 @@ export function ProfileForm({ user }: { user: PublicUser }) {
         placeholder="TypeScript, React, MongoDB"
         hint="Comma-separated. Duplicates are removed automatically."
       />
+
+      {isCandidate ? (
+        <fieldset className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+          <legend className="px-1 text-sm font-semibold text-slate-800">
+            Recruiter visibility
+          </legend>
+
+          <label htmlFor="isSearchable" className="flex cursor-pointer items-start gap-3">
+            <input
+              id="isSearchable"
+              name="isSearchable"
+              type="checkbox"
+              checked={isSearchable}
+              onChange={(event) => setIsSearchable(event.target.checked)}
+              className="mt-0.5 h-4 w-4 shrink-0 rounded border-slate-400 text-brand-600
+                focus:ring-2 focus:ring-brand-200"
+            />
+            <span>
+              <span className="block text-sm font-medium text-slate-900">
+                Make my profile visible to recruiters
+              </span>
+              <span className="mt-1 block text-sm text-slate-600">
+                HR users will be able to find you by name, headline and skills, and see your
+                experience level. Your email, phone number, resumes and applications are{' '}
+                <strong className="font-medium">never</strong> shown in search — recruiters only
+                see those if you apply to one of their jobs.
+              </span>
+            </span>
+          </label>
+
+          <p className="mt-3 text-xs text-slate-500">
+            {isSearchable
+              ? 'You are currently discoverable. Untick this and save to be removed from search immediately.'
+              : 'You are not currently discoverable. This is off by default.'}
+          </p>
+
+          <div className="mt-4 max-w-xs">
+            <label htmlFor="experienceLevel" className="field-label">
+              Experience level
+            </label>
+            <select
+              id="experienceLevel"
+              name="experienceLevel"
+              value={experienceLevel}
+              onChange={(event) => setExperienceLevel(event.target.value as ExperienceLevel | '')}
+              className="field-input"
+            >
+              <option value="">Not specified</option>
+              {EXPERIENCE_LEVELS.map((level) => (
+                <option key={level} value={level}>
+                  {EXPERIENCE_LEVEL_LABELS[level]}
+                </option>
+              ))}
+            </select>
+            {fieldErrors.experienceLevel?.length ? (
+              <p className="field-error">{fieldErrors.experienceLevel.join(' ')}</p>
+            ) : (
+              <p className="mt-1 text-xs text-slate-500">
+                Lets recruiters filter by seniority. Optional.
+              </p>
+            )}
+          </div>
+        </fieldset>
+      ) : null}
 
       <button type="submit" className="btn-primary" disabled={isSubmitting}>
         {isSubmitting ? 'Saving…' : 'Save profile'}

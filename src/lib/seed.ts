@@ -2,7 +2,7 @@ import { connectToDatabase } from '@/lib/db';
 import { getEnv } from '@/lib/env';
 import { hashPassword } from '@/modules/auth/password';
 import { Job, type JobType } from '@/modules/jobs/job.model';
-import { User, type UserRole } from '@/modules/users/user.model';
+import { User, type ExperienceLevel, type UserRole } from '@/modules/users/user.model';
 
 /**
  * Fixed demo accounts. HR users have no public signup route, so this seed is
@@ -16,6 +16,9 @@ type SeedAccount = {
   password: string;
   headline?: string;
   skills?: string[];
+  /** Candidate-only. Omitted means opted out, which is the real default. */
+  isSearchable?: boolean;
+  experienceLevel?: ExperienceLevel;
 };
 
 function seedAccounts(): SeedAccount[] {
@@ -37,12 +40,56 @@ function seedAccounts(): SeedAccount[] {
       headline: 'Recruiting Lead, Aurora Systems',
     },
     {
+      // Seeded opted OUT on purpose: log in as this account, tick "Make my
+      // profile visible to recruiters" on /profile, and watch the profile
+      // appear in HR's candidate search.
       email: 'candidate@example.com',
       name: 'Sam Rivera',
       role: 'CANDIDATE',
       password: SEED_CANDIDATE_PASSWORD,
       headline: 'Full-stack engineer',
       skills: ['TypeScript', 'React', 'Node.js', 'MongoDB'],
+      experienceLevel: 'MID',
+    },
+    {
+      email: 'asha@example.com',
+      name: 'Asha Nair',
+      role: 'CANDIDATE',
+      password: SEED_CANDIDATE_PASSWORD,
+      headline: 'Backend engineer focused on distributed systems',
+      skills: ['Go', 'PostgreSQL', 'Kafka', 'Kubernetes'],
+      isSearchable: true,
+      experienceLevel: 'SENIOR',
+    },
+    {
+      email: 'marco@example.com',
+      name: 'Marco Ferreira',
+      role: 'CANDIDATE',
+      password: SEED_CANDIDATE_PASSWORD,
+      headline: 'Frontend developer who cares about accessibility',
+      skills: ['React', 'TypeScript', 'CSS', 'Testing Library'],
+      isSearchable: true,
+      experienceLevel: 'MID',
+    },
+    {
+      email: 'lena@example.com',
+      name: 'Lena Fischer',
+      role: 'CANDIDATE',
+      password: SEED_CANDIDATE_PASSWORD,
+      headline: 'Platform lead, ex-infrastructure',
+      skills: ['Kubernetes', 'Terraform', 'Go', 'Observability'],
+      isSearchable: true,
+      experienceLevel: 'LEAD',
+    },
+    {
+      // Also opted out, so the directory is visibly a subset of all accounts.
+      email: 'tomas@example.com',
+      name: 'Tomas Halonen',
+      role: 'CANDIDATE',
+      password: SEED_CANDIDATE_PASSWORD,
+      headline: 'Data analyst',
+      skills: ['SQL', 'Python', 'dbt'],
+      experienceLevel: 'ENTRY',
     },
   ];
 }
@@ -131,6 +178,8 @@ export async function seedDatabase(): Promise<SeedSummary> {
       passwordHash: await hashPassword(account.password),
       headline: account.headline,
       skills: account.skills ?? [],
+      isSearchable: account.isSearchable ?? false,
+      experienceLevel: account.experienceLevel,
     });
     usersCreated += 1;
   }

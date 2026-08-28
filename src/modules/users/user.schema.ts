@@ -1,5 +1,8 @@
 import { z } from 'zod';
 
+import { optionalSearchTerm, paginationSchema } from '@/lib/validation';
+import { EXPERIENCE_LEVELS } from '@/modules/users/user.constants';
+
 /**
  * Skills arrive either as an array (JSON clients) or as a comma-separated
  * string (the profile form). Both are normalised to a trimmed, de-duplicated,
@@ -42,6 +45,9 @@ const phoneSchema = z
 /**
  * Note what is absent: email, role and passwordHash. A candidate cannot change
  * their own role or take over another account by editing their profile.
+ *
+ * `isSearchable` and `experienceLevel` are candidate-only; the service rejects
+ * them for HR accounts rather than silently storing a field HR cannot use.
  */
 export const updateProfileSchema = z
   .object({
@@ -49,6 +55,14 @@ export const updateProfileSchema = z
     phone: phoneSchema.optional(),
     headline: z.string().trim().max(160, 'Headline must be 160 characters or fewer.').optional(),
     skills: skillsSchema.optional(),
+    isSearchable: z.boolean(),
+    experienceLevel: z
+      .enum(EXPERIENCE_LEVELS, {
+        errorMap: () => ({ message: 'Choose a valid experience level.' }),
+      })
+      // An empty string from a <select> means "not specified", stored as unset.
+      .or(z.literal('').transform(() => undefined))
+      .optional(),
   })
   .partial()
   .refine((value) => Object.keys(value).length > 0, {
@@ -56,3 +70,17 @@ export const updateProfileSchema = z
   });
 
 export type UpdateProfileInput = z.infer<typeof updateProfileSchema>;
+
+/**
+ * Query for HR's candidate search.
+ *
+ * There is deliberately no parameter here that could widen the result set
+ * beyond opted-in candidates — the isSearchable filter is applied in the
+ * service and is not expressible through the query string.
+ */
+export const candidateSearchQuerySchema = paginationSchema.extend({
+  q: optionalSearchTerm,
+  experienceLevel: z.enum(EXPERIENCE_LEVELS).optional(),
+});
+
+export type CandidateSearchQuery = z.infer<typeof candidateSearchQuerySchema>;

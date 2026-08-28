@@ -91,6 +91,22 @@ applicants of any listing belonging to HR1.
 The seed also creates six listings — four owned by HR1 (one of them `CLOSED`, so the status
 filter has something to show) and two owned by HR2.
 
+It seeds five candidate accounts (all with the candidate password above), three of which have
+opted in to recruiter search and two of which have not, so HR's candidate directory is visibly a
+subset of everyone with an account:
+
+| Candidate | Opted in to search? | Experience |
+| --- | --- | --- |
+| `candidate@example.com` — Sam Rivera | **No** | Mid |
+| `asha@example.com` — Asha Nair | Yes | Senior |
+| `marco@example.com` — Marco Ferreira | Yes | Mid |
+| `lena@example.com` — Lena Fischer | Yes | Lead |
+| `tomas@example.com` — Tomas Halonen | **No** | Entry |
+
+Sam is opted out deliberately: log in as `candidate@example.com`, tick *Make my profile visible
+to recruiters* on `/profile`, and watch the profile appear in HR's candidate search — then untick
+it and watch it disappear.
+
 ---
 
 ## Architecture
@@ -131,7 +147,8 @@ src/
 ├── app/
 │   ├── (auth)/            login, signup
 │   ├── (candidate)/       jobs, jobs/[id], applications, profile
-│   ├── (hr)/hr/           jobs, jobs/new, jobs/[id]/edit, jobs/[id]/applicants
+│   ├── (hr)/hr/           jobs, jobs/new, jobs/[id]/edit, jobs/[id]/applicants,
+│   │                      candidates
 │   └── api/               route handlers only — no business logic
 │
 ├── modules/
@@ -159,7 +176,7 @@ src/
 
 | Collection | Fields | Indexes |
 | --- | --- | --- |
-| `users` | `email` (unique, lowercased), `passwordHash` (`select: false`), `role`, `name`, `phone?`, `headline?`, `skills[]` | unique `email` |
+| `users` | `email` (unique, lowercased), `passwordHash` (`select: false`), `role`, `name`, `phone?`, `headline?`, `skills[]`, `isSearchable` (default `false`, candidate-only), `experienceLevel?` (`ENTRY`/`MID`/`SENIOR`/`LEAD`, candidate-only) | unique `email`, `{role, isSearchable, createdAt}` |
 | `jobs` | `title`, `description`, `location`, `jobType`, `status`, `postedBy → users` | `{status, createdAt}`, `{postedBy, createdAt}` |
 | `applications` | `job → jobs`, `candidate → users`, `status`, `coverNote?`, `resume {storedName, originalName, sizeBytes, contentType}` | **unique `{job, candidate}`** |
 
@@ -213,6 +230,18 @@ becomes a status code:
    status. If HR deletes a listing, the row degrades to "Listing removed" rather than vanishing.
 6. **Edit your profile** at `/profile`: name, phone, headline and comma-separated skills. HR sees
    these next to your application. Email and role are not editable.
+7. **Opt in to recruiter search** (optional) — also on `/profile`, under *Recruiter visibility*.
+   Ticking **"Make my profile visible to recruiters"** lets any HR user find you at
+   `/hr/candidates` by name, headline or skill. You can also set an experience level so
+   recruiters can filter by seniority.
+
+   This is **off by default** and nothing turns it on for you. While it is off you do not appear
+   in search at all — not lower down the results, not without contact details, not at all. Untick
+   it and save, and you are gone from search on the very next query.
+
+   Even when it is on, search results show only your name, headline, skills and experience level.
+   Your email, phone number, resumes and applications are never exposed there — recruiters see
+   those only if you apply to one of their listings.
 
 ### As an HR user — `hr1@example.com` / `Hr@Passw0rd123`
 
@@ -225,7 +254,12 @@ becomes a status code:
 5. **View applicants** at `/hr/jobs/<id>/applicants`: each candidate's name, email, phone,
    headline, skills and cover note. Search by candidate name, filter by status.
 6. **Download a resume** — served through an authorized handler, not a public URL.
-7. **Change a status** with the inline control. If the server rejects the change, the control
+7. **Search candidates** at `/hr/candidates` — a directory of candidates who have opted in to
+   being found. Search across name, headline and skills, filter by experience level, and page
+   through results. Results are intentionally limited to name, headline, skills and experience
+   level: no email, no phone, no resumes, no application history. Candidates who have not opted
+   in never appear, however well they match.
+8. **Change a status** with the inline control. If the server rejects the change, the control
    rolls back rather than showing a status that was never saved.
 
 ### Confirming role isolation yourself
@@ -283,7 +317,8 @@ All routes are under `/api`. Every route except `/api/health`, `/api/auth/signup
 | `POST` | `/auth/logout` | any | Expires the session cookie |
 | `GET` | `/auth/me` | any | Current user |
 | `GET` | `/users/me` | any | Own profile |
-| `PATCH` | `/users/me` | any | Edit own name, phone, headline, skills |
+| `PATCH` | `/users/me` | any | Edit own name, phone, headline, skills; candidates also `isSearchable` and `experienceLevel` (400 for HR) |
+| `GET` | `/candidates` | **HR** | Opt-in candidate search. `?q=&experienceLevel=&page=&limit=` |
 | `GET` | `/jobs` | any | Open listings. `?q=&location=&jobType=&page=&limit=` |
 | `GET` | `/jobs?scope=mine` | **HR** | Caller's own listings incl. closed. `?q=&status=` |
 | `POST` | `/jobs` | **HR** | Create a listing |
@@ -297,7 +332,11 @@ All routes are under `/api`. Every route except `/api/health`, `/api/auth/signup
 | `GET` | `/applications/:id/resume` | **owner HR or the applicant** | Streams the PDF as an attachment |
 
 Enumerations: `jobType` is `FULL_TIME | PART_TIME | CONTRACT | INTERNSHIP | REMOTE`, job `status`
-is `OPEN | CLOSED`, application `status` is `APPLIED | REVIEWED | SHORTLISTED | REJECTED`.
+is `OPEN | CLOSED`, application `status` is `APPLIED | REVIEWED | SHORTLISTED | REJECTED`, and
+`experienceLevel` is `ENTRY | MID | SENIOR | LEAD`.
+
+`GET /api/candidates` returns only `{ id, name, headline, skills, experienceLevel }` per result.
+There is no query parameter that can widen it beyond opted-in candidates.
 
 Pagination defaults to `page=1&limit=10`; `limit` is capped at 50 and a larger value is a 400.
 
@@ -354,6 +393,21 @@ permission check cannot be bypassed by guessing a URL. Only the HR user who owns
 the candidate who submitted it may download. Responses are `attachment`, `nosniff`,
 `private, no-store` and sandboxed by CSP.
 
+**Candidate search is opt-in, enforced in the query rather than the view.** `searchCandidates()`
+pins `role: 'CANDIDATE'` and `isSearchable: true` into the Mongo filter itself, and nothing in the
+request can override either — the query schema has no parameter for them. A candidate who has not
+opted in is never loaded from the database, so there is no "fetched then filtered" step to get
+wrong and no stale copy to leak. `isSearchable` defaults to `false` on the model, so accounts
+created before the field existed read back as opted out rather than undefined. Because the filter
+runs per request against live state, revoking consent takes effect on the next query.
+
+Results are projected through `toSearchableCandidate()`, a type that structurally has no `email`
+or `phone` field, rather than by deleting keys at the call site. Discoverability and
+contactability are deliberately separate: opting in grants the first only. Contact details,
+resumes and application history stay scoped to candidates who actually applied to that HR user's
+listings. A test asserts on the serialised response body, so an accidentally added field fails
+the suite.
+
 **Duplicate applications are prevented by a unique compound index on `{job, candidate}`**, not
 only by an application-level check. Two concurrent submissions cannot both succeed; the resulting
 `E11000` is caught and returned as a 409.
@@ -375,7 +429,7 @@ markup into another user's page.
 
 ```bash
 npm install       # once
-npm test          # 136 tests across 10 suites
+npm test          # 162 tests across 11 suites
 npm run test:coverage
 npx jest tests/applications.test.ts     # a single suite
 npx jest -t 'applying twice'            # a single test by name
@@ -395,6 +449,7 @@ hermetic.
 | `applications.test.ts` | applying, upload validation, applicant pipeline, delete cascade |
 | `resume-download.test.ts` | download authorization, headers, filename sanitisation |
 | `users.test.ts` | profile editing, privilege-escalation attempts |
+| `candidate-search.test.ts` | the opt-in boundary, HR-only access, what results expose, search/filter/pagination |
 | `middleware.test.ts` | redirect behaviour, and that it is not an access control |
 | `api-envelope.test.ts` | error-to-status mapping, no internal leakage |
 | `query-helpers.test.ts` | URL/pagination helpers |
@@ -510,6 +565,16 @@ Things deliberately left out or simplified, and what they would take to fix.
 - **Pagination uses skip/limit**, which degrades on deep pages. Cursor pagination would be the fix.
 - **No email delivery.** Nothing notifies a candidate when their status changes; they see it on
   `/applications`.
+- **No way to contact a candidate from search results.** By design there is no messaging, no
+  "reveal contact details" action and no way to invite someone to apply — an opted-in profile is
+  discoverable, not contactable. A real product would add messaging here, and that is exactly the
+  point at which it would need its own consent model, an audit trail of who viewed or contacted
+  whom, and rate limits against bulk scraping. None of that exists yet.
+- **Candidate search opt-in is all-or-nothing.** A candidate cannot be visible to some recruiters
+  and not others, hide specific fields, or set an expiry on their visibility. There is also no
+  record shown to the candidate of which recruiters have found them.
+- **Search results are not deduplicated against your own applicants**, so someone who has already
+  applied to one of your listings appears in the directory as well.
 - **`Secure` cookies over `http://localhost`** work because browsers treat localhost as a
   trustworthy origin. Deploying to any other host over plain HTTP would break sign-in — put the
   app behind TLS.
