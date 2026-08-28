@@ -1,7 +1,9 @@
 import Link from 'next/link';
+import { Suspense } from 'react';
 
 import { CandidateSummary } from '@/components/candidate-summary';
 import { EmptyState } from '@/components/empty-state';
+import { SkeletonList } from '@/components/skeleton';
 
 import { Pagination } from '@/components/pagination';
 import { buildPageHref, toQueryRecord, type RawSearchParams } from '@/lib/query';
@@ -10,7 +12,10 @@ import {
   EXPERIENCE_LEVELS,
   EXPERIENCE_LEVEL_LABELS,
 } from '@/modules/users/user.constants';
-import { candidateSearchQuerySchema } from '@/modules/users/user.schema';
+import {
+  candidateSearchQuerySchema,
+  type CandidateSearchQuery,
+} from '@/modules/users/user.schema';
 import { searchCandidates } from '@/modules/users/user.service';
 
 export const metadata = { title: 'Candidate search' };
@@ -31,9 +36,6 @@ export default async function CandidateSearchPage({
   const rawParams = toQueryRecord(await searchParams);
   const parsed = candidateSearchQuerySchema.safeParse(rawParams);
   const query = parsed.success ? parsed.data : candidateSearchQuerySchema.parse({});
-
-  const { candidates, total } = await searchCandidates(query);
-  const totalPages = Math.max(1, Math.ceil(total / query.limit));
 
   return (
     <>
@@ -93,6 +95,25 @@ export default async function CandidateSearchPage({
         </div>
       </form>
 
+      <Suspense key={JSON.stringify(query)} fallback={<SkeletonList label="Loading candidates…" />}>
+        <CandidateResults query={query} rawParams={rawParams} />
+      </Suspense>
+    </>
+  );
+}
+
+async function CandidateResults({
+  query,
+  rawParams,
+}: {
+  query: CandidateSearchQuery;
+  rawParams: Record<string, string>;
+}) {
+  const { candidates, total } = await searchCandidates(query);
+  const totalPages = Math.max(1, Math.ceil(total / query.limit));
+
+  return (
+    <>
       {candidates.length === 0 ? (
         query.q || query.experienceLevel ? (
           <EmptyState

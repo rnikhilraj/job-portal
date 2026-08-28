@@ -1,14 +1,17 @@
+import type { Types } from 'mongoose';
 import Link from 'next/link';
+import { Suspense } from 'react';
 
 import { DeleteJobButton } from '@/components/delete-job-button';
 import { EmptyState } from '@/components/empty-state';
 import { HrJobFilters } from '@/components/hr-job-filters';
 import { Pagination } from '@/components/pagination';
+import { SkeletonList } from '@/components/skeleton';
 import { StatusBadge } from '@/components/status-badge';
 import { buildPageHref, toQueryRecord, type RawSearchParams } from '@/lib/query';
 import { requirePageUser } from '@/modules/auth/session';
 import { JOB_TYPE_LABELS } from '@/modules/jobs/job.constants';
-import { hrJobsQuerySchema } from '@/modules/jobs/job.schema';
+import { hrJobsQuerySchema, type HrJobsQuery } from '@/modules/jobs/job.schema';
 import { listJobsForOwner } from '@/modules/jobs/job.service';
 
 export const metadata = { title: 'My listings' };
@@ -23,12 +26,6 @@ export default async function HrJobsPage({
   const rawParams = toQueryRecord(await searchParams);
   const parsed = hrJobsQuerySchema.safeParse(rawParams);
   const query = parsed.success ? parsed.data : hrJobsQuerySchema.parse({});
-
-  // Scoped to the signed-in HR user at the query level — another HR user's
-  // listings are never loaded, let alone rendered.
-  const { jobs, total } = await listJobsForOwner(hr._id, query);
-  const totalPages = Math.max(1, Math.ceil(total / query.limit));
-  const isFiltered = Boolean(query.q || query.status);
 
   return (
     <>
@@ -46,6 +43,30 @@ export default async function HrJobsPage({
 
       <HrJobFilters q={query.q} status={query.status} />
 
+      <Suspense key={JSON.stringify(query)} fallback={<SkeletonList label="Loading your listings…" />}>
+        <OwnedJobResults ownerId={hr._id} query={query} rawParams={rawParams} />
+      </Suspense>
+    </>
+  );
+}
+
+async function OwnedJobResults({
+  ownerId,
+  query,
+  rawParams,
+}: {
+  ownerId: Types.ObjectId;
+  query: HrJobsQuery;
+  rawParams: Record<string, string>;
+}) {
+  // Scoped to the signed-in HR user at the query level — another HR user's
+  // listings are never loaded, let alone rendered.
+  const { jobs, total } = await listJobsForOwner(ownerId, query);
+  const totalPages = Math.max(1, Math.ceil(total / query.limit));
+  const isFiltered = Boolean(query.q || query.status);
+
+  return (
+    <>
       {jobs.length === 0 ? (
         isFiltered ? (
           <EmptyState

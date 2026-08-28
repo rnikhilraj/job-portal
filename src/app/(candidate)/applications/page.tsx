@@ -1,14 +1,20 @@
+import type { Types } from 'mongoose';
 import Link from 'next/link';
+import { Suspense } from 'react';
 
 import { EmptyState } from '@/components/empty-state';
 import { Pagination } from '@/components/pagination';
 import { PipelineRail, StatusChip } from '@/components/pipeline';
+import { SkeletonList } from '@/components/skeleton';
 import { buildPageHref, toQueryRecord, type RawSearchParams } from '@/lib/query';
 import {
   APPLICATION_STATUSES,
   APPLICATION_STATUS_LABELS,
 } from '@/modules/applications/application.constants';
-import { myApplicationsQuerySchema } from '@/modules/applications/application.schema';
+import {
+  myApplicationsQuerySchema,
+  type MyApplicationsQuery,
+} from '@/modules/applications/application.schema';
 import { listApplicationsForCandidate } from '@/modules/applications/application.service';
 import { requirePageUser } from '@/modules/auth/session';
 import { JOB_TYPE_LABELS } from '@/modules/jobs/job.constants';
@@ -25,9 +31,6 @@ export default async function MyApplicationsPage({
   const rawParams = toQueryRecord(await searchParams);
   const parsed = myApplicationsQuerySchema.safeParse(rawParams);
   const query = parsed.success ? parsed.data : myApplicationsQuerySchema.parse({});
-
-  const { applications, total } = await listApplicationsForCandidate(candidate._id, query);
-  const totalPages = Math.max(1, Math.ceil(total / query.limit));
 
   return (
     <>
@@ -69,6 +72,35 @@ export default async function MyApplicationsPage({
         </div>
       </form>
 
+      {/* Boundary sits below the guard so auth resolves before the first flush. */}
+      <Suspense
+        key={JSON.stringify(query)}
+        fallback={<SkeletonList label="Loading your applications…" />}
+      >
+        <ApplicationResults
+          candidateId={candidate._id}
+          query={query}
+          rawParams={rawParams}
+        />
+      </Suspense>
+    </>
+  );
+}
+
+async function ApplicationResults({
+  candidateId,
+  query,
+  rawParams,
+}: {
+  candidateId: Types.ObjectId;
+  query: MyApplicationsQuery;
+  rawParams: Record<string, string>;
+}) {
+  const { applications, total } = await listApplicationsForCandidate(candidateId, query);
+  const totalPages = Math.max(1, Math.ceil(total / query.limit));
+
+  return (
+    <>
       {applications.length === 0 ? (
         query.status ? (
           <EmptyState

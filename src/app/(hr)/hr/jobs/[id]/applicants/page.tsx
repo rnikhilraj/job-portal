@@ -1,10 +1,13 @@
+import type { Types } from 'mongoose';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { Suspense } from 'react';
 
 import { ApplicantStatusSelect } from '@/components/applicant-status-select';
 import { EmptyState } from '@/components/empty-state';
 import { Pagination } from '@/components/pagination';
 import { PipelineFunnel, PipelineRail } from '@/components/pipeline';
+import { SkeletonList } from '@/components/skeleton';
 import { AppError } from '@/lib/api/errors';
 import { buildPageHref, toQueryRecord, type RawSearchParams } from '@/lib/query';
 import { objectIdSchema } from '@/lib/validation';
@@ -12,7 +15,10 @@ import {
   APPLICATION_STATUSES,
   APPLICATION_STATUS_LABELS,
 } from '@/modules/applications/application.constants';
-import { applicantsQuerySchema } from '@/modules/applications/application.schema';
+import {
+  applicantsQuerySchema,
+  type ApplicantsQuery,
+} from '@/modules/applications/application.schema';
 import {
   countApplicantsByStatus,
   listApplicantsForJob,
@@ -48,12 +54,7 @@ export default async function ApplicantsPage({
   const parsed = applicantsQuerySchema.safeParse(rawParams);
   const query = parsed.success ? parsed.data : applicantsQuerySchema.parse({});
 
-  const [{ applicants, total }, pipeline] = await Promise.all([
-    listApplicantsForJob(id, hr._id, query),
-    countApplicantsByStatus(id, hr._id),
-  ]);
-
-  const totalPages = Math.max(1, Math.ceil(total / query.limit));
+  const pipeline = await countApplicantsByStatus(id, hr._id);
   const basePath = `/hr/jobs/${id}/applicants`;
   const isFiltered = Boolean(query.q || query.status);
 
@@ -123,6 +124,38 @@ export default async function ApplicantsPage({
         </div>
       </form>
 
+      <Suspense key={JSON.stringify(query)} fallback={<SkeletonList label="Loading applicants…" />}>
+        <ApplicantResults
+          jobId={id}
+          ownerId={hr._id}
+          query={query}
+          rawParams={rawParams}
+          isFiltered={isFiltered}
+        />
+      </Suspense>
+    </>
+  );
+}
+
+async function ApplicantResults({
+  jobId,
+  ownerId,
+  query,
+  rawParams,
+  isFiltered,
+}: {
+  jobId: string;
+  ownerId: Types.ObjectId;
+  query: ApplicantsQuery;
+  rawParams: Record<string, string>;
+  isFiltered: boolean;
+}) {
+  const { applicants, total } = await listApplicantsForJob(jobId, ownerId, query);
+  const totalPages = Math.max(1, Math.ceil(total / query.limit));
+  const basePath = `/hr/jobs/${jobId}/applicants`;
+
+  return (
+    <>
       {applicants.length === 0 ? (
         isFiltered ? (
           <EmptyState
