@@ -501,7 +501,7 @@ markup into another user's page.
 
 ```bash
 npm install       # once
-npm test          # 245 tests across 15 suites (api + component projects)
+npm test          # 294 tests across 18 suites (api + component projects)
 npm run test:coverage
 npx jest tests/applications.test.ts     # a single suite
 npx jest -t 'applying twice'            # a single test by name
@@ -530,6 +530,9 @@ hermetic.
 | `components/pipeline-rail.test.tsx` | the status rail: accessible description, the seen-status memory, reduced motion, frame cleanup |
 | `components/applicant-status-select.test.tsx` | optimistic update and rollback, and that a 403 surfaces the server's reason |
 | `components/mobile-nav.test.tsx` | disclosure behaviour: Escape, outside click, and closing on navigation |
+| `components/apply-form.test.tsx` | client-side upload checks, and that a rejected file never reaches the network |
+| `components/pipeline.test.tsx` | the signature element: chip labels, funnel maths, hero sequence and reduced motion |
+| `components/presentational.test.tsx` | field errors, empty states, pagination, page header, job card, skeletons |
 
 The edge cases called out in the brief are covered explicitly: duplicate signup email → 409,
 wrong password → 401, applying twice to the same job → 409, one HR user touching another's

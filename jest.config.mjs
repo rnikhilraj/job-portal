@@ -43,12 +43,12 @@ const config = {
     // Directory keys group the files beneath them; a glob key would instead
     // apply the numbers to every file individually and pull those files out of
     // the global pool, which is not what is wanted here.
-    './src/modules/': { statements: 88, branches: 74, functions: 86, lines: 88 },
+    './src/modules/': { statements: 90, branches: 76, functions: 88, lines: 90 },
     './src/lib/api/': { statements: 94, branches: 84, functions: 100, lines: 94 },
     // Note this pool excludes the directory-keyed groups above, so it is not
     // the same number the summary row prints — it covers components plus the
     // non-api lib files.
-    global: { statements: 52, branches: 28, functions: 45, lines: 51 },
+    global: { statements: 62, branches: 50, functions: 62, lines: 61 },
   },
   projects: [
     {
