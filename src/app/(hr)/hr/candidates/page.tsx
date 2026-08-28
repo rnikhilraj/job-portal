@@ -117,22 +117,21 @@ async function CandidateResults({
       {candidates.length === 0 ? (
         query.q || query.experienceLevel ? (
           <EmptyState
-            icon="⌕"
             title="No opted-in candidates match those filters"
             description="Nobody who has enabled recruiter visibility matches that keyword or experience level. Candidates who have not opted in never appear here, however well they match."
             action={{ href: '/hr/candidates', label: 'Clear filters' }}
           />
         ) : (
           <EmptyState
-            icon="◇"
             title="No candidates are discoverable yet"
-            description="This directory only lists candidates who have turned on recruiter visibility on their own profile. Nobody has opted in so far."
+            description="This directory only lists people who have turned on recruiter visibility themselves. Nobody has opted in so far — post a role and applicants will come to you in the meantime."
+            secondary={{ href: '/hr/jobs/new', label: 'Post a job' }}
           />
         )
       ) : (
-        <ul className="space-y-4">
+        <ul className="stagger space-y-4">
           {candidates.map((candidate) => (
-            <li key={candidate.id} className="card-interactive">
+            <li key={candidate.id} className="card-hoverable">
               <CandidateSummary candidate={candidate} headingLevel="h2" />
             </li>
           ))}

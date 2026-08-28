@@ -6,7 +6,8 @@ import { Suspense } from 'react';
 import { ApplicantStatusSelect } from '@/components/applicant-status-select';
 import { EmptyState } from '@/components/empty-state';
 import { Pagination } from '@/components/pagination';
-import { PipelineFunnel, PipelineRail } from '@/components/pipeline';
+import { PipelineFunnel } from '@/components/pipeline';
+import { PipelineRail } from '@/components/pipeline-rail';
 import { SkeletonList } from '@/components/skeleton';
 import { AppError } from '@/lib/api/errors';
 import { buildPageHref, toQueryRecord, type RawSearchParams } from '@/lib/query';
@@ -159,20 +160,19 @@ async function ApplicantResults({
       {applicants.length === 0 ? (
         isFiltered ? (
           <EmptyState
-            icon="⌕"
             title="No applicants match those filters"
-            description="Nobody who applied to this role matches that name or stage. Clear the filters to see everyone."
+            description="Nobody who applied to this role matches that name or stage. Clear the filters to see everyone in the pipeline."
             action={{ href: basePath, label: 'Show all applicants' }}
           />
         ) : (
           <EmptyState
-            icon="◇"
-            title="No applications yet"
-            description="Nobody has applied to this listing so far. Applicants appear here as soon as they do, and you can move them through the pipeline from this page."
+            title="Waiting on the first applicant"
+            description="Nobody has applied to this listing yet. The moment someone does they appear here with their resume, and you can move them along the rail from this page."
+            secondary={{ href: '/hr/candidates', label: 'Search candidates instead' }}
           />
         )
       ) : (
-        <ul className="space-y-4">
+        <ul className="stagger space-y-4">
           {applicants.map((applicant) => (
             <li key={applicant.id} className="card">
               <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">

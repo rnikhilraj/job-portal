@@ -2,7 +2,8 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
 import { ApplyForm } from '@/components/apply-form';
-import { PipelineRail, StatusChip } from '@/components/pipeline';
+import { StatusChip } from '@/components/pipeline';
+import { PipelineRail } from '@/components/pipeline-rail';
 import { StatusBadge } from '@/components/status-badge';
 import { NotFoundError } from '@/lib/api/errors';
 import { getEnv } from '@/lib/env';

@@ -70,21 +70,19 @@ async function OwnedJobResults({
       {jobs.length === 0 ? (
         isFiltered ? (
           <EmptyState
-            icon="⌕"
             title="No listings match those filters"
-            description="Nothing of yours matched that title or status. Clear the filters to see all your listings."
+            description="None of your listings match that title or status. Clear the filters to see everything you have posted."
             action={{ href: '/hr/jobs', label: 'Clear filters' }}
           />
         ) : (
           <EmptyState
-            icon="◇"
-            title="You haven't posted a job yet"
-            description="Post your first listing and it will appear here, along with the applicants who apply to it."
+            title="Your first listing goes here"
+            description="Post a role and this page becomes your pipeline: every applicant, their resume and cover note, and a funnel you can move them through."
             action={{ href: '/hr/jobs/new', label: 'Post a job' }}
           />
         )
       ) : (
-        <ul className="space-y-4">
+        <ul className="stagger space-y-4">
           {jobs.map((job) => (
             <li key={job.id} className="card">
               <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-2">

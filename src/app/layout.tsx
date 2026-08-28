@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Archivo, IBM_Plex_Sans } from 'next/font/google';
 
+import { RouteTransition } from '@/components/route-transition';
 import { SiteHeader } from '@/components/site-header';
 import { getCurrentUser } from '@/modules/auth/session';
 import { toPublicUser } from '@/modules/users/user.model';
@@ -54,8 +55,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
 
         <SiteHeader user={user ? toPublicUser(user) : null} />
 
+        {/* Below the header, so navigation itself never flickers on route change. */}
         <div id="main" className="flex-1">
-          {children}
+          <RouteTransition>{children}</RouteTransition>
         </div>
 
         <footer className="border-t border-mist-300 bg-white">

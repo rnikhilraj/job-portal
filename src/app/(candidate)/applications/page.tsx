@@ -4,7 +4,8 @@ import { Suspense } from 'react';
 
 import { EmptyState } from '@/components/empty-state';
 import { Pagination } from '@/components/pagination';
-import { PipelineRail, StatusChip } from '@/components/pipeline';
+import { StatusChip } from '@/components/pipeline';
+import { PipelineRail } from '@/components/pipeline-rail';
 import { SkeletonList } from '@/components/skeleton';
 import { buildPageHref, toQueryRecord, type RawSearchParams } from '@/lib/query';
 import {
@@ -104,21 +105,20 @@ async function ApplicationResults({
       {applications.length === 0 ? (
         query.status ? (
           <EmptyState
-            icon="⌕"
             title={`Nothing at the ${APPLICATION_STATUS_LABELS[query.status].toLowerCase()} stage`}
-            description="You have no applications at this stage right now. Clear the filter to see all of them."
+            description="No application of yours is sitting here right now. Clear the filter to see where they all actually are."
             action={{ href: '/applications', label: 'Show all applications' }}
           />
         ) : (
           <EmptyState
-            icon="◇"
-            title="No applications yet"
-            description="Once you apply to a role it will appear here, and you can follow it from applied through to shortlisted."
+            title="Your pipeline starts with one application"
+            description="Apply to a role and it lands here, with its own rail. You will see it move from applied to reviewed to shortlisted as it happens — no refreshing an inbox and hoping."
             action={{ href: '/jobs', label: 'Browse open positions' }}
+            secondary={{ href: '/profile', label: 'Set up your profile first' }}
           />
         )
       ) : (
-        <ul className="space-y-4">
+        <ul className="stagger space-y-4">
           {applications.map((application) => (
             <li key={application.id} className="card">
               <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
@@ -153,9 +153,13 @@ async function ApplicationResults({
                   </p>
                 </div>
 
-                {/* The signature rail: stage by position, readable without colour. */}
+                {/*
+                  applicationId lets the rail animate a status change the first
+                  time this viewer sees it, then stay calm on every later load.
+                */}
                 <PipelineRail
                   status={application.status}
+                  applicationId={application.id}
                   className="w-full shrink-0 sm:w-56 lg:w-64"
                 />
               </div>

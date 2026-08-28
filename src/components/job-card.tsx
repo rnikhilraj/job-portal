@@ -9,7 +9,7 @@ function summarise(description: string, maxLength = 180): string {
 
 export function JobCard({ job }: { job: PublicJob }) {
   return (
-    <li className="card-interactive">
+    <li className="card-hoverable">
       <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-1">
         <h2 className="font-display text-display-sm font-semibold">
           {/* Stretched link: the whole card is the target, but only one link in the a11y tree. */}

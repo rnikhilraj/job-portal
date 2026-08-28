@@ -64,23 +64,22 @@ async function JobResults({
   if (jobs.length === 0) {
     return isFiltered ? (
       <EmptyState
-        icon="⌕"
-        title="No roles match those filters"
-        description="Nothing matched this combination of keyword, location and job type. Try widening one of them."
+        title="Nothing matched — yet"
+        description="No open role fits this combination of keyword, location and job type. Widening any one of them usually turns up something."
         action={{ href: '/jobs', label: 'Clear filters' }}
       />
     ) : (
       <EmptyState
-        icon="◇"
         title="No open roles right now"
-        description="There are no listings accepting applications at the moment. Check back shortly — new roles appear here as soon as they are posted."
+        description="Nothing is accepting applications at the moment. New listings appear here the moment a hiring team posts one — and your profile is ready when they do."
+        action={{ href: '/profile', label: 'Polish your profile' }}
       />
     );
   }
 
   return (
     <>
-      <ul className="space-y-4">
+      <ul className="stagger space-y-4">
         {jobs.map((job) => (
           <JobCard key={job.id} job={job} />
         ))}
