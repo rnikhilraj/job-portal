@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
-import { patchJson } from '@/lib/http';
+import { ApiRequestError, patchJson } from '@/lib/http';
 import {
   APPLICATION_STATUSES,
   APPLICATION_STATUS_LABELS,
@@ -32,11 +32,16 @@ export function ApplicantStatusSelect({
     try {
       await patchJson(`/api/applications/${applicationId}`, { status: next });
       router.refresh();
-    } catch {
+    } catch (caught) {
       // Roll back so the control never shows a status the server did not accept.
       setStatus(previous);
-      // Says what was kept, since the control has just rolled back visually.
-      setError('Status not saved — still showing as before. Try again in a moment.');
+      // The server's reason is more useful than a guess: a 403 means this is not
+      // your listing, which no amount of retrying will fix.
+      setError(
+        caught instanceof ApiRequestError
+          ? `${caught.message} Still showing as ${APPLICATION_STATUS_LABELS[previous].toLowerCase()}.`
+          : 'Could not reach the server — status not saved. Try again in a moment.',
+      );
     } finally {
       setIsSaving(false);
     }

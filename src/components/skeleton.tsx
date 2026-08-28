@@ -34,18 +34,3 @@ export function SkeletonList({ label, rows = 3 }: { label: string; rows?: number
     </>
   );
 }
-
-export function SkeletonPage({ label, rows = 3 }: { label: string; rows?: number }) {
-  return (
-    <>
-      <div aria-hidden="true" className="mb-6">
-        <SkeletonLine className="h-8 w-64" />
-        <SkeletonLine className="mt-3 h-3.5 w-80 max-w-full" />
-      </div>
-      <div aria-hidden="true" className="card mb-6">
-        <SkeletonLine className="h-11 w-full" />
-      </div>
-      <SkeletonList label={label} rows={rows} />
-    </>
-  );
-}

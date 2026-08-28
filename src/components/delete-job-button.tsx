@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
-import { apiFetch } from '@/lib/http';
+import { ApiRequestError, apiFetch } from '@/lib/http';
 
 /**
  * Deleting a listing also removes its applications and resume files, so the
@@ -25,9 +25,15 @@ export function DeleteJobButton({ jobId, jobTitle }: { jobId: string; jobTitle: 
     try {
       await apiFetch(`/api/jobs/${jobId}`, { method: 'DELETE' });
       router.refresh();
-    } catch {
-      // Specific about what failed and what is still true, not a generic apology.
-      setError('Could not delete this listing — it is unchanged. Check your connection and try again.');
+    } catch (caught) {
+      // Prefer the server's own reason — a 403 or 404 here means something quite
+      // different from a dropped connection, and saying "check your connection"
+      // for either would be actively misleading.
+      setError(
+        caught instanceof ApiRequestError
+          ? `${caught.message} The listing is unchanged.`
+          : 'Could not reach the server — the listing is unchanged. Check your connection and try again.',
+      );
       setIsDeleting(false);
     }
   }

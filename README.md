@@ -486,7 +486,7 @@ markup into another user's page.
 
 ```bash
 npm install       # once
-npm test          # 187 tests across 11 suites
+npm test          # 208 tests across 12 suites
 npm run test:coverage
 npx jest tests/applications.test.ts     # a single suite
 npx jest -t 'applying twice'            # a single test by name
@@ -507,6 +507,7 @@ hermetic.
 | `resume-download.test.ts` | download authorization, headers, filename sanitisation |
 | `users.test.ts` | profile editing, privilege-escalation attempts |
 | `candidate-search.test.ts` | the opt-in boundary, profile resume upload, recruiter resume access, HR-only access, search/filter/pagination |
+| `page-guards.test.ts` | requirePageUser: redirect target and status for every signed-out and wrong-role case |
 | `middleware.test.ts` | redirect behaviour, and that it is not an access control |
 | `api-envelope.test.ts` | error-to-status mapping, no internal leakage |
 | `query-helpers.test.ts` | URL/pagination helpers |
@@ -638,8 +639,13 @@ a fourth position, because that is what actually happened.
   rather than scrolling sideways; touch targets are ≥44px via `min-h-11` on buttons and inputs.
 - **Empty states** — designed, and distinct for "nothing here yet" versus "your filter matched
   nothing", which are different problems with different fixes.
-- **Loading** — route-level skeletons that mirror the shape of the content, marked `aria-hidden`
-  with a single polite status message alongside.
+- **Loading** — skeletons that mirror the shape of the content, marked `aria-hidden` with a
+  single polite status message alongside. The Suspense boundary is placed inside each page,
+  around the result list only, rather than as a route-level `loading.tsx`. That matters for
+  more than layout: a route-level boundary sits *above* the page component, so Next flushes a
+  200 shell before the page's auth guard runs, which downgrades a 307 redirect or a 404 to a
+  client-side instruction with the wrong HTTP status. Scoping the boundary keeps authorization
+  resolving before the first byte, and only the query streams.
 - **Errors** — specific about what happened and what is still true ("Status not saved — still
   showing as before"), never a generic apology.
 - **Reduced motion** — honoured via `prefers-reduced-motion`.
