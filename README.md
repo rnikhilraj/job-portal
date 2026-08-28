@@ -486,7 +486,7 @@ markup into another user's page.
 
 ```bash
 npm install       # once
-npm test          # 208 tests across 12 suites
+npm test          # 237 tests across 14 suites (api + component projects)
 npm run test:coverage
 npx jest tests/applications.test.ts     # a single suite
 npx jest -t 'applying twice'            # a single test by name
@@ -512,10 +512,23 @@ hermetic.
 | `api-envelope.test.ts` | error-to-status mapping, no internal leakage |
 | `query-helpers.test.ts` | URL/pagination helpers |
 | `client-bundle-boundary.test.ts` | that no client component can reach Mongoose, bcrypt or the JWT key |
+| `components/pipeline-rail.test.tsx` | the status rail: accessible description, the seen-status memory, reduced motion, frame cleanup |
+| `components/applicant-status-select.test.tsx` | optimistic update and rollback, and that a 403 surfaces the server's reason |
 
 The edge cases called out in the brief are covered explicitly: duplicate signup email → 409,
 wrong password → 401, applying twice to the same job → 409, one HR user touching another's
 listing → 403, and a candidate hitting an HR-only route → 403.
+
+Coverage is reported over `src/app/api`, `src/modules`, `src/lib` **and**
+`src/components`, with per-directory thresholds acting as ratchets. The
+component floor is honestly low — most of the UI has no behavioural tests yet —
+and is meant to be raised as suites land rather than to imply the UI is well
+covered. `src/lib/seed.ts` reads 0% by design: it runs only at boot, and the
+docker job in CI asserts `[seed] complete` instead.
+
+Every gate runs on push and pull request via `.github/workflows/ci.yml`, which
+has two jobs: one running typecheck, lint, tests and build, and one booting the
+Compose stack from scratch to prove the README's single-command claim.
 
 Other quality gates:
 

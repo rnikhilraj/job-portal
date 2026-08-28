@@ -1,0 +1,91 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+# A second push to the same branch cancels the first — no point burning
+# minutes on a commit that has already been superseded.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: typecheck · lint · test · build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      # mongodb-memory-server downloads a mongod binary on first run; caching it
+      # keeps CI from re-fetching ~80 MB on every push.
+      - name: Cache mongodb-memory-server binary
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/mongodb-binaries
+          key: mongo-binaries-${{ runner.os }}
+
+      - run: npm ci
+
+      # Each gate runs even if an earlier one failed, so a single push reports
+      # every problem at once rather than one per round trip.
+      - name: Typecheck
+        if: '!cancelled()'
+        run: npm run typecheck
+
+      - name: Lint
+        if: '!cancelled()'
+        run: npm run lint
+
+      - name: Test
+        if: '!cancelled()'
+        run: npm run test:coverage
+
+      - name: Build
+        if: '!cancelled()'
+        run: npm run build
+        env:
+          NEXT_TELEMETRY_DISABLED: '1'
+
+  docker:
+    name: docker compose boots clean
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # Proves the claim the README makes: a fresh clone plus one command
+      # yields a healthy, seeded app with no manual setup.
+      - name: Boot the stack from a clean slate
+        run: |
+          cp .env.example .env
+          docker compose up --build -d
+
+      - name: Wait for both services to report healthy
+        run: |
+          for i in $(seq 1 40); do
+            if [ "$(docker inspect -f '{{.State.Health.Status}}' job-portal-app)" = "healthy" ]; then
+              echo "app healthy after ${i}0s"; exit 0
+            fi
+            sleep 10
+          done
+          echo "app never became healthy"; docker compose logs app; exit 1
+
+      - name: Verify the health endpoint and that seeding ran
+        run: |
+          curl -fsS http://localhost:3000/api/health | tee /dev/stderr | grep -q '"database":"connected"'
+          docker compose logs app | grep -q '\[seed\] complete'
+
+      - name: Dump logs on failure
+        if: failure()
+        run: docker compose logs

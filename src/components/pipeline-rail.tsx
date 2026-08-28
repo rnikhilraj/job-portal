@@ -98,14 +98,18 @@ export function PipelineRail({
     setIsAcknowledging(true);
 
     // Two frames: one to paint the old state, one to start the transition.
-    const outer = requestAnimationFrame(() => {
-      const inner = requestAnimationFrame(() => setDisplayed(status));
-      return inner;
+    // Both handles are tracked, because cancelling only the outer one leaves
+    // the inner frame free to fire setState on an unmounted component if the
+    // viewer navigates away inside that ~16ms window.
+    let innerFrame = 0;
+    const outerFrame = requestAnimationFrame(() => {
+      innerFrame = requestAnimationFrame(() => setDisplayed(status));
     });
     const settle = window.setTimeout(() => setIsAcknowledging(false), 1800);
 
     return () => {
-      cancelAnimationFrame(outer);
+      cancelAnimationFrame(outerFrame);
+      cancelAnimationFrame(innerFrame);
       window.clearTimeout(settle);
     };
   }, [applicationId, status]);

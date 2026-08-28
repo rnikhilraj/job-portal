@@ -444,3 +444,83 @@ describe('deleting a job cascades to its applications', () => {
     expect(await uploadsDirEntries()).toHaveLength(0);
   });
 });
+
+describe('countApplicantsByStatus (the pipeline funnel)', () => {
+  it('counts each stage, and zero for stages nobody is at', async () => {
+    const hr = await createHr();
+    const job = await createJobFor(hr.id);
+    const [a, b, c] = await Promise.all([
+      createCandidate(),
+      createCandidate(),
+      createCandidate(),
+    ]);
+
+    for (const candidate of [a, b, c]) {
+      await applyRequest(String(job._id), candidate.cookie, applicationForm(pdfFile()));
+    }
+    await Application.updateOne({ candidate: b.id }, { status: 'SHORTLISTED' });
+    await Application.updateOne({ candidate: c.id }, { status: 'REJECTED' });
+
+    const { countApplicantsByStatus } = await import(
+      '@/modules/applications/application.service'
+    );
+    const { counts, total } = await countApplicantsByStatus(String(job._id), hr.user._id);
+
+    expect(counts).toEqual({ APPLIED: 1, REVIEWED: 0, SHORTLISTED: 1, REJECTED: 1 });
+    expect(total).toBe(3);
+  });
+
+  it('returns an all-zero funnel for a listing nobody has applied to', async () => {
+    const hr = await createHr();
+    const job = await createJobFor(hr.id);
+
+    const { countApplicantsByStatus } = await import(
+      '@/modules/applications/application.service'
+    );
+    const { counts, total } = await countApplicantsByStatus(String(job._id), hr.user._id);
+
+    expect(total).toBe(0);
+    expect(counts).toEqual({ APPLIED: 0, REVIEWED: 0, SHORTLISTED: 0, REJECTED: 0 });
+  });
+
+  it('counts only this listing, never another one', async () => {
+    const hr = await createHr();
+    const [mine, other] = await Promise.all([createJobFor(hr.id), createJobFor(hr.id)]);
+    const candidate = await createCandidate();
+
+    await applyRequest(String(mine._id), candidate.cookie, applicationForm(pdfFile()));
+    await applyRequest(String(other._id), candidate.cookie, applicationForm(pdfFile()));
+
+    const { countApplicantsByStatus } = await import(
+      '@/modules/applications/application.service'
+    );
+
+    expect((await countApplicantsByStatus(String(mine._id), hr.user._id)).total).toBe(1);
+  });
+
+  it('refuses to count another HR user’s pipeline', async () => {
+    const [owner, intruder] = await Promise.all([createHr(), createHr()]);
+    const job = await createJobFor(owner.id);
+
+    const { countApplicantsByStatus } = await import(
+      '@/modules/applications/application.service'
+    );
+
+    // Ownership is enforced here too, not just on the list beside it.
+    await expect(
+      countApplicantsByStatus(String(job._id), intruder.user._id),
+    ).rejects.toMatchObject({ status: 403 });
+  });
+
+  it('reports a missing listing as 404', async () => {
+    const hr = await createHr();
+
+    const { countApplicantsByStatus } = await import(
+      '@/modules/applications/application.service'
+    );
+
+    await expect(
+      countApplicantsByStatus('000000000000000000000000', hr.user._id),
+    ).rejects.toMatchObject({ status: 404 });
+  });
+});
