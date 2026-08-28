@@ -6,16 +6,16 @@ import { z } from 'zod';
  */
 export const passwordSchema = z
   .string()
-  .min(8, 'Password must be at least 8 characters.')
-  .max(72, 'Password must be at most 72 characters.')
-  .regex(/[A-Za-z]/, 'Password must contain a letter.')
-  .regex(/[0-9]/, 'Password must contain a number.');
+  .min(8, 'Use at least 8 characters.')
+  .max(72, 'Keep it under 72 characters.')
+  .regex(/[A-Za-z]/, 'Add at least one letter.')
+  .regex(/[0-9]/, 'Add at least one number.');
 
 export const emailSchema = z
   .string()
   .trim()
   .toLowerCase()
-  .email('Enter a valid email address.')
+  .email('That does not look like an email address.')
   .max(254);
 
 /**
@@ -24,7 +24,7 @@ export const emailSchema = z
  * escalate its own privileges.
  */
 export const signupSchema = z.object({
-  name: z.string().trim().min(2, 'Name must be at least 2 characters.').max(120),
+  name: z.string().trim().min(2, 'Your name needs at least 2 characters.').max(120),
   email: emailSchema,
   password: passwordSchema,
 });
@@ -32,7 +32,7 @@ export const signupSchema = z.object({
 export const loginSchema = z.object({
   email: emailSchema,
   // Deliberately lax: login validates credentials, not password strength.
-  password: z.string().min(1, 'Password is required.').max(72),
+  password: z.string().min(1, 'Enter your password.').max(72),
 });
 
 export type SignupInput = z.infer<typeof signupSchema>;

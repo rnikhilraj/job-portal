@@ -29,7 +29,7 @@ const skillsSchema = z
     return skills;
   })
   .refine((skills) => skills.length <= MAX_SKILLS, {
-    message: `List at most ${MAX_SKILLS} skills.`,
+    message: `Pick your best ${MAX_SKILLS} — that is plenty.`,
   });
 
 /**
@@ -39,8 +39,8 @@ const skillsSchema = z
 const phoneSchema = z
   .string()
   .trim()
-  .max(30, 'Phone number must be 30 characters or fewer.')
-  .regex(/^[0-9+()\-. ]*$/, 'Phone number may only contain digits and + ( ) - . characters.');
+  .max(30, 'That is too long for a phone number.')
+  .regex(/^[0-9+()\-. ]*$/, 'Digits and + ( ) - . only, please.');
 
 /**
  * Note what is absent: email, role and passwordHash. A candidate cannot change
@@ -51,14 +51,14 @@ const phoneSchema = z
  */
 export const updateProfileSchema = z
   .object({
-    name: z.string().trim().min(2, 'Name must be at least 2 characters.').max(120),
+    name: z.string().trim().min(2, 'Your name needs at least 2 characters.').max(120),
     phone: phoneSchema.optional(),
-    headline: z.string().trim().max(160, 'Headline must be 160 characters or fewer.').optional(),
+    headline: z.string().trim().max(160, 'Keep your headline under 160 characters.').optional(),
     skills: skillsSchema.optional(),
     isSearchable: z.boolean(),
     experienceLevel: z
       .enum(EXPERIENCE_LEVELS, {
-        errorMap: () => ({ message: 'Choose a valid experience level.' }),
+        errorMap: () => ({ message: 'Pick one of the listed experience levels.' }),
       })
       // An empty string from a <select> means "not specified", stored as unset.
       .or(z.literal('').transform(() => undefined))
@@ -66,7 +66,7 @@ export const updateProfileSchema = z
   })
   .partial()
   .refine((value) => Object.keys(value).length > 0, {
-    message: 'Provide at least one field to update.',
+    message: 'Nothing to save — change something first.',
   });
 
 export type UpdateProfileInput = z.infer<typeof updateProfileSchema>;

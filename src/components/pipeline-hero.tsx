@@ -67,10 +67,7 @@ export function PipelineHero() {
         The gradient deepens toward Shortlisted, so warmth increases with
         progress. It encodes the journey rather than decorating the box.
       */}
-      <div
-        className="relative overflow-hidden rounded-card border border-mist-300
-          bg-gradient-to-r from-white via-petrol-50 to-petrol-100 px-5 py-8 sm:px-10 sm:py-12"
-      >
+      <div className="panel-feature relative overflow-hidden px-5 py-8 sm:px-10 sm:py-12">
         <div className="relative">
           {/* Track */}
           <div className="relative h-1 rounded-full bg-mist-300">

@@ -10,7 +10,7 @@ export default function LoginPage() {
     <div className="card">
       <h1 className="font-display text-display-sm font-semibold">Log in</h1>
       <p className="mt-1.5 text-sm leading-relaxed text-ink-muted">
-        HR and candidate accounts both sign in here.
+        Candidates and hiring teams both start here.
       </p>
 
       <Suspense fallback={<p className="mt-6 text-sm text-ink-muted">Loading…</p>}>
@@ -18,7 +18,7 @@ export default function LoginPage() {
       </Suspense>
 
       <p className="mt-6 border-t border-mist-200 pt-5 text-sm text-ink-muted">
-        No candidate account yet?{' '}
+        First time here?{' '}
         <Link href="/signup" className="link">
           Sign up
         </Link>

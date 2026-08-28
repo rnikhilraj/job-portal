@@ -181,6 +181,29 @@
     transform: scaleY(1);
   }
 
+  /*
+   * Entrance cascade. A page resolves in the order you read it — header, then
+   * the controls, then the content — rather than everything arriving at once.
+   * Three steps only; a longer ladder starts to feel slow.
+   */
+  .enter-1 { animation: rise-in 420ms cubic-bezier(0.22, 0.68, 0.36, 1) 0ms both; }
+  .enter-2 { animation: rise-in 420ms cubic-bezier(0.22, 0.68, 0.36, 1) 70ms both; }
+  .enter-3 { animation: rise-in 420ms cubic-bezier(0.22, 0.68, 0.36, 1) 140ms both; }
+
+  /*
+   * The elevated panel.
+   *
+   * Reserved for the single most consequential moment on a page, and used in
+   * exactly three places in the whole product: the landing hero, the apply form
+   * (the candidate's point of commitment) and the applicant funnel (the
+   * recruiter's equivalent). Spending it anywhere else would turn a signature
+   * into wallpaper.
+   */
+  .panel-feature {
+    @apply rounded-card border border-mist-300
+      bg-gradient-to-br from-white via-petrol-50 to-petrol-100 shadow-card;
+  }
+
   /* Route change: content settles rather than snapping in. */
   .route-enter {
     animation: route-enter 180ms cubic-bezier(0.22, 0.68, 0.36, 1) both;

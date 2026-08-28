@@ -1,4 +1,5 @@
 import { ProfileForm } from '@/components/profile-form';
+import { PageHeader } from '@/components/page-header';
 import { ProfileResume } from '@/components/profile-resume';
 import { getEnv } from '@/lib/env';
 import { requirePageUser } from '@/modules/auth/session';
@@ -12,12 +13,13 @@ export default async function ProfilePage() {
 
   return (
     <>
-      <h1 className="page-title">Your profile</h1>
-      <p className="page-lede mb-6">
-        HR sees these details next to your applications.
-      </p>
+      <PageHeader
+        eyebrow="Your details"
+        title="Your profile"
+        lede="This is what a recruiter sees next to your application. Worth five minutes."
+      />
 
-      <div className="space-y-6">
+      <div className="enter-2 space-y-6">
         {profile.role === 'CANDIDATE' ? (
           <ProfileResume
             resume={profile.resume}

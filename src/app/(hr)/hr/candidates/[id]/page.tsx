@@ -46,8 +46,8 @@ export default async function CandidateDetailPage({
       <p className="mt-4 flex items-start gap-2 rounded-md bg-mist-200 px-3.5 py-2.5 text-xs leading-relaxed text-ink-muted">
         <span aria-hidden="true" className="mt-px">ℹ</span>
         <span>
-          This candidate has opted in to recruiter visibility. If they turn it off, this page and
-          their resume link stop working immediately.
+          They chose to be listed here. If they change their mind, this page and their resume
+          link stop working the moment they save — no cached copy, no grace period.
         </span>
       </p>
     </article>

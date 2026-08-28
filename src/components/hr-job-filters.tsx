@@ -15,7 +15,7 @@ export function HrJobFilters({ q, status }: { q?: string; status?: string }) {
             name="q"
             type="search"
             defaultValue={q ?? ''}
-            placeholder="Job title"
+            placeholder="Search your titles"
             className="field-input"
           />
         </div>

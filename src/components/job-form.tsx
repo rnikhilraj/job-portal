@@ -17,8 +17,8 @@ import {
 import { createJobSchema } from '@/modules/jobs/job.schema';
 
 const STATUS_LABELS: Record<JobStatus, string> = {
-  OPEN: 'Open — visible to candidates',
-  CLOSED: 'Closed — hidden from candidates',
+  OPEN: 'Open — candidates can see and apply',
+  CLOSED: 'Closed — hidden, but kept on file',
 };
 
 /** Shared by the create and edit pages; `job` decides which. */
@@ -103,7 +103,8 @@ export function JobForm({ job }: { job?: PublicJob }) {
           </p>
         ) : (
           <p className="field-hint">
-            At least 20 characters. Candidates see this in full on the job page.
+            Candidates read this in full. What the work actually involves beats a list of
+            adjectives.
           </p>
         )}
       </div>
@@ -159,7 +160,7 @@ export function JobForm({ job }: { job?: PublicJob }) {
 
       <div className="flex flex-wrap gap-2 border-t border-mist-200 pt-5">
         <button type="submit" className="btn-primary" disabled={isSubmitting}>
-          {isSubmitting ? 'Saving…' : isEditing ? 'Save changes' : 'Post job'}
+          {isSubmitting ? 'Saving…' : isEditing ? 'Save changes' : 'Post this role'}
         </button>
         <button type="button" onClick={() => router.push('/hr/jobs')} className="btn-secondary">
           Cancel

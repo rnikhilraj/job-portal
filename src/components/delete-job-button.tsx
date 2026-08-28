@@ -16,7 +16,7 @@ export function DeleteJobButton({ jobId, jobTitle }: { jobId: string; jobTitle: 
 
   async function handleDelete() {
     const confirmed = window.confirm(
-      `Delete “${jobTitle}”?\n\nThis also permanently removes every application to this listing and the uploaded resumes.`,
+      `Delete “${jobTitle}”?\n\nThis also permanently deletes every application to it, and the resumes people uploaded. There is no undo.`,
     );
     if (!confirmed) return;
 

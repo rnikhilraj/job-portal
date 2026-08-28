@@ -47,7 +47,7 @@ export function LoginForm() {
         setFieldErrors(error.fieldErrors);
         setFormError(error.message);
       } else {
-        setFormError('Could not reach the server. Please try again.');
+        setFormError('Could not reach the server. Nothing was submitted — try again in a moment.');
       }
       setIsSubmitting(false);
     }
@@ -79,7 +79,7 @@ export function LoginForm() {
       />
 
       <button type="submit" className="btn-primary w-full" disabled={isSubmitting}>
-        {isSubmitting ? 'Signing in…' : 'Log in'}
+        {isSubmitting ? 'Letting you in…' : 'Log in'}
       </button>
     </form>
   );

@@ -6,6 +6,7 @@ import { Suspense } from 'react';
 import { ApplicantStatusSelect } from '@/components/applicant-status-select';
 import { EmptyState } from '@/components/empty-state';
 import { Pagination } from '@/components/pagination';
+import { PageHeader } from '@/components/page-header';
 import { PipelineFunnel } from '@/components/pipeline';
 import { PipelineRail } from '@/components/pipeline-rail';
 import { SkeletonList } from '@/components/skeleton';
@@ -65,19 +66,23 @@ export default async function ApplicantsPage({
         <span aria-hidden="true">←</span> Back to my listings
       </Link>
 
-      <header className="mb-6 mt-4">
-        <h1 className="page-title">Applicants</h1>
-        <p className="page-lede">
-          {job.title} · {job.location}
-        </p>
-      </header>
+      <PageHeader
+        eyebrow={job.location}
+        title="Applicants"
+        lede={job.title}
+        className="mt-4"
+      />
 
-      {/* The aggregate view of the signature rail: this listing's funnel shape. */}
-      <div className="mb-6">
+      {/*
+        The recruiter's equivalent of the candidate's rail — the shape of this
+        listing at a glance — so it earns the elevated panel treatment. That is
+        two of the three places in the app that get it.
+      */}
+      <div className="enter-2 mb-6">
         <PipelineFunnel counts={pipeline.counts} total={pipeline.total} />
       </div>
 
-      <form method="get" action={basePath} className="card mb-6">
+      <form method="get" action={basePath} className="enter-3 card mb-6">
         <div className="grid gap-4 sm:grid-cols-3">
           <div className="sm:col-span-2">
             <label htmlFor="q" className="field-label">
@@ -88,7 +93,7 @@ export default async function ApplicantsPage({
               name="q"
               type="search"
               defaultValue={query.q ?? ''}
-              placeholder="Search applicants"
+              placeholder="Search by name"
               className="field-input"
             />
           </div>
@@ -160,15 +165,15 @@ async function ApplicantResults({
       {applicants.length === 0 ? (
         isFiltered ? (
           <EmptyState
-            title="No applicants match those filters"
-            description="Nobody who applied to this role matches that name or stage. Clear the filters to see everyone in the pipeline."
-            action={{ href: basePath, label: 'Show all applicants' }}
+            title="Nobody here matches"
+            description="No applicant to this role fits that name or stage. Clear the filters to see the whole pipeline again."
+            action={{ href: basePath, label: 'Show me everyone' }}
           />
         ) : (
           <EmptyState
-            title="Waiting on the first applicant"
-            description="Nobody has applied to this listing yet. The moment someone does they appear here with their resume, and you can move them along the rail from this page."
-            secondary={{ href: '/hr/candidates', label: 'Search candidates instead' }}
+            title="Quiet so far"
+            description="Nobody's applied yet. When they do, they'll show up here with their resume and cover note, and you can move them along without opening a spreadsheet."
+            secondary={{ href: '/hr/candidates', label: 'Go find people instead' }}
           />
         )
       ) : (

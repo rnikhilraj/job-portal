@@ -40,7 +40,7 @@ export function SignupForm() {
         setFieldErrors(error.fieldErrors);
         setFormError(error.message);
       } else {
-        setFormError('Could not reach the server. Please try again.');
+        setFormError('Could not reach the server. Nothing was submitted — try again in a moment.');
       }
       setIsSubmitting(false);
     }
@@ -77,12 +77,12 @@ export function SignupForm() {
         onChange={setPassword}
         errors={fieldErrors.password}
         autoComplete="new-password"
-        hint="At least 8 characters, including a letter and a number."
+        hint="At least 8 characters, with a letter and a number in there somewhere."
         required
       />
 
       <button type="submit" className="btn-primary w-full" disabled={isSubmitting}>
-        {isSubmitting ? 'Creating account…' : 'Create account'}
+        {isSubmitting ? 'Setting you up…' : 'Create my account'}
       </button>
     </form>
   );

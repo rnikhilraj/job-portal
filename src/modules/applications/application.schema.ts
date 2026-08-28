@@ -12,14 +12,14 @@ export const applyToJobSchema = z.object({
   coverNote: z
     .string()
     .trim()
-    .max(2000, 'Cover note must be 2000 characters or fewer.')
+    .max(2000, 'Trim the cover note to 2000 characters.')
     .optional()
     .transform((value) => (value ? value : undefined)),
 });
 
 export const updateApplicationStatusSchema = z.object({
   status: z.enum(APPLICATION_STATUSES, {
-    errorMap: () => ({ message: 'Choose a valid application status.' }),
+    errorMap: () => ({ message: 'Pick one of the listed stages.' }),
   }),
 });
 

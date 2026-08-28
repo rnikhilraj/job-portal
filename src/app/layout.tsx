@@ -62,7 +62,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
 
         <footer className="border-t border-mist-300 bg-white">
           <div className="mx-auto max-w-6xl px-4 py-6 text-xs text-ink-muted sm:px-6">
-            Job Application Tracker — a demo hiring platform.
+            Job Application Tracker — a demo hiring platform. Built to make waiting less awful.
           </div>
         </footer>
       </body>

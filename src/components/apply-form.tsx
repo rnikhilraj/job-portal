@@ -40,7 +40,7 @@ export function ApplyForm({ jobId, maxResumeBytes }: ApplyFormProps) {
 
     const file = fileInputRef.current?.files?.[0];
     if (!file) {
-      setFieldErrors({ resume: ['Attach your resume as a PDF.'] });
+      setFieldErrors({ resume: ['Pick a PDF before sending this.'] });
       return;
     }
     if (file.type !== PDF_CONTENT_TYPE) {
@@ -109,8 +109,9 @@ export function ApplyForm({ jobId, maxResumeBytes }: ApplyFormProps) {
           </p>
         ) : (
           <p className="field-hint">
-            PDF only, up to {formatMegabytes(maxResumeBytes)}.
-            {fileName ? ` Selected: ${fileName}` : ''}
+            {fileName
+              ? `${fileName} — looks good.`
+              : `PDF only, up to ${formatMegabytes(maxResumeBytes)}. The one you actually want them to read.`}
           </p>
         )}
       </div>
@@ -126,7 +127,7 @@ export function ApplyForm({ jobId, maxResumeBytes }: ApplyFormProps) {
           maxLength={2000}
           value={coverNote}
           onChange={(event) => setCoverNote(event.target.value)}
-          placeholder="Why you are a good fit for this role."
+          placeholder="Optional, but the ones who write something are the ones we remember."
           className={`field-input ${fieldErrors.coverNote?.length ? 'border-status-rejected' : ''}`}
         />
         {fieldErrors.coverNote?.length ? (
@@ -135,12 +136,16 @@ export function ApplyForm({ jobId, maxResumeBytes }: ApplyFormProps) {
             <span>{fieldErrors.coverNote.join(' ')}</span>
           </p>
         ) : (
-          <p className="field-hint">{coverNote.length} of 2000 characters.</p>
+          <p className="field-hint">
+            {coverNote.length === 0
+              ? 'A few honest sentences beat a page of adjectives.'
+              : `${coverNote.length} of 2000 characters.`}
+          </p>
         )}
       </div>
 
       <button type="submit" className="btn-primary" disabled={isSubmitting}>
-        {isSubmitting ? 'Submitting…' : 'Submit application'}
+        {isSubmitting ? 'Sending it over…' : 'Send my application'}
       </button>
     </form>
   );

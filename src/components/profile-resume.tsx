@@ -48,7 +48,7 @@ export function ProfileResume({
 
     const file = fileInputRef.current?.files?.[0];
     if (!file) {
-      setError('Choose a PDF to upload.');
+      setError('Pick a file first.');
       return;
     }
     // Mirrors the server, which re-checks the type and reads the actual bytes.
@@ -68,7 +68,7 @@ export function ProfileResume({
     try {
       const updated = await apiFetch<PublicUser>('/api/users/me/resume', { method: 'PUT', body });
       setResume(updated.resume);
-      setNotice('Resume uploaded.');
+      setNotice('Uploaded. That\u2019s the one recruiters will see.');
       if (fileInputRef.current) fileInputRef.current.value = '';
     } catch (caught) {
       setError(
@@ -82,7 +82,11 @@ export function ProfileResume({
   }
 
   async function handleRemove() {
-    if (!window.confirm('Remove your uploaded resume? Recruiters will no longer be able to download it.')) {
+    if (
+      !window.confirm(
+        'Remove your resume? Recruiters will no longer be able to download it.',
+      )
+    ) {
       return;
     }
 
@@ -92,7 +96,7 @@ export function ProfileResume({
     try {
       const updated = await apiFetch<PublicUser>('/api/users/me/resume', { method: 'DELETE' });
       setResume(updated.resume);
-      setNotice('Resume removed.');
+      setNotice('Removed. Nothing to download now.');
     } catch (caught) {
       setError(
         caught instanceof ApiRequestError
@@ -108,8 +112,8 @@ export function ProfileResume({
     <section className="card">
       <h2 className="section-title">Your resume</h2>
       <p className="mt-1.5 max-w-prose text-sm leading-relaxed text-ink-muted">
-        A general resume for your profile, separate from the one you attach when applying to a
-        specific job.
+        Your default CV. Separate from the one you attach to a specific application, so you can
+        keep a good general version here and tailor the rest.
       </p>
 
       <div className="mt-4 space-y-3">
@@ -137,7 +141,7 @@ export function ProfileResume({
             </button>
           </div>
         ) : (
-          <p className="text-sm text-ink-muted">You have not uploaded a resume yet.</p>
+          <p className="text-sm text-ink-muted">Nothing uploaded yet.</p>
         )}
 
         {/*
@@ -157,17 +161,15 @@ export function ProfileResume({
           <span>
           {isSearchable ? (
             <>
-              <strong className="font-medium">Recruiters can download this resume.</strong> Your
-              profile is visible to recruiters, so any HR user can find you and download the file
-              above along with your email and phone number. Turn off recruiter visibility to stop
-              that immediately.
+              <strong className="font-medium">Recruiters can download this.</strong> Your
+              profile is visible, so any HR user can find you and take this file along with your
+              email and phone number. Switching visibility off stops that the moment you save.
             </>
           ) : (
             <>
-              <strong className="font-medium">This resume is private right now.</strong> Only you
-              can download it. It becomes visible to recruiters — along with your email and phone
-              number — only if you turn on{' '}
-              <em>Make my profile visible to recruiters</em> below.
+              <strong className="font-medium">This is private right now.</strong> Only you can
+              download it. It reaches recruiters — along with your email and phone number — only
+              if you switch on <em>Make my profile visible to recruiters</em> below.
             </>
           )}
           </span>
@@ -200,7 +202,7 @@ export function ProfileResume({
                 file:text-ink-soft"
             />
             <button type="submit" className="btn-primary shrink-0" disabled={isBusy}>
-              {isBusy ? 'Working…' : resume ? 'Replace' : 'Upload'}
+              {isBusy ? 'Uploading…' : resume ? 'Swap it out' : 'Upload'}
             </button>
           </div>
 

@@ -27,13 +27,13 @@ export class AppError extends Error {
 }
 
 export class BadRequestError extends AppError {
-  constructor(message = 'Invalid request.', details?: unknown) {
+  constructor(message = 'That request did not look right.', details?: unknown) {
     super(400, 'VALIDATION_ERROR', message, details);
   }
 }
 
 export class UnauthorizedError extends AppError {
-  constructor(message = 'Authentication required.') {
+  constructor(message = 'You need to be signed in for this.') {
     super(401, 'UNAUTHORIZED', message);
   }
 }
@@ -57,7 +57,7 @@ export class ConflictError extends AppError {
 }
 
 export class RateLimitError extends AppError {
-  constructor(message = 'Too many requests. Please try again later.') {
+  constructor(message = 'Too many attempts. Give it a minute.') {
     super(429, 'RATE_LIMITED', message);
   }
 }

@@ -9,13 +9,14 @@ export default function SignupPage() {
     <div className="card">
       <h1 className="font-display text-display-sm font-semibold">Create a candidate account</h1>
       <p className="mt-1.5 text-sm leading-relaxed text-ink-muted">
-        HR accounts are provisioned by an administrator and cannot be created here.
+        Takes about thirty seconds. Hiring-team accounts are set up by an administrator, not
+        here.
       </p>
 
       <SignupForm />
 
       <p className="mt-6 border-t border-mist-200 pt-5 text-sm text-ink-muted">
-        Already registered?{' '}
+        Been here before?{' '}
         <Link href="/login" className="link">
           Log in
         </Link>

@@ -3,6 +3,7 @@ import { Suspense } from 'react';
 
 import { CandidateSummary } from '@/components/candidate-summary';
 import { EmptyState } from '@/components/empty-state';
+import { PageHeader } from '@/components/page-header';
 import { SkeletonList } from '@/components/skeleton';
 
 import { Pagination } from '@/components/pagination';
@@ -39,14 +40,13 @@ export default async function CandidateSearchPage({
 
   return (
     <>
-      <h1 className="page-title">Candidate search</h1>
-      <p className="page-lede mb-6">
-        Candidates who have chosen to be found by recruiters. Each of them has explicitly agreed
-        to share their contact details and resume here. Anyone who has not opted in does not
-        appear, and their details are never shown.
-      </p>
+      <PageHeader
+        eyebrow="Opt-in directory"
+        title="Candidate search"
+        lede="Everyone here chose to be found. They have agreed to share their contact details and resume with recruiters — anyone who hasn't opted in never appears, however well they match."
+      />
 
-      <form method="get" action="/hr/candidates" className="card mb-6">
+      <form method="get" action="/hr/candidates" className="enter-2 card mb-6">
         <div className="grid gap-4 sm:grid-cols-3">
         <div className="sm:col-span-2">
           <label htmlFor="q" className="field-label">
@@ -57,7 +57,7 @@ export default async function CandidateSearchPage({
             name="q"
             type="search"
             defaultValue={query.q ?? ''}
-            placeholder="Name, headline or skill"
+            placeholder="Skill, headline, or name"
             className="field-input"
           />
         </div>
@@ -95,9 +95,14 @@ export default async function CandidateSearchPage({
         </div>
       </form>
 
-      <Suspense key={JSON.stringify(query)} fallback={<SkeletonList label="Loading candidates…" />}>
-        <CandidateResults query={query} rawParams={rawParams} />
-      </Suspense>
+      <div className="enter-3">
+        <Suspense
+          key={JSON.stringify(query)}
+          fallback={<SkeletonList label="Loading candidates…" />}
+        >
+          <CandidateResults query={query} rawParams={rawParams} />
+        </Suspense>
+      </div>
     </>
   );
 }
@@ -117,15 +122,15 @@ async function CandidateResults({
       {candidates.length === 0 ? (
         query.q || query.experienceLevel ? (
           <EmptyState
-            title="No opted-in candidates match those filters"
-            description="Nobody who has enabled recruiter visibility matches that keyword or experience level. Candidates who have not opted in never appear here, however well they match."
-            action={{ href: '/hr/candidates', label: 'Clear filters' }}
+            title="Nobody here matches — yet"
+            description="No one who's opted in fits that keyword or experience level. People who haven't opted in never appear here, however well they'd match."
+            action={{ href: '/hr/candidates', label: 'Clear the filters' }}
           />
         ) : (
           <EmptyState
-            title="No candidates are discoverable yet"
-            description="This directory only lists people who have turned on recruiter visibility themselves. Nobody has opted in so far — post a role and applicants will come to you in the meantime."
-            secondary={{ href: '/hr/jobs/new', label: 'Post a job' }}
+            title="Nobody's opted in yet"
+            description="This directory only lists people who've turned on recruiter visibility themselves — it's their call, not ours. Post a role in the meantime and applicants will come to you."
+            secondary={{ href: '/hr/jobs/new', label: 'Post a role instead' }}
           />
         )
       ) : (

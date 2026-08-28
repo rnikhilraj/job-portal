@@ -3,6 +3,7 @@ import { Suspense } from 'react';
 import { EmptyState } from '@/components/empty-state';
 import { JobCard } from '@/components/job-card';
 import { JobFilters } from '@/components/job-filters';
+import { PageHeader } from '@/components/page-header';
 import { Pagination } from '@/components/pagination';
 import { SkeletonList } from '@/components/skeleton';
 import { buildPageHref, toQueryRecord, type RawSearchParams } from '@/lib/query';
@@ -35,17 +36,25 @@ export default async function BrowseJobsPage({
 
   return (
     <>
-      <header className="mb-6">
-        <h1 className="page-title">Open positions</h1>
-        <p className="page-lede">Roles currently accepting applications.</p>
-      </header>
+      <PageHeader
+        eyebrow="Open roles"
+        title="Open positions"
+        lede="Everything here is live and taking applications right now."
+      />
 
-      <JobFilters q={query.q} location={query.location} jobType={query.jobType} />
+      <div className="enter-2">
+        <JobFilters q={query.q} location={query.location} jobType={query.jobType} />
+      </div>
 
       {/* key remounts the boundary on every filter change, so the skeleton reappears. */}
-      <Suspense key={JSON.stringify(query)} fallback={<SkeletonList label="Loading open positions…" />}>
-        <JobResults query={query} rawParams={rawParams} />
-      </Suspense>
+      <div className="enter-3">
+        <Suspense
+          key={JSON.stringify(query)}
+          fallback={<SkeletonList label="Loading open positions…" />}
+        >
+          <JobResults query={query} rawParams={rawParams} />
+        </Suspense>
+      </div>
     </>
   );
 }
@@ -64,15 +73,15 @@ async function JobResults({
   if (jobs.length === 0) {
     return isFiltered ? (
       <EmptyState
-        title="Nothing matched — yet"
-        description="No open role fits this combination of keyword, location and job type. Widening any one of them usually turns up something."
-        action={{ href: '/jobs', label: 'Clear filters' }}
+        title="Nothing matched — this time"
+        description="No open role fits all three filters at once. Loosening the location is usually the one that helps."
+        action={{ href: '/jobs', label: 'Clear the filters' }}
       />
     ) : (
       <EmptyState
-        title="No open roles right now"
-        description="Nothing is accepting applications at the moment. New listings appear here the moment a hiring team posts one — and your profile is ready when they do."
-        action={{ href: '/profile', label: 'Polish your profile' }}
+        title="The board is empty"
+        description="No roles are open at the moment. New ones show up here the moment a team posts them — good time to make sure your profile is ready for when they do."
+        action={{ href: '/profile', label: 'Get my profile ready' }}
       />
     );
   }

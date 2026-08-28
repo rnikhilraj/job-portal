@@ -28,7 +28,7 @@ export function JobFilters({ q, location, jobType }: JobFiltersProps) {
             name="q"
             type="search"
             defaultValue={q ?? ''}
-            placeholder="Title or description"
+            placeholder="Role, skill, anything"
             className="field-input"
           />
         </div>
@@ -42,7 +42,7 @@ export function JobFilters({ q, location, jobType }: JobFiltersProps) {
             name="location"
             type="search"
             defaultValue={location ?? ''}
-            placeholder="e.g. Remote"
+            placeholder="City, or Remote"
             className="field-input"
           />
         </div>

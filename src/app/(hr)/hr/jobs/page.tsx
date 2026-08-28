@@ -5,6 +5,7 @@ import { Suspense } from 'react';
 import { DeleteJobButton } from '@/components/delete-job-button';
 import { EmptyState } from '@/components/empty-state';
 import { HrJobFilters } from '@/components/hr-job-filters';
+import { PageHeader } from '@/components/page-header';
 import { Pagination } from '@/components/pagination';
 import { SkeletonList } from '@/components/skeleton';
 import { StatusBadge } from '@/components/status-badge';
@@ -29,23 +30,29 @@ export default async function HrJobsPage({
 
   return (
     <>
-      <header className="mb-6 flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <h1 className="page-title">My job listings</h1>
-          <p className="page-lede">
-            Only listings you posted. Open roles are visible to candidates; closed ones are not.
-          </p>
-        </div>
-        <Link href="/hr/jobs/new" className="btn-primary shrink-0">
-          <span aria-hidden="true">+</span> Post a job
-        </Link>
-      </header>
+      <PageHeader
+        eyebrow="Your listings"
+        title="My job listings"
+        lede="Only roles you posted. Open ones are visible to candidates; closed ones stay here for your records."
+        action={
+          <Link href="/hr/jobs/new" className="btn-primary">
+            <span aria-hidden="true">+</span> Post a job
+          </Link>
+        }
+      />
 
-      <HrJobFilters q={query.q} status={query.status} />
+      <div className="enter-2">
+        <HrJobFilters q={query.q} status={query.status} />
+      </div>
 
-      <Suspense key={JSON.stringify(query)} fallback={<SkeletonList label="Loading your listings…" />}>
-        <OwnedJobResults ownerId={hr._id} query={query} rawParams={rawParams} />
-      </Suspense>
+      <div className="enter-3">
+        <Suspense
+          key={JSON.stringify(query)}
+          fallback={<SkeletonList label="Loading your listings…" />}
+        >
+          <OwnedJobResults ownerId={hr._id} query={query} rawParams={rawParams} />
+        </Suspense>
+      </div>
     </>
   );
 }
@@ -70,15 +77,15 @@ async function OwnedJobResults({
       {jobs.length === 0 ? (
         isFiltered ? (
           <EmptyState
-            title="No listings match those filters"
-            description="None of your listings match that title or status. Clear the filters to see everything you have posted."
-            action={{ href: '/hr/jobs', label: 'Clear filters' }}
+            title="Nothing matches those filters"
+            description="None of your listings fit that title or status. Clear the filters to see everything you've posted."
+            action={{ href: '/hr/jobs', label: 'Show me everything' }}
           />
         ) : (
           <EmptyState
             title="Your first listing goes here"
-            description="Post a role and this page becomes your pipeline: every applicant, their resume and cover note, and a funnel you can move them through."
-            action={{ href: '/hr/jobs/new', label: 'Post a job' }}
+            description="Post a role and this page turns into your pipeline — every applicant, their resume and cover note, and a funnel you can actually move people through."
+            action={{ href: '/hr/jobs/new', label: 'Post the first one' }}
           />
         )
       ) : (

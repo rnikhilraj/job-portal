@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 
 import { ApplyForm } from '@/components/apply-form';
 import { StatusChip } from '@/components/pipeline';
+import { MetaRow } from '@/components/page-header';
 import { PipelineRail } from '@/components/pipeline-rail';
 import { StatusBadge } from '@/components/status-badge';
 import { NotFoundError } from '@/lib/api/errors';
@@ -40,28 +41,29 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
         <span aria-hidden="true">←</span> Back to jobs
       </Link>
 
-      <header className="mt-4 flex flex-wrap items-start justify-between gap-x-6 gap-y-3">
-        <div>
+      <header className="enter-1 mt-4 flex flex-wrap items-start justify-between gap-x-6 gap-y-3">
+        <div className="min-w-0">
           <h1 className="page-title">{job.title}</h1>
-          <p className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-ink-muted">
-            <span className="inline-flex items-center gap-1.5">
-              <span aria-hidden="true">◎</span>
-              {job.location}
-            </span>
-            <span aria-hidden="true" className="text-mist-400">
-              ·
-            </span>
-            <span>{JOB_TYPE_LABELS[job.jobType]}</span>
-            <span aria-hidden="true" className="text-mist-400">
-              ·
-            </span>
-            <span>Posted {new Date(job.createdAt).toLocaleDateString()}</span>
-          </p>
+          <MetaRow
+            className="mt-3"
+            items={[
+              { glyph: '◎', label: job.location },
+              { glyph: '◈', label: JOB_TYPE_LABELS[job.jobType] },
+              {
+                glyph: '◷',
+                label: `Posted ${new Date(job.createdAt).toLocaleDateString(undefined, {
+                  day: 'numeric',
+                  month: 'short',
+                  year: 'numeric',
+                })}`,
+              },
+            ]}
+          />
         </div>
         <StatusBadge status={job.status} />
       </header>
 
-      <section className="card mt-6">
+      <section className="enter-2 card mt-6">
         <h2 className="eyebrow">Description</h2>
         {/* Rendered as text, never as HTML, so a listing cannot inject markup. */}
         <p className="mt-3 max-w-prose whitespace-pre-line text-sm leading-relaxed text-ink-soft">
@@ -70,7 +72,12 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
       </section>
 
       {isCandidate ? (
-        <section className="card mt-6">
+        /*
+          The candidate's point of commitment, and the third and final place in
+          the app that gets the elevated panel — the landing hero and the
+          recruiter's funnel are the other two.
+        */
+        <section className="enter-3 panel-feature mt-6 p-5">
           {existingApplication ? (
             <>
               <div className="flex flex-wrap items-center justify-between gap-3">
@@ -78,18 +85,19 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
                 <StatusChip status={existingApplication.status} />
               </div>
               <p className="mt-2 text-sm text-ink-muted">
-                You applied to this role. Its current stage is shown below.
+                You&rsquo;re in. Here&rsquo;s exactly where it sits right now.
               </p>
               <PipelineRail status={existingApplication.status} className="mt-5 max-w-md" />
               <Link href="/applications" className="btn-secondary btn-sm mt-6">
-                View all my applications
+                See all my applications
               </Link>
             </>
           ) : job.status === 'OPEN' ? (
             <>
               <h2 className="section-title">Apply for this role</h2>
-              <p className="mt-1.5 text-sm text-ink-muted">
-                Attach your resume as a PDF. A cover note is optional but helps.
+              <p className="mt-1.5 max-w-prose text-sm text-ink-muted">
+                Attach a PDF and you&rsquo;re done. You&rsquo;ll be able to watch this one move
+                from your applications page — no wondering whether it arrived.
               </p>
               <div className="mt-5">
                 <ApplyForm jobId={job.id} maxResumeBytes={getEnv().MAX_RESUME_BYTES} />
@@ -97,9 +105,10 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
             </>
           ) : (
             <>
-              <h2 className="section-title">Applications closed</h2>
+              <h2 className="section-title">This one&rsquo;s closed</h2>
               <p className="mt-1.5 text-sm text-ink-muted">
-                This listing is no longer accepting applications.
+                The team has stopped taking applications for this role. Worth checking what else
+                is open.
               </p>
             </>
           )}

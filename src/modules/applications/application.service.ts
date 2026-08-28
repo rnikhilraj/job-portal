@@ -82,7 +82,7 @@ export type ApplyToJobParams = {
 export async function applyToJob(params: ApplyToJobParams): Promise<PublicApplication> {
   const job = await Job.findOne({ _id: params.jobId, status: 'OPEN' });
   if (!job) {
-    throw new NotFoundError('This job listing is no longer accepting applications.');
+    throw new NotFoundError('This listing has closed — it is no longer accepting applications.');
   }
 
   const alreadyApplied = await Application.exists({ job: job._id, candidate: params.candidateId });

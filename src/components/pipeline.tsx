@@ -85,7 +85,7 @@ export function PipelineFunnel({
   if (total === 0) return null;
 
   return (
-    <div className="card">
+    <div className="panel-feature p-5">
       <h2 className="eyebrow">Pipeline</h2>
 
       {/*

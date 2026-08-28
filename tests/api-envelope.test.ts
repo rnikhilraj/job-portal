@@ -59,9 +59,12 @@ describe('API error envelope', () => {
 
     expect(response.status).toBe(500);
     const body = await readBody(response);
+    // Matched exactly on purpose: the 500 body must be a fixed string, never
+    // anything derived from the thrown error. Changing the copy should be a
+    // deliberate act that updates this line, not something that slips through.
     expect(body.error).toEqual({
       code: 'INTERNAL_ERROR',
-      message: 'Something went wrong. Please try again.',
+      message: 'Something broke on our side. Nothing you did — try again in a moment.',
     });
     expect(JSON.stringify(body)).not.toContain('hunter2');
   });

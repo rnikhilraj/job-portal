@@ -50,7 +50,7 @@ export function ApplicantStatusSelect({
   return (
     <div className="flex w-full flex-col items-start">
       <label htmlFor={`status-${applicationId}`} className="field-label">
-        Move to stage
+        Move to
       </label>
       <select
         id={`status-${applicationId}`}

@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { Suspense } from 'react';
 
 import { EmptyState } from '@/components/empty-state';
+import { PageHeader } from '@/components/page-header';
 import { Pagination } from '@/components/pagination';
 import { StatusChip } from '@/components/pipeline';
 import { PipelineRail } from '@/components/pipeline-rail';
@@ -35,18 +36,16 @@ export default async function MyApplicationsPage({
 
   return (
     <>
-      <header className="mb-6">
-        <h1 className="page-title">My applications</h1>
-        <p className="page-lede">
-          Where each of your applications currently stands. Recruiters move you along the
-          pipeline; this updates as they do.
-        </p>
-      </header>
+      <PageHeader
+        eyebrow="Your pipeline"
+        title="My applications"
+        lede="Where each one actually stands. Recruiters move you along the rail; this updates the moment they do."
+      />
 
       <form
         method="get"
         action="/applications"
-        className="card mb-6 flex flex-col gap-4 sm:flex-row sm:items-end"
+        className="enter-2 card mb-6 flex flex-col gap-4 sm:flex-row sm:items-end"
       >
         <div className="sm:max-w-xs sm:flex-1">
           <label htmlFor="status" className="field-label">
@@ -74,6 +73,7 @@ export default async function MyApplicationsPage({
       </form>
 
       {/* Boundary sits below the guard so auth resolves before the first flush. */}
+      <div className="enter-3">
       <Suspense
         key={JSON.stringify(query)}
         fallback={<SkeletonList label="Loading your applications…" />}
@@ -84,6 +84,7 @@ export default async function MyApplicationsPage({
           rawParams={rawParams}
         />
       </Suspense>
+      </div>
     </>
   );
 }
@@ -106,15 +107,15 @@ async function ApplicationResults({
         query.status ? (
           <EmptyState
             title={`Nothing at the ${APPLICATION_STATUS_LABELS[query.status].toLowerCase()} stage`}
-            description="No application of yours is sitting here right now. Clear the filter to see where they all actually are."
-            action={{ href: '/applications', label: 'Show all applications' }}
+            description="Nothing of yours is sitting here right now. Clear the filter to see where everything actually is."
+            action={{ href: '/applications', label: 'Show me everything' }}
           />
         ) : (
           <EmptyState
-            title="Your pipeline starts with one application"
-            description="Apply to a role and it lands here, with its own rail. You will see it move from applied to reviewed to shortlisted as it happens — no refreshing an inbox and hoping."
-            action={{ href: '/jobs', label: 'Browse open positions' }}
-            secondary={{ href: '/profile', label: 'Set up your profile first' }}
+            title="Nothing in flight yet"
+            description="Apply to something and it lands here with its own rail. You'll see it move without refreshing your inbox at midnight."
+            action={{ href: '/jobs', label: 'Find something to apply for' }}
+            secondary={{ href: '/profile', label: 'Sort my profile first' }}
           />
         )
       ) : (

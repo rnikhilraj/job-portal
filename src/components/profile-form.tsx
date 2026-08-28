@@ -76,7 +76,7 @@ export function ProfileForm({ user }: { user: PublicUser }) {
   return (
     <form onSubmit={handleSubmit} className="card space-y-4" noValidate>
       {formError ? <Alert tone="error">{formError}</Alert> : null}
-      {savedAt ? <Alert tone="success">Profile saved at {savedAt}.</Alert> : null}
+      {savedAt ? <Alert tone="success">Saved at {savedAt}. Looking good.</Alert> : null}
 
       <div>
         <span className="field-label">Email</span>
@@ -89,7 +89,7 @@ export function ProfileForm({ user }: { user: PublicUser }) {
             {user.role}
           </span>
         </p>
-        <p className="field-hint">Email and role cannot be changed from this page.</p>
+        <p className="field-hint">Email and role are fixed — an administrator handles those.</p>
       </div>
 
       <TextField
@@ -120,7 +120,7 @@ export function ProfileForm({ user }: { user: PublicUser }) {
         onChange={setHeadline}
         errors={fieldErrors.headline}
         placeholder="Full-stack engineer"
-        hint="A short line describing what you do. Shown to HR alongside your application."
+        hint="One line on what you do. It sits right under your name on a recruiter's screen."
       />
 
       <TextField
@@ -130,7 +130,7 @@ export function ProfileForm({ user }: { user: PublicUser }) {
         onChange={setSkills}
         errors={fieldErrors.skills}
         placeholder="TypeScript, React, MongoDB"
-        hint="Comma-separated. Duplicates are removed automatically."
+        hint="Comma-separated. We tidy up duplicates and stray spaces for you."
       />
 
       {isCandidate ? (
@@ -166,8 +166,8 @@ export function ProfileForm({ user }: { user: PublicUser }) {
 
           <p className="mt-3 text-xs leading-relaxed text-ink-muted">
             {isSearchable
-              ? 'You are currently discoverable, and recruiters can see your contact details and download your resume. Untick this and save to revoke all of that immediately.'
-              : 'You are not currently discoverable, and nobody can see your contact details or resume through search. This is off by default.'}
+              ? 'You are discoverable right now — recruiters can see your contact details and download your resume. Untick and save to pull all of it back immediately.'
+              : "You're invisible to recruiters right now, which is the default and entirely fine. Nothing here is shared with anyone until you say so."}
           </p>
 
           <div className="mt-4 max-w-xs">
@@ -191,7 +191,7 @@ export function ProfileForm({ user }: { user: PublicUser }) {
             {fieldErrors.experienceLevel?.length ? (
               <p className="field-error">{fieldErrors.experienceLevel.join(' ')}</p>
             ) : (
-              <p className="field-hint">Lets recruiters filter by seniority. Optional.</p>
+              <p className="field-hint">Helps recruiters filter by seniority. Optional.</p>
             )}
           </div>
         </fieldset>
@@ -199,7 +199,7 @@ export function ProfileForm({ user }: { user: PublicUser }) {
 
       <div className="border-t border-mist-200 pt-5">
         <button type="submit" className="btn-primary" disabled={isSubmitting}>
-          {isSubmitting ? 'Saving…' : 'Save profile'}
+          {isSubmitting ? 'Saving…' : 'Save my profile'}
         </button>
       </div>
     </form>

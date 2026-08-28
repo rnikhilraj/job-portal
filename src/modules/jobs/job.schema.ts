@@ -4,14 +4,14 @@ import { optionalSearchTerm, paginationSchema } from '@/lib/validation';
 import { JOB_STATUSES, JOB_TYPES } from '@/modules/jobs/job.constants';
 
 export const createJobSchema = z.object({
-  title: z.string().trim().min(3, 'Title must be at least 3 characters.').max(140),
+  title: z.string().trim().min(3, 'Give the role a title of at least 3 characters.').max(140),
   description: z
     .string()
     .trim()
-    .min(20, 'Description must be at least 20 characters.')
+    .min(20, 'Candidates need more than 20 characters to go on.')
     .max(10_000),
-  location: z.string().trim().min(2, 'Location is required.').max(120),
-  jobType: z.enum(JOB_TYPES, { errorMap: () => ({ message: 'Choose a valid job type.' }) }),
+  location: z.string().trim().min(2, 'Where is this role based? Remote counts.').max(120),
+  jobType: z.enum(JOB_TYPES, { errorMap: () => ({ message: 'Pick one of the listed job types.' }) }),
   status: z.enum(JOB_STATUSES).default('OPEN'),
 });
 
@@ -19,7 +19,7 @@ export const createJobSchema = z.object({
 export const updateJobSchema = createJobSchema
   .partial()
   .refine((value) => Object.keys(value).length > 0, {
-    message: 'Provide at least one field to update.',
+    message: 'Nothing to save — change something first.',
   });
 
 /** Query for the candidate-facing listing: only OPEN jobs are ever returned. */

@@ -104,5 +104,9 @@ export function toErrorResponse(error: unknown, request?: NextRequest): NextResp
     `[api] Unhandled error on ${request?.method ?? 'UNKNOWN'} ${request?.nextUrl?.pathname ?? ''}`,
     error,
   );
-  return fail(500, 'INTERNAL_ERROR', 'Something went wrong. Please try again.');
+  return fail(
+    500,
+    'INTERNAL_ERROR',
+    'Something broke on our side. Nothing you did — try again in a moment.',
+  );
 }
