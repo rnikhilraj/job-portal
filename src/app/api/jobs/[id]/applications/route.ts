@@ -2,6 +2,7 @@ import { BadRequestError } from '@/lib/api/errors';
 import { buildPaginationMeta, created, ok } from '@/lib/api/respond';
 import { withRoute } from '@/lib/api/route';
 import { assertContentLengthWithinLimit } from '@/lib/resume-storage';
+import { enforceRateLimit, userKey } from '@/lib/rate-limit';
 import { objectIdSchema, searchParamsToObject } from '@/lib/validation';
 import { requireRole } from '@/modules/auth/session';
 import {
@@ -25,6 +26,14 @@ export const GET = withRoute<{ id: string }>(async (request, params) => {
 export const POST = withRoute<{ id: string }>(async (request, params) => {
   const jobId = objectIdSchema.parse(params.id);
   const candidate = await requireRole(request, 'CANDIDATE');
+
+  // Every application writes a PDF to the uploads volume, so this is throttled
+  // per account rather than per IP: the session is already verified here, and a
+  // disk-writing endpoint should not be rate limited on a spoofable header.
+  enforceRateLimit(userKey('apply', String(candidate._id)), {
+    limit: 20,
+    windowMs: 60 * 60 * 1000,
+  });
 
   // Checked before parsing the body so an oversized upload is rejected without
   // being buffered into memory first.

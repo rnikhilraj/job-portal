@@ -345,14 +345,19 @@ export async function findResumeForViewer(
 /**
  * Removes every application to a job together with its stored resume. Called
  * when a listing is deleted so no orphaned files accumulate on the volume.
+ *
+ * The records go first and the files second, which is the safe order for a
+ * sequence that cannot be atomic. If the unlink fails the database is already
+ * consistent and the leftover file is unreferenced garbage; the other way round
+ * a failed deleteMany would leave live records pointing at files that no longer
+ * exist, and every download from them would 404.
  */
 export async function deleteApplicationsForJob(jobId: Types.ObjectId): Promise<number> {
   const applications = await Application.find({ job: jobId }).select('resume.storedName');
+  const storedNames = applications.map((application) => application.resume.storedName);
 
-  await Promise.all(
-    applications.map((application) => deleteResume(application.resume.storedName)),
-  );
   await Application.deleteMany({ job: jobId });
+  await Promise.all(storedNames.map((storedName) => deleteResume(storedName)));
 
-  return applications.length;
+  return storedNames.length;
 }

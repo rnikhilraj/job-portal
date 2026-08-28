@@ -8,6 +8,7 @@ import {
   readResume,
   resumeDownloadHeaders,
 } from '@/lib/resume-storage';
+import { enforceRateLimit, userKey } from '@/lib/rate-limit';
 import { requireUser } from '@/modules/auth/session';
 import {
   findOwnResume,
@@ -36,6 +37,14 @@ export const GET = withRoute(async (request) => {
 /** PUT /api/users/me/resume — upload or replace the caller's general resume. */
 export const PUT = withRoute(async (request) => {
   const user = await requireUser(request);
+
+  // Same reasoning as the application upload: a disk write behind a verified
+  // session, so the bucket is the account. Replacing a resume is a rarer act
+  // than applying to jobs, hence the tighter allowance.
+  enforceRateLimit(userKey('profile-resume', String(user._id)), {
+    limit: 10,
+    windowMs: 60 * 60 * 1000,
+  });
 
   // Checked before parsing so an oversized upload is never buffered into memory.
   assertContentLengthWithinLimit(request.headers.get('content-length'));

@@ -60,9 +60,17 @@ export const updateProfileSchema = z
       .enum(EXPERIENCE_LEVELS, {
         errorMap: () => ({ message: 'Pick one of the listed experience levels.' }),
       })
-      // An empty string from a <select> means "not specified", stored as unset.
-      .or(z.literal('').transform(() => undefined))
-      .optional(),
+      /*
+       * An empty string from a <select> means "not specified", stored as unset.
+       *
+       * It becomes null rather than undefined so that the intent survives the
+       * network. The client parses with this same schema and sends the result
+       * as JSON, and JSON.stringify drops undefined-valued keys entirely — so
+       * mapping to undefined meant the server received no key at all and could
+       * not tell "clear this" apart from "leave it alone".
+       */
+      .or(z.literal('').transform(() => null))
+      .nullish(),
   })
   .partial()
   .refine((value) => Object.keys(value).length > 0, {

@@ -474,6 +474,13 @@ the flag governs what *recruiters* may see, not whether someone can read back a 
 themselves.
 
 
+**The two upload endpoints are rate limited per account**, not per IP. Applying to a job and
+replacing a profile resume both write a PDF to the volume, and by the time either runs the session
+has already been verified — so the bucket is keyed on the user id (`userKey()`), which cannot be
+shed by rotating addresses and does not make one uploader throttle everyone behind a shared NAT.
+The credential endpoints still key on IP (`clientKey()`), because they run before there is anyone
+to attribute the request to.
+
 **Duplicate applications are prevented by a unique compound index on `{job, candidate}`**, not
 only by an application-level check. Two concurrent submissions cannot both succeed; the resulting
 `E11000` is caught and returned as a 409.
@@ -735,9 +742,11 @@ regresses.
 
 Things deliberately left out or simplified, and what they would take to fix.
 
-- **Rate limiting is per process, in memory.** It blunts online password guessing against a single
-  instance, but it neither survives a restart nor coordinates across replicas. Redis or an
-  edge/WAF rule would be the real answer.
+- **Rate limiting is per process, in memory.** Login, signup and the two resume upload endpoints
+  are all metered, but the counters neither survive a restart nor coordinate across replicas, so
+  a second instance doubles every allowance. Redis or an edge/WAF rule would be the real answer.
+  The IP-keyed buckets on the credential endpoints also trust `X-Forwarded-For`, which is
+  attacker-controlled unless something trusted terminates in front of the app.
 - **The CSP allows inline scripts.** `script-src` carries `'unsafe-inline'` to
   accommodate Next's inline bootstrap and streaming-payload scripts, which means
   the policy does not stop injected inline script and is not the app's XSS

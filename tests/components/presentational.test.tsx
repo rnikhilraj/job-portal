@@ -6,7 +6,7 @@ import { EmptyState } from '@/components/empty-state';
 import { JobCard } from '@/components/job-card';
 import { MetaRow, PageHeader } from '@/components/page-header';
 import { Pagination } from '@/components/pagination';
-import { SkeletonList } from '@/components/skeleton';
+import { SkeletonCard, SkeletonLine, SkeletonList } from '@/components/skeleton';
 import { TextField } from '@/components/text-field';
 import type { PublicJob } from '@/modules/jobs/job.constants';
 
@@ -207,5 +207,28 @@ describe('SkeletonList', () => {
     // One polite message, rather than a screen reader reading three empty cards.
     expect(screen.getByRole('status')).toHaveTextContent('Loading open positions…');
     expect(container.querySelectorAll('[aria-hidden="true"]')).toHaveLength(3);
+  });
+});
+
+describe('Skeleton', () => {
+  it('hides the placeholder boxes from screen readers', () => {
+    const { container } = render(<SkeletonCard />);
+
+    expect(container.firstElementChild).toHaveAttribute('aria-hidden', 'true');
+    // Five bars mirroring a job card's shape, so the page does not reflow.
+    expect(container.querySelectorAll('span')).toHaveLength(5);
+  });
+
+  it('animates a bare line and passes size classes through', () => {
+    const { container } = render(<SkeletonLine className="h-5 w-1/2" />);
+    const line = container.firstElementChild as HTMLElement;
+
+    expect(line).toHaveClass('animate-pulse', 'h-5', 'w-1/2');
+  });
+
+  it('renders as many rows as asked for', () => {
+    const { container } = render(<SkeletonList label="Loading jobs" rows={4} />);
+
+    expect(container.querySelectorAll('li')).toHaveLength(4);
   });
 });

@@ -402,6 +402,39 @@ describe('PATCH /api/users/me — the opt-in fields', () => {
     expect((await User.findById(candidate.id))?.experienceLevel).toBeUndefined();
   });
 
+  /*
+   * The test above posts a raw body, which the browser never does: the profile
+   * form parses with updateProfileSchema first and sends the *result*. That gap
+   * hid a real bug — the empty option used to become `undefined`, JSON.stringify
+   * dropped the key, and the server could not distinguish "clear this" from
+   * "not mentioned", so the level silently survived a save that reported
+   * success. This drives the exact bytes the client puts on the wire.
+   */
+  it('clears it through the round trip the profile form actually performs', async () => {
+    const { updateProfileSchema } = await import('@/modules/users/user.schema');
+    const candidate = await createCandidate();
+    await patch({ experienceLevel: 'LEAD' }, candidate.cookie);
+
+    const clientParsed = updateProfileSchema.parse({ name: 'Sam Rivera', experienceLevel: '' });
+    const overTheWire = JSON.parse(JSON.stringify(clientParsed));
+    expect(overTheWire).toHaveProperty('experienceLevel', null);
+
+    const response = await patch(overTheWire, candidate.cookie);
+
+    expect(response.status).toBe(200);
+    expect((await User.findById(candidate.id))?.experienceLevel).toBeUndefined();
+  });
+
+  it('leaves a set level alone when the request does not mention it', async () => {
+    const candidate = await createCandidate();
+    await patch({ experienceLevel: 'LEAD' }, candidate.cookie);
+
+    const response = await patch({ headline: 'Backend engineer' }, candidate.cookie);
+
+    expect(response.status).toBe(200);
+    expect((await User.findById(candidate.id))?.experienceLevel).toBe('LEAD');
+  });
+
   it('rejects an invalid experience level with 400', async () => {
     const candidate = await createCandidate();
 
@@ -726,5 +759,72 @@ describe('toDiscoverableCandidate fails closed', () => {
     const document = await User.findById(hr.id);
 
     expect(() => toDiscoverableCandidate(document!)).toThrow(/not an opted-in candidate/);
+  });
+});
+
+describe('PUT /api/users/me/resume is rate limited', () => {
+  /*
+   * Every upload writes a PDF to the volume, so the endpoint is throttled per
+   * account. The bucket is keyed on the verified session rather than an IP,
+   * which is what makes the limit meaningful: X-Forwarded-For is spoofable when
+   * nothing trusted sits in front of the app.
+   */
+  it('refuses the eleventh upload in the window with 429', async () => {
+    const candidate = await createCandidate();
+
+    for (let attempt = 0; attempt < 10; attempt += 1) {
+      await uploadResume(candidate.cookie, `resume-${attempt}.pdf`);
+    }
+
+    const response = await putOwnResume(
+      formRequest('/api/users/me/resume', applicationForm(pdfFile()), {
+        method: 'PUT',
+        cookie: candidate.cookie,
+      }),
+      noParams,
+    );
+
+    expect(response.status).toBe(429);
+    const body = await readJson<ApiError>(response);
+    expect(body.error.code).toBe('RATE_LIMITED');
+  });
+
+  it('meters each account separately, so one uploader cannot lock out another', async () => {
+    const heavy = await createCandidate();
+    const quiet = await createCandidate();
+
+    for (let attempt = 0; attempt < 10; attempt += 1) {
+      await uploadResume(heavy.cookie, `resume-${attempt}.pdf`);
+    }
+
+    // The first candidate is now exhausted; the second must be untouched.
+    const blocked = await putOwnResume(
+      formRequest('/api/users/me/resume', applicationForm(pdfFile()), {
+        method: 'PUT',
+        cookie: heavy.cookie,
+      }),
+      noParams,
+    );
+    expect(blocked.status).toBe(429);
+
+    const allowed = await uploadResume(quiet.cookie);
+    expect(allowed.status).toBe(200);
+  });
+
+  it('does not spend the allowance on reads or deletes', async () => {
+    const candidate = await createCandidate();
+    await uploadResume(candidate.cookie);
+
+    for (let attempt = 0; attempt < 15; attempt += 1) {
+      const read = await downloadOwnResume(
+        jsonRequest('/api/users/me/resume', { cookie: candidate.cookie }),
+        noParams,
+      );
+      expect(read.status).toBe(200);
+    }
+
+    // Nine uploads remain, because only PUT consumes the bucket.
+    const response = await uploadResume(candidate.cookie, 'replacement.pdf');
+    expect(response.status).toBe(200);
   });
 });

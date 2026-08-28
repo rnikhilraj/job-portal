@@ -524,3 +524,91 @@ describe('countApplicantsByStatus (the pipeline funnel)', () => {
     ).rejects.toMatchObject({ status: 404 });
   });
 });
+
+describe('POST /api/jobs/:id/applications is rate limited', () => {
+  /*
+   * The limiter runs before the duplicate check, so repeated posts to one
+   * listing spend the allowance exactly as posts to twenty different listings
+   * would. That is the point: the cost being bounded is the disk write, not the
+   * successful application.
+   */
+  it('refuses the twenty-first application in the window with 429', async () => {
+    const hr = await createHr();
+    const candidate = await createCandidate();
+    const job = await createJobFor(hr.id);
+
+    for (let attempt = 0; attempt < 20; attempt += 1) {
+      const response = await applyRequest(
+        String(job._id),
+        candidate.cookie,
+        applicationForm(pdfFile()),
+      );
+      // The first lands; the rest are duplicates. Neither outcome is a 429 yet.
+      expect([201, 409]).toContain(response.status);
+    }
+
+    const response = await applyRequest(
+      String(job._id),
+      candidate.cookie,
+      applicationForm(pdfFile()),
+    );
+
+    expect(response.status).toBe(429);
+    expect((await readJson<ApiError>(response)).error.code).toBe('RATE_LIMITED');
+  });
+
+  it('meters each candidate separately', async () => {
+    const hr = await createHr();
+    const heavy = await createCandidate();
+    const quiet = await createCandidate();
+    const job = await createJobFor(hr.id);
+
+    for (let attempt = 0; attempt < 20; attempt += 1) {
+      await applyRequest(String(job._id), heavy.cookie, applicationForm(pdfFile()));
+    }
+    const blocked = await applyRequest(
+      String(job._id),
+      heavy.cookie,
+      applicationForm(pdfFile()),
+    );
+    expect(blocked.status).toBe(429);
+
+    const allowed = await applyRequest(
+      String(job._id),
+      quiet.cookie,
+      applicationForm(pdfFile()),
+    );
+    expect(allowed.status).toBe(201);
+  });
+
+  it('leaves no file behind for a throttled request', async () => {
+    const hr = await createHr();
+    const candidate = await createCandidate();
+    const job = await createJobFor(hr.id);
+
+    for (let attempt = 0; attempt < 20; attempt += 1) {
+      await applyRequest(String(job._id), candidate.cookie, applicationForm(pdfFile()));
+    }
+    // One successful application wrote one file; the 19 duplicates cleaned up
+    // after themselves.
+    expect(await uploadsDirEntries()).toHaveLength(1);
+
+    await applyRequest(String(job._id), candidate.cookie, applicationForm(pdfFile()));
+
+    // A 429 is refused before the body is read, so nothing reaches the volume.
+    expect(await uploadsDirEntries()).toHaveLength(1);
+  });
+
+  it('does not spend the allowance on reading the applicant list', async () => {
+    const hr = await createHr();
+    const job = await createJobFor(hr.id);
+
+    for (let attempt = 0; attempt < 25; attempt += 1) {
+      const response = await listApplicants(
+        jsonRequest(`/api/jobs/${job._id}/applications`, { cookie: hr.cookie }),
+        routeContext({ id: String(job._id) }),
+      );
+      expect(response.status).toBe(200);
+    }
+  });
+});

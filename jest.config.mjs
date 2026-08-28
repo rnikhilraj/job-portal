@@ -30,25 +30,30 @@ const config = {
   ],
   /*
    * Ratchets, set just under the current numbers so they catch a regression
-   * without tripping on noise. They are deliberately per-layer: the server side
-   * is where a slip is dangerous and is held near 90, while the component floor
-   * is honestly low and is meant to be raised as suites are added rather than
-   * to pretend the UI is well covered today.
+   * without tripping on noise. They are deliberately per-layer, because the
+   * layers carry different risk and a single global figure hides both.
+   *
+   * `src/components/` now has its own key. It used to sit in the global pool at
+   * around 50%, which was honest but thin; the suites behind these numbers were
+   * what turned up the profile form dropping a cleared experience level and the
+   * logout button swallowing a failed request, so the floor is worth holding.
+   *
+   * Directory keys group the files beneath them; a glob key would instead apply
+   * the numbers to every file individually and pull those files out of the
+   * global pool, which is not what is wanted here. What global covers, after the
+   * three keyed groups are removed, is `src/app/api/` plus the non-api files in
+   * `src/lib/` — so it is not the number the summary row prints.
    *
    * `src/lib/seed.ts` sits at 0% here on purpose — it runs only at boot, and
    * the docker job in CI asserts "[seed] complete" instead, which is the
-   * meaningful check for it.
+   * meaningful check for it. It is the single reason the global branch floor
+   * is far below the others.
    */
   coverageThreshold: {
-    // Directory keys group the files beneath them; a glob key would instead
-    // apply the numbers to every file individually and pull those files out of
-    // the global pool, which is not what is wanted here.
-    './src/modules/': { statements: 90, branches: 76, functions: 88, lines: 90 },
-    './src/lib/api/': { statements: 94, branches: 84, functions: 100, lines: 94 },
-    // Note this pool excludes the directory-keyed groups above, so it is not
-    // the same number the summary row prints — it covers components plus the
-    // non-api lib files.
-    global: { statements: 62, branches: 50, functions: 62, lines: 61 },
+    './src/modules/': { statements: 93, branches: 87, functions: 96, lines: 95 },
+    './src/lib/api/': { statements: 96, branches: 86, functions: 100, lines: 96 },
+    './src/components/': { statements: 97, branches: 92, functions: 96, lines: 98 },
+    global: { statements: 86, branches: 63, functions: 86, lines: 86 },
   },
   projects: [
     {

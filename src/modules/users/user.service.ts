@@ -67,11 +67,12 @@ export async function updateProfile(
   if (input.skills !== undefined) user.skills = input.skills;
   if (input.isSearchable !== undefined) user.isSearchable = input.isSearchable;
 
-  // Presence of the key, not its value, decides here: the schema maps the form's
-  // empty option to undefined, which must clear a previously set level rather
-  // than leave it stale.
-  if ('experienceLevel' in input) {
-    user.set('experienceLevel', input.experienceLevel);
+  // null means "the user chose Not specified" and clears the field; undefined
+  // means the request did not mention it at all and it is left alone. Testing
+  // the value rather than key presence matters, because a key whose value is
+  // undefined does not survive JSON.stringify on the way here.
+  if (input.experienceLevel !== undefined) {
+    user.set('experienceLevel', input.experienceLevel ?? undefined);
   }
 
   await user.save();

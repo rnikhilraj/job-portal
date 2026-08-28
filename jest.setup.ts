@@ -7,6 +7,7 @@ import mongoose from 'mongoose';
 
 import { connectToDatabase, disconnectFromDatabase } from '@/lib/db';
 import { resetEnvCache } from '@/lib/env';
+import { resetRateLimits } from '@/lib/rate-limit';
 
 /**
  * Each test file gets its own ephemeral MongoDB and its own uploads directory,
@@ -35,6 +36,11 @@ beforeAll(async () => {
 });
 
 afterEach(async () => {
+  // Rate-limit counters live in module state, so they outlive the database
+  // reset below. Clearing them here stops one suite's requests from consuming
+  // another's allowance.
+  resetRateLimits();
+
   const { collections } = mongoose.connection;
   await Promise.all(Object.values(collections).map((collection) => collection.deleteMany({})));
 
