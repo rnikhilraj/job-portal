@@ -9,26 +9,40 @@ function summarise(description: string, maxLength = 180): string {
 
 export function JobCard({ job }: { job: PublicJob }) {
   return (
-    <li className="card">
-      <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <h2 className="text-lg font-semibold">
-          <Link href={`/jobs/${job.id}`} className="hover:text-brand-600">
+    <li className="card-interactive">
+      <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-1">
+        <h2 className="font-display text-display-sm font-semibold">
+          {/* Stretched link: the whole card is the target, but only one link in the a11y tree. */}
+          <Link href={`/jobs/${job.id}`} className="hover:text-petrol-700">
             {job.title}
           </Link>
         </h2>
-        <p className="text-xs text-slate-500">
-          Posted {new Date(job.createdAt).toLocaleDateString()}
+        <p className="shrink-0 text-xs text-ink-faint">
+          {new Date(job.createdAt).toLocaleDateString(undefined, {
+            day: 'numeric',
+            month: 'short',
+            year: 'numeric',
+          })}
         </p>
       </div>
 
-      <p className="mt-1 text-sm text-slate-600">
-        {job.location} · {JOB_TYPE_LABELS[job.jobType]}
+      <p className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-ink-muted">
+        <span className="inline-flex items-center gap-1.5">
+          <span aria-hidden="true">◎</span>
+          {job.location}
+        </span>
+        <span aria-hidden="true" className="text-mist-400">
+          ·
+        </span>
+        <span>{JOB_TYPE_LABELS[job.jobType]}</span>
       </p>
 
-      <p className="mt-3 text-sm text-slate-700">{summarise(job.description)}</p>
+      <p className="mt-3 max-w-prose text-sm leading-relaxed text-ink-soft">
+        {summarise(job.description)}
+      </p>
 
-      <Link href={`/jobs/${job.id}`} className="mt-4 inline-block text-sm font-medium text-brand-600 hover:underline">
-        View details →
+      <Link href={`/jobs/${job.id}`} className="link mt-4 inline-block text-sm">
+        View details <span aria-hidden="true">→</span>
       </Link>
     </li>
   );

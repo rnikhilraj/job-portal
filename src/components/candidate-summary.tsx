@@ -31,9 +31,9 @@ export function CandidateSummary({
     <>
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <Heading className="text-lg font-semibold">
+          <Heading className="font-display text-display-sm font-semibold">
             {linkToDetail ? (
-              <Link href={`/hr/candidates/${candidate.id}`} className="hover:text-brand-600">
+              <Link href={`/hr/candidates/${candidate.id}`} className="hover:text-petrol-700">
                 {candidate.name}
               </Link>
             ) : (
@@ -41,11 +41,11 @@ export function CandidateSummary({
             )}
           </Heading>
           {candidate.headline ? (
-            <p className="mt-1 text-sm text-slate-700">{candidate.headline}</p>
+            <p className="mt-1.5 text-sm text-ink-soft">{candidate.headline}</p>
           ) : null}
 
-          <p className="mt-2 text-sm text-slate-600">
-            <a href={`mailto:${candidate.email}`} className="text-brand-600 hover:underline">
+          <p className="mt-2 break-words text-sm text-ink-muted">
+            <a href={`mailto:${candidate.email}`} className="link">
               {candidate.email}
             </a>
             {candidate.phone ? <span className="ml-2">· {candidate.phone}</span> : null}
@@ -53,7 +53,13 @@ export function CandidateSummary({
         </div>
 
         {candidate.experienceLevel ? (
-          <span className="inline-flex rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-700">
+          <span
+            className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-petrol-50
+              px-2.5 py-1 text-[0.8125rem] font-medium text-petrol-700"
+          >
+            <span aria-hidden="true" className="text-[0.625rem]">
+              ◆
+            </span>
             {EXPERIENCE_LEVEL_LABELS[candidate.experienceLevel]}
           </span>
         ) : null}
@@ -62,31 +68,28 @@ export function CandidateSummary({
       {candidate.skills.length > 0 ? (
         <ul className="mt-3 flex flex-wrap gap-1.5">
           {candidate.skills.map((skill) => (
-            <li key={skill} className="rounded bg-slate-100 px-2 py-0.5 text-xs text-slate-700">
+            <li key={skill} className="rounded-md bg-mist-200 px-2 py-0.5 text-xs text-ink-soft">
               {skill}
             </li>
           ))}
         </ul>
       ) : null}
 
-      <p className="mt-4 text-sm">
+      <p className="mt-4 border-t border-mist-200 pt-4 text-sm">
         {candidate.resume ? (
           // Authorized handler, not a public file path: the link stops working
           // the moment this candidate opts out.
-          <a
-            href={`/api/candidates/${candidate.id}/resume`}
-            className="font-medium text-brand-600 hover:underline"
-          >
-            Download resume ({candidate.resume.originalName})
-          </a>
+          <>
+            <a href={`/api/candidates/${candidate.id}/resume`} className="link">
+              <span aria-hidden="true">↓</span> {candidate.resume.originalName}
+            </a>
+            <span className="ml-2 text-xs text-ink-faint">
+              {formatSize(candidate.resume.sizeBytes)}
+            </span>
+          </>
         ) : (
-          <span className="text-slate-500">No resume uploaded.</span>
+          <span className="text-ink-faint">No resume uploaded.</span>
         )}
-        {candidate.resume ? (
-          <span className="ml-2 text-xs text-slate-500">
-            {formatSize(candidate.resume.sizeBytes)}
-          </span>
-        ) : null}
       </p>
     </>
   );

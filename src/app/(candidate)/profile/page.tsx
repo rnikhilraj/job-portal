@@ -12,8 +12,8 @@ export default async function ProfilePage() {
 
   return (
     <>
-      <h1 className="mb-1 text-2xl font-semibold">Your profile</h1>
-      <p className="mb-6 text-sm text-slate-600">
+      <h1 className="page-title">Your profile</h1>
+      <p className="page-lede mb-6">
         HR sees these details next to your applications.
       </p>
 

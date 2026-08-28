@@ -61,7 +61,7 @@ export function JobForm({ job }: { job?: PublicJob }) {
         setFieldErrors(error.fieldErrors);
         setFormError(error.message);
       } else {
-        setFormError('Could not reach the server. Please try again.');
+        setFormError('Could not reach the server — nothing was saved. Check your connection and try again.');
       }
       setIsSubmitting(false);
     }
@@ -82,7 +82,10 @@ export function JobForm({ job }: { job?: PublicJob }) {
 
       <div>
         <label htmlFor="description" className="field-label">
-          Description<span className="ml-0.5 text-red-600">*</span>
+          Description
+          <span className="ml-0.5 text-status-rejected" aria-hidden="true">
+            *
+          </span>
         </label>
         <textarea
           id="description"
@@ -91,16 +94,21 @@ export function JobForm({ job }: { job?: PublicJob }) {
           value={description}
           onChange={(event) => setDescription(event.target.value)}
           aria-invalid={Boolean(fieldErrors.description?.length)}
-          className="field-input"
+          className={`field-input ${fieldErrors.description?.length ? 'border-status-rejected' : ''}`}
         />
         {fieldErrors.description?.length ? (
-          <p className="field-error">{fieldErrors.description.join(' ')}</p>
+          <p className="field-error">
+            <span aria-hidden="true">✕</span>
+            <span>{fieldErrors.description.join(' ')}</span>
+          </p>
         ) : (
-          <p className="mt-1 text-xs text-slate-500">At least 20 characters.</p>
+          <p className="field-hint">
+            At least 20 characters. Candidates see this in full on the job page.
+          </p>
         )}
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <TextField
           label="Location"
           name="location"
@@ -149,7 +157,7 @@ export function JobForm({ job }: { job?: PublicJob }) {
         </div>
       </div>
 
-      <div className="flex gap-2">
+      <div className="flex flex-wrap gap-2 border-t border-mist-200 pt-5">
         <button type="submit" className="btn-primary" disabled={isSubmitting}>
           {isSubmitting ? 'Saving…' : isEditing ? 'Save changes' : 'Post job'}
         </button>

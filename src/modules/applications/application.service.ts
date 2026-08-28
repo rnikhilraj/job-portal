@@ -3,6 +3,7 @@ import type { FilterQuery, Types } from 'mongoose';
 import { ConflictError, ForbiddenError, NotFoundError } from '@/lib/api/errors';
 import { containsMatcher } from '@/lib/validation';
 import {
+  APPLICATION_STATUSES,
   Application,
   type ApplicationAttributes,
   type ApplicationDocument,
@@ -257,6 +258,38 @@ export async function listApplicantsForJob(
       };
     }),
   };
+}
+
+/**
+ * Applicant counts per stage for one listing, for the pipeline funnel on the
+ * applicants page.
+ *
+ * Read-only and ownership-checked like every other view of this data. It is
+ * separate from listApplicantsForJob because the funnel summarises the whole
+ * pipeline while the list below it is paginated.
+ */
+export async function countApplicantsByStatus(
+  jobId: string,
+  ownerId: Types.ObjectId,
+): Promise<{ counts: Record<ApplicationStatus, number>; total: number }> {
+  const job = await findOwnedJobOrFail(jobId, ownerId);
+
+  const grouped = await Application.aggregate<{ _id: ApplicationStatus; count: number }>([
+    { $match: { job: job._id } },
+    { $group: { _id: '$status', count: { $sum: 1 } } },
+  ]);
+
+  const counts = Object.fromEntries(
+    APPLICATION_STATUSES.map((status) => [status, 0]),
+  ) as Record<ApplicationStatus, number>;
+
+  let total = 0;
+  for (const row of grouped) {
+    counts[row._id] = row.count;
+    total += row.count;
+  }
+
+  return { counts, total };
 }
 
 /** Loads an application and asserts the caller is the HR user who owns its job. */

@@ -1,6 +1,7 @@
 import Link from 'next/link';
 
 import { CandidateSummary } from '@/components/candidate-summary';
+import { EmptyState } from '@/components/empty-state';
 
 import { Pagination } from '@/components/pagination';
 import { buildPageHref, toQueryRecord, type RawSearchParams } from '@/lib/query';
@@ -12,7 +13,7 @@ import {
 import { candidateSearchQuerySchema } from '@/modules/users/user.schema';
 import { searchCandidates } from '@/modules/users/user.service';
 
-export const metadata = { title: 'Candidate search · Job Application Tracker' };
+export const metadata = { title: 'Candidate search' };
 
 /**
  * HR-only directory of candidates who have opted in.
@@ -36,14 +37,15 @@ export default async function CandidateSearchPage({
 
   return (
     <>
-      <h1 className="mb-1 text-2xl font-semibold">Candidate search</h1>
-      <p className="mb-6 text-sm text-slate-600">
+      <h1 className="page-title">Candidate search</h1>
+      <p className="page-lede mb-6">
         Candidates who have chosen to be found by recruiters. Each of them has explicitly agreed
         to share their contact details and resume here. Anyone who has not opted in does not
         appear, and their details are never shown.
       </p>
 
-      <form method="get" action="/hr/candidates" className="card mb-6 grid gap-4 sm:grid-cols-4">
+      <form method="get" action="/hr/candidates" className="card mb-6">
+        <div className="grid gap-4 sm:grid-cols-3">
         <div className="sm:col-span-2">
           <label htmlFor="q" className="field-label">
             Keyword
@@ -77,27 +79,39 @@ export default async function CandidateSearchPage({
           </select>
         </div>
 
-        <div className="flex items-end gap-2">
-          <button type="submit" className="btn-primary">
+        </div>
+
+        <div className="mt-4 flex flex-wrap gap-2 border-t border-mist-200 pt-4">
+          <button type="submit" className="btn-primary btn-sm">
             Search
           </button>
           {query.q || query.experienceLevel ? (
-            <Link href="/hr/candidates" className="btn-secondary">
-              Clear
+            <Link href="/hr/candidates" className="btn-ghost btn-sm">
+              Clear filters
             </Link>
           ) : null}
         </div>
       </form>
 
       {candidates.length === 0 ? (
-        <p className="card text-sm text-slate-600">
-          No opted-in candidates match these filters. Only candidates who have enabled recruiter
-          visibility on their profile appear here.
-        </p>
+        query.q || query.experienceLevel ? (
+          <EmptyState
+            icon="⌕"
+            title="No opted-in candidates match those filters"
+            description="Nobody who has enabled recruiter visibility matches that keyword or experience level. Candidates who have not opted in never appear here, however well they match."
+            action={{ href: '/hr/candidates', label: 'Clear filters' }}
+          />
+        ) : (
+          <EmptyState
+            icon="◇"
+            title="No candidates are discoverable yet"
+            description="This directory only lists candidates who have turned on recruiter visibility on their own profile. Nobody has opted in so far."
+          />
+        )
       ) : (
         <ul className="space-y-4">
           {candidates.map((candidate) => (
-            <li key={candidate.id} className="card">
+            <li key={candidate.id} className="card-interactive">
               <CandidateSummary candidate={candidate} headingLevel="h2" />
             </li>
           ))}

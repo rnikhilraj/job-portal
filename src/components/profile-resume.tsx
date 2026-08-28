@@ -72,7 +72,9 @@ export function ProfileResume({
       if (fileInputRef.current) fileInputRef.current.value = '';
     } catch (caught) {
       setError(
-        caught instanceof ApiRequestError ? caught.message : 'Could not upload the resume.',
+        caught instanceof ApiRequestError
+          ? caught.message
+          : 'Could not reach the server — your resume was not uploaded. Try again in a moment.',
       );
     } finally {
       setIsBusy(false);
@@ -93,7 +95,9 @@ export function ProfileResume({
       setNotice('Resume removed.');
     } catch (caught) {
       setError(
-        caught instanceof ApiRequestError ? caught.message : 'Could not remove the resume.',
+        caught instanceof ApiRequestError
+          ? caught.message
+          : 'Could not reach the server — your resume is still in place. Try again in a moment.',
       );
     } finally {
       setIsBusy(false);
@@ -102,8 +106,8 @@ export function ProfileResume({
 
   return (
     <section className="card">
-      <h2 className="text-lg font-semibold">Your resume</h2>
-      <p className="mt-1 text-sm text-slate-600">
+      <h2 className="section-title">Your resume</h2>
+      <p className="mt-1.5 max-w-prose text-sm leading-relaxed text-ink-muted">
         A general resume for your profile, separate from the one you attach when applying to a
         specific job.
       </p>
@@ -113,27 +117,27 @@ export function ProfileResume({
         {notice ? <Alert tone="success">{notice}</Alert> : null}
 
         {resume ? (
-          <div className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-slate-200 bg-slate-50 px-3 py-2">
-            <p className="text-sm text-slate-800">
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-mist-300 bg-mist-100 px-3.5 py-3">
+            <p className="min-w-0 break-words text-sm text-ink-soft">
               <a
                 href="/api/users/me/resume"
-                className="font-medium text-brand-600 hover:underline"
+                className="link"
               >
                 {resume.originalName}
               </a>
-              <span className="ml-2 text-xs text-slate-500">{formatSize(resume.sizeBytes)}</span>
+              <span className="ml-2 text-xs text-ink-faint">{formatSize(resume.sizeBytes)}</span>
             </p>
             <button
               type="button"
               onClick={handleRemove}
               disabled={isBusy}
-              className="btn-danger"
+              className="btn-danger btn-sm"
             >
               Remove
             </button>
           </div>
         ) : (
-          <p className="text-sm text-slate-600">You have not uploaded a resume yet.</p>
+          <p className="text-sm text-ink-muted">You have not uploaded a resume yet.</p>
         )}
 
         {/*
@@ -141,12 +145,16 @@ export function ProfileResume({
           upload alone changes nothing, and the opt-in alone shares nothing.
         */}
         <p
-          className={`rounded-md border px-3 py-2 text-sm ${
+          className={`flex items-start gap-2.5 rounded-md border px-3.5 py-2.5 text-sm leading-relaxed ${
             isSearchable
-              ? 'border-amber-200 bg-amber-50 text-amber-900'
-              : 'border-slate-200 bg-slate-50 text-slate-700'
+              ? 'border-status-reviewed/25 bg-status-reviewed-tint text-status-reviewed'
+              : 'border-mist-300 bg-mist-100 text-ink-soft'
           }`}
         >
+          <span aria-hidden="true" className="mt-px shrink-0 font-semibold">
+            {isSearchable ? '!' : '🔒'}
+          </span>
+          <span>
           {isSearchable ? (
             <>
               <strong className="font-medium">Recruiters can download this resume.</strong> Your
@@ -162,10 +170,11 @@ export function ProfileResume({
               <em>Make my profile visible to recruiters</em> below.
             </>
           )}
+          </span>
         </p>
 
-        <form onSubmit={handleUpload} className="flex flex-wrap items-end gap-3">
-          <div className="min-w-[16rem] flex-1">
+        <form onSubmit={handleUpload} className="flex flex-col gap-3 sm:flex-row sm:items-end">
+          <div className="min-w-0 flex-1">
             <label htmlFor="profileResume" className="field-label">
               {resume ? 'Replace resume' : 'Upload resume'}
             </label>
@@ -175,13 +184,11 @@ export function ProfileResume({
               type="file"
               accept="application/pdf,.pdf"
               ref={fileInputRef}
-              className="field-input file:mr-3 file:rounded file:border-0 file:bg-slate-100 file:px-3 file:py-1.5 file:text-sm"
+              className="field-input py-2.5 file:mr-3 file:rounded file:border-0 file:bg-mist-200 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-ink-soft"
             />
-            <p className="mt-1 text-xs text-slate-500">
-              PDF only, up to {formatMegabytes(maxResumeBytes)}.
-            </p>
+            <p className="field-hint">PDF only, up to {formatMegabytes(maxResumeBytes)}.</p>
           </div>
-          <button type="submit" className="btn-primary" disabled={isBusy}>
+          <button type="submit" className="btn-primary shrink-0" disabled={isBusy}>
             {isBusy ? 'Working…' : resume ? 'Replace' : 'Upload'}
           </button>
         </form>

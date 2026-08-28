@@ -26,17 +26,25 @@ export function DeleteJobButton({ jobId, jobTitle }: { jobId: string; jobTitle: 
       await apiFetch(`/api/jobs/${jobId}`, { method: 'DELETE' });
       router.refresh();
     } catch {
-      setError('Could not delete this listing.');
+      // Specific about what failed and what is still true, not a generic apology.
+      setError('Could not delete this listing — it is unchanged. Check your connection and try again.');
       setIsDeleting(false);
     }
   }
 
   return (
     <span className="inline-flex flex-col items-end">
-      <button type="button" onClick={handleDelete} disabled={isDeleting} className="btn-danger">
+      <button
+        type="button"
+        onClick={handleDelete}
+        disabled={isDeleting}
+        className="btn-danger btn-sm"
+      >
         {isDeleting ? 'Deleting…' : 'Delete'}
       </button>
-      {error ? <span className="mt-1 text-xs text-red-600">{error}</span> : null}
+      {error ? (
+        <span className="mt-1.5 text-xs font-medium text-status-rejected">{error}</span>
+      ) : null}
     </span>
   );
 }

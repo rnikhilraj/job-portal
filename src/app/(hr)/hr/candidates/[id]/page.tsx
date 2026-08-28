@@ -7,7 +7,7 @@ import { objectIdSchema } from '@/lib/validation';
 import { requirePageUser } from '@/modules/auth/session';
 import { findDiscoverableCandidate } from '@/modules/users/user.service';
 
-export const metadata = { title: 'Candidate · Job Application Tracker' };
+export const metadata = { title: 'Candidate' };
 
 /**
  * One opted-in candidate's profile.
@@ -35,17 +35,20 @@ export default async function CandidateDetailPage({
 
   return (
     <article>
-      <Link href="/hr/candidates" className="text-sm text-brand-600 hover:underline">
-        ← Back to candidate search
+      <Link href="/hr/candidates" className="link text-sm">
+        <span aria-hidden="true">←</span> Back to candidate search
       </Link>
 
       <div className="card mt-4">
         <CandidateSummary candidate={candidate} linkToDetail={false} />
       </div>
 
-      <p className="mt-4 text-xs text-slate-500">
-        This candidate has opted in to recruiter visibility. If they turn it off, this page and
-        their resume link stop working immediately.
+      <p className="mt-4 flex items-start gap-2 rounded-md bg-mist-200 px-3.5 py-2.5 text-xs leading-relaxed text-ink-muted">
+        <span aria-hidden="true" className="mt-px">ℹ</span>
+        <span>
+          This candidate has opted in to recruiter visibility. If they turn it off, this page and
+          their resume link stop working immediately.
+        </span>
       </p>
     </article>
   );

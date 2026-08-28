@@ -73,7 +73,7 @@ export function ApplyForm({ jobId, maxResumeBytes }: ApplyFormProps) {
         setFieldErrors(error.fieldErrors);
         setFormError(error.message);
       } else {
-        setFormError('Could not reach the server. Please try again.');
+        setFormError('Could not reach the server — your application was not submitted. Check your connection and try again.');
       }
       setIsSubmitting(false);
     }
@@ -85,7 +85,10 @@ export function ApplyForm({ jobId, maxResumeBytes }: ApplyFormProps) {
 
       <div>
         <label htmlFor="resume" className="field-label">
-          Resume (PDF)<span className="ml-0.5 text-red-600">*</span>
+          Resume (PDF)
+          <span className="ml-0.5 text-status-rejected" aria-hidden="true">
+            *
+          </span>
         </label>
         <input
           id="resume"
@@ -95,12 +98,17 @@ export function ApplyForm({ jobId, maxResumeBytes }: ApplyFormProps) {
           ref={fileInputRef}
           onChange={(event) => setFileName(event.target.files?.[0]?.name ?? null)}
           aria-invalid={Boolean(fieldErrors.resume?.length)}
-          className="field-input file:mr-3 file:rounded file:border-0 file:bg-slate-100 file:px-3 file:py-1.5 file:text-sm"
+          className={`field-input py-2.5 file:mr-3 file:rounded file:border-0 file:bg-mist-200
+            file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-ink-soft
+            ${fieldErrors.resume?.length ? 'border-status-rejected' : ''}`}
         />
         {fieldErrors.resume?.length ? (
-          <p className="field-error">{fieldErrors.resume.join(' ')}</p>
+          <p className="field-error">
+            <span aria-hidden="true">✕</span>
+            <span>{fieldErrors.resume.join(' ')}</span>
+          </p>
         ) : (
-          <p className="mt-1 text-xs text-slate-500">
+          <p className="field-hint">
             PDF only, up to {formatMegabytes(maxResumeBytes)}.
             {fileName ? ` Selected: ${fileName}` : ''}
           </p>
@@ -119,12 +127,15 @@ export function ApplyForm({ jobId, maxResumeBytes }: ApplyFormProps) {
           value={coverNote}
           onChange={(event) => setCoverNote(event.target.value)}
           placeholder="Why you are a good fit for this role."
-          className="field-input"
+          className={`field-input ${fieldErrors.coverNote?.length ? 'border-status-rejected' : ''}`}
         />
         {fieldErrors.coverNote?.length ? (
-          <p className="field-error">{fieldErrors.coverNote.join(' ')}</p>
+          <p className="field-error">
+            <span aria-hidden="true">✕</span>
+            <span>{fieldErrors.coverNote.join(' ')}</span>
+          </p>
         ) : (
-          <p className="mt-1 text-xs text-slate-500">{coverNote.length}/2000 characters.</p>
+          <p className="field-hint">{coverNote.length} of 2000 characters.</p>
         )}
       </div>
 

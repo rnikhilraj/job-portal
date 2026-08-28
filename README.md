@@ -21,6 +21,7 @@ and never in a publicly served directory.
 - [Testing](#testing)
 - [Local development without Docker](#local-development-without-docker)
 - [Configuration](#configuration)
+- [Design](#design)
 - [Tech stack](#tech-stack)
 - [Known limitations](#known-limitations)
 
@@ -573,6 +574,76 @@ Both volumes survive `docker compose down` and are removed by `docker compose do
 
 ---
 
+## Design
+
+### Palette
+
+Six defined colours. Every foreground pairing below clears WCAG AA; the lowest measured ratio
+anywhere in the interface is 4.5:1.
+
+| Role | Hex | Contrast |
+| --- | --- | --- |
+| Petrol (primary) | `#0F6675` / `#0B4E5A` | 6.61:1 / 9.33:1 on white |
+| Ink (text) | `#16262B` → `#5F7176` | 15.6:1 → 4.79:1 |
+| Mist (canvas, hairlines) | `#F5F8F9` / `#DDE4E7` | — |
+| Amber (Reviewed) | `#96520A` | 5.31:1 on tint |
+| Green (Shortlisted, Open) | `#116B45` | 5.60:1 on tint |
+| Rose (Rejected) | `#B02A45` | 5.43:1 on tint |
+
+Two rules hold it together, both enforced by convention in `tailwind.config.ts`:
+
+1. **Petrol is the only interactive colour** — buttons, links, focus rings — and is never used
+   for a status. The semantic ramp is never used for interactive chrome. A coloured element is
+   therefore never ambiguous about what it is telling you.
+2. **Colour never carries meaning alone.** A CVD simulation of the four application statuses
+   showed Shortlisted green and Rejected rose collapsing to a colour distance of 32 under
+   deuteranopia, with near-identical luminance (0.111 vs 0.113) — the classic red/green failure.
+   Conventional hues were kept, and the load was moved off colour entirely (see below).
+
+### Typefaces
+
+**Archivo** for display and **IBM Plex Sans** for body, both self-hosted at build time by
+`next/font` — no request to a font CDN at runtime and no flash of unstyled text. Archivo is a
+sturdy grotesque with presence at large sizes, used with restraint for headings and figures.
+Plex was drawn for dense business and technical content, which is what most of this app is:
+job descriptions, applicant lists, forms.
+
+### Signature element — the pipeline rail
+
+Recruiting's native mental model is a funnel, so status is drawn as a position on a track rather
+than as a coloured chip alone.
+
+```
+Applied          ●━━━━━━━○───────○
+Reviewed         ●━━━━━━━●───────○
+Shortlisted      ●━━━━━━━●━━━━━━━●
+Rejected         ✕╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌    (off-path, not a fourth stage)
+```
+
+It appears in exactly two places: per application on the candidate's tracker and each HR
+applicant row, and aggregated as a funnel bar at the top of a listing's applicants page.
+
+This is the accessibility mechanism as much as the visual one. State is encoded in four
+independent channels — fill position, glyph, text label, and colour — and the first three all
+survive in greyscale. `PipelineRail` also renders an `sr-only` sentence ("Reviewed — stage 2 of
+3") so the whole thing has a text equivalent. Rejected terminates the rail rather than occupying
+a fourth position, because that is what actually happened.
+
+### Quality floor
+
+- **Focus** — one `:focus-visible` rule at the base layer, so no interactive element can ship
+  without a visible petrol ring.
+- **Responsive** — usable from 320px up. Navigation collapses to a disclosure panel below `md`;
+  there is not a single `<table>` or `overflow-x` in the app, so dense lists reflow into cards
+  rather than scrolling sideways; touch targets are ≥44px via `min-h-11` on buttons and inputs.
+- **Empty states** — designed, and distinct for "nothing here yet" versus "your filter matched
+  nothing", which are different problems with different fixes.
+- **Loading** — route-level skeletons that mirror the shape of the content, marked `aria-hidden`
+  with a single polite status message alongside.
+- **Errors** — specific about what happened and what is still true ("Status not saved — still
+  showing as before"), never a generic apology.
+- **Reduced motion** — honoured via `prefers-reduced-motion`.
+
 ## Tech stack
 
 | Layer | Choice |
@@ -582,7 +653,7 @@ Both volumes survive `docker compose down` and are removed by `docker compose do
 | Database | MongoDB 7 via Mongoose 8 |
 | Validation | zod 3 — the same schemas run on the client and the server |
 | Auth | jose 5 (HS256 JWT) in httpOnly cookies, bcryptjs 2 for password hashing |
-| Styling | Tailwind CSS 3 |
+| Styling | Tailwind CSS 3, Archivo + IBM Plex Sans via next/font (self-hosted) |
 | Testing | Jest 29 with in-process route handlers and mongodb-memory-server 10 |
 | Tooling | ESLint, Docker Compose v2 |
 

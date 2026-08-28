@@ -1,40 +1,29 @@
+import { JOB_STATUS_LABELS, type JobStatus } from '@/modules/jobs/job.constants';
+
+const JOB_STATUS_STYLES: Record<JobStatus, string> = {
+  OPEN: 'bg-status-shortlisted-tint text-status-shortlisted',
+  CLOSED: 'bg-status-applied-tint text-status-applied',
+};
+
+const JOB_STATUS_ICON: Record<JobStatus, string> = {
+  OPEN: '●',
+  CLOSED: '⊘',
+};
+
 /**
- * Covers both job statuses and application statuses. Declared locally rather
- * than imported so a shared presentational component does not couple the two
- * domain modules together.
+ * Job status. Glyph plus label plus colour, so it survives greyscale and
+ * colour vision deficiency — see components/pipeline.tsx for the reasoning.
  */
-export type BadgeStatus =
-  | 'OPEN'
-  | 'CLOSED'
-  | 'APPLIED'
-  | 'REVIEWED'
-  | 'SHORTLISTED'
-  | 'REJECTED';
-
-const STATUS_CLASSES: Record<BadgeStatus, string> = {
-  OPEN: 'bg-emerald-100 text-emerald-800',
-  CLOSED: 'bg-slate-200 text-slate-700',
-  APPLIED: 'bg-blue-100 text-blue-800',
-  REVIEWED: 'bg-amber-100 text-amber-800',
-  SHORTLISTED: 'bg-emerald-100 text-emerald-800',
-  REJECTED: 'bg-red-100 text-red-800',
-};
-
-const STATUS_LABELS: Record<BadgeStatus, string> = {
-  OPEN: 'Open',
-  CLOSED: 'Closed',
-  APPLIED: 'Applied',
-  REVIEWED: 'Reviewed',
-  SHORTLISTED: 'Shortlisted',
-  REJECTED: 'Rejected',
-};
-
-export function StatusBadge({ status }: { status: BadgeStatus }) {
+export function StatusBadge({ status }: { status: JobStatus }) {
   return (
     <span
-      className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${STATUS_CLASSES[status]}`}
+      className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[0.8125rem]
+        font-medium ${JOB_STATUS_STYLES[status]}`}
     >
-      {STATUS_LABELS[status]}
+      <span aria-hidden="true" className="text-[0.625rem] leading-none">
+        {JOB_STATUS_ICON[status]}
+      </span>
+      {JOB_STATUS_LABELS[status]}
     </span>
   );
 }

@@ -1,7 +1,8 @@
 import Link from 'next/link';
 
+import { EmptyState } from '@/components/empty-state';
 import { Pagination } from '@/components/pagination';
-import { StatusBadge } from '@/components/status-badge';
+import { PipelineRail, StatusChip } from '@/components/pipeline';
 import { buildPageHref, toQueryRecord, type RawSearchParams } from '@/lib/query';
 import {
   APPLICATION_STATUSES,
@@ -10,9 +11,9 @@ import {
 import { myApplicationsQuerySchema } from '@/modules/applications/application.schema';
 import { listApplicationsForCandidate } from '@/modules/applications/application.service';
 import { requirePageUser } from '@/modules/auth/session';
-import { JOB_TYPE_LABELS } from '@/modules/jobs/job.model';
+import { JOB_TYPE_LABELS } from '@/modules/jobs/job.constants';
 
-export const metadata = { title: 'My applications · Job Application Tracker' };
+export const metadata = { title: 'My applications' };
 
 export default async function MyApplicationsPage({
   searchParams,
@@ -30,15 +31,25 @@ export default async function MyApplicationsPage({
 
   return (
     <>
-      <h1 className="mb-6 text-2xl font-semibold">My applications</h1>
+      <header className="mb-6">
+        <h1 className="page-title">My applications</h1>
+        <p className="page-lede">
+          Where each of your applications currently stands. Recruiters move you along the
+          pipeline; this updates as they do.
+        </p>
+      </header>
 
-      <form method="get" action="/applications" className="card mb-6 flex flex-wrap items-end gap-4">
-        <div>
+      <form
+        method="get"
+        action="/applications"
+        className="card mb-6 flex flex-col gap-4 sm:flex-row sm:items-end"
+      >
+        <div className="sm:max-w-xs sm:flex-1">
           <label htmlFor="status" className="field-label">
-            Status
+            Filter by stage
           </label>
           <select id="status" name="status" defaultValue={query.status ?? ''} className="field-input">
-            <option value="">Any</option>
+            <option value="">All stages</option>
             {APPLICATION_STATUSES.map((status) => (
               <option key={status} value={status}>
                 {APPLICATION_STATUS_LABELS[status]}
@@ -46,65 +57,89 @@ export default async function MyApplicationsPage({
             ))}
           </select>
         </div>
-        <button type="submit" className="btn-primary">
-          Filter
-        </button>
-        {query.status ? (
-          <Link href="/applications" className="btn-secondary">
-            Clear
-          </Link>
-        ) : null}
+        <div className="flex gap-2">
+          <button type="submit" className="btn-primary btn-sm">
+            Apply filter
+          </button>
+          {query.status ? (
+            <Link href="/applications" className="btn-ghost btn-sm">
+              Clear
+            </Link>
+          ) : null}
+        </div>
       </form>
 
       {applications.length === 0 ? (
-        <p className="card text-sm text-slate-600">
-          You have not applied to anything yet.{' '}
-          <Link href="/jobs" className="font-medium text-brand-600 hover:underline">
-            Browse open positions
-          </Link>
-          .
-        </p>
+        query.status ? (
+          <EmptyState
+            icon="⌕"
+            title={`Nothing at the ${APPLICATION_STATUS_LABELS[query.status].toLowerCase()} stage`}
+            description="You have no applications at this stage right now. Clear the filter to see all of them."
+            action={{ href: '/applications', label: 'Show all applications' }}
+          />
+        ) : (
+          <EmptyState
+            icon="◇"
+            title="No applications yet"
+            description="Once you apply to a role it will appear here, and you can follow it from applied through to shortlisted."
+            action={{ href: '/jobs', label: 'Browse open positions' }}
+          />
+        )
       ) : (
         <ul className="space-y-4">
           {applications.map((application) => (
             <li key={application.id} className="card">
-              <div className="flex flex-wrap items-start justify-between gap-3">
-                <div>
-                  <h2 className="text-lg font-semibold">
-                    {application.job ? (
-                      <Link href={`/jobs/${application.job.id}`} className="hover:text-brand-600">
-                        {application.job.title}
-                      </Link>
-                    ) : (
-                      // The listing was deleted; the application row is kept
-                      // so the candidate still sees their own history.
-                      <span className="text-slate-500">Listing removed</span>
-                    )}
-                  </h2>
+              <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+                    <h2 className="font-display text-display-sm font-semibold">
+                      {application.job ? (
+                        <Link href={`/jobs/${application.job.id}`} className="hover:text-petrol-700">
+                          {application.job.title}
+                        </Link>
+                      ) : (
+                        // The listing was deleted; the application row is kept
+                        // so the candidate still sees their own history.
+                        <span className="text-ink-muted">Listing removed</span>
+                      )}
+                    </h2>
+                    <StatusChip status={application.status} size="sm" />
+                  </div>
+
                   {application.job ? (
-                    <p className="mt-1 text-sm text-slate-600">
+                    <p className="mt-1.5 text-sm text-ink-muted">
                       {application.job.location} · {JOB_TYPE_LABELS[application.job.jobType]}
                     </p>
-                  ) : null}
-                  <p className="mt-1 text-xs text-slate-500">
+                  ) : (
+                    <p className="mt-1.5 text-sm text-ink-muted">
+                      This role was taken down, but your application is kept here for reference.
+                    </p>
+                  )}
+
+                  <p className="mt-1 text-xs text-ink-faint">
                     Applied {new Date(application.appliedAt).toLocaleDateString()}
                   </p>
                 </div>
-                <StatusBadge status={application.status} />
+
+                {/* The signature rail: stage by position, readable without colour. */}
+                <PipelineRail
+                  status={application.status}
+                  className="w-full shrink-0 sm:w-56 lg:w-64"
+                />
               </div>
 
               {application.coverNote ? (
-                <p className="mt-3 whitespace-pre-line border-l-2 border-slate-200 pl-3 text-sm text-slate-700">
+                <p
+                  className="mt-4 max-w-prose whitespace-pre-line border-l-2 border-mist-300 pl-3.5
+                    text-sm leading-relaxed text-ink-soft"
+                >
                   {application.coverNote}
                 </p>
               ) : null}
 
-              <p className="mt-4 text-sm">
-                <a
-                  href={`/api/applications/${application.id}/resume`}
-                  className="font-medium text-brand-600 hover:underline"
-                >
-                  Download my resume ({application.resume.originalName})
+              <p className="mt-4 border-t border-mist-200 pt-4 text-sm">
+                <a href={`/api/applications/${application.id}/resume`} className="link">
+                  <span aria-hidden="true">↓</span> {application.resume.originalName}
                 </a>
               </p>
             </li>

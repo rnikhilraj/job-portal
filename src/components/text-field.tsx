@@ -31,7 +31,11 @@ export function TextField({
     <div>
       <label htmlFor={name} className="field-label">
         {label}
-        {required ? <span className="ml-0.5 text-red-600">*</span> : null}
+        {required ? (
+          <span className="ml-0.5 text-status-rejected" aria-hidden="true">
+            *
+          </span>
+        ) : null}
       </label>
       <input
         id={name}
@@ -44,12 +48,13 @@ export function TextField({
         aria-invalid={hasError}
         aria-describedby={hasError ? errorId : undefined}
         onChange={(event) => onChange(event.target.value)}
-        className="field-input"
+        className={`field-input ${hasError ? 'border-status-rejected' : ''}`}
       />
-      {hint && !hasError ? <p className="mt-1 text-xs text-slate-500">{hint}</p> : null}
+      {hint && !hasError ? <p className="field-hint">{hint}</p> : null}
       {hasError ? (
         <p id={errorId} className="field-error">
-          {errors?.join(' ')}
+          <span aria-hidden="true">✕</span>
+          <span>{errors?.join(' ')}</span>
         </p>
       ) : null}
     </div>

@@ -10,6 +10,11 @@ export type JobType = (typeof JOB_TYPES)[number];
 export const JOB_STATUSES = ['OPEN', 'CLOSED'] as const;
 export type JobStatus = (typeof JOB_STATUSES)[number];
 
+export const JOB_STATUS_LABELS: Record<JobStatus, string> = {
+  OPEN: 'Open',
+  CLOSED: 'Closed',
+};
+
 export const JOB_TYPE_LABELS: Record<JobType, string> = {
   FULL_TIME: 'Full time',
   PART_TIME: 'Part time',

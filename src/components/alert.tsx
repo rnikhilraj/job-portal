@@ -3,16 +3,31 @@ type AlertProps = {
   children: React.ReactNode;
 };
 
-const TONE_CLASSES: Record<NonNullable<AlertProps['tone']>, string> = {
-  error: 'border-red-200 bg-red-50 text-red-800',
-  success: 'border-emerald-200 bg-emerald-50 text-emerald-800',
-  info: 'border-slate-200 bg-slate-50 text-slate-700',
+const TONE: Record<NonNullable<AlertProps['tone']>, { classes: string; icon: string }> = {
+  error: {
+    classes: 'border-status-rejected/25 bg-status-rejected-tint text-status-rejected',
+    icon: '✕',
+  },
+  success: {
+    classes: 'border-status-shortlisted/25 bg-status-shortlisted-tint text-status-shortlisted',
+    icon: '✓',
+  },
+  info: { classes: 'border-mist-300 bg-mist-100 text-ink-soft', icon: 'ℹ' },
 };
 
+/** Tone is carried by an icon as well as colour, so it reads without hue. */
 export function Alert({ tone = 'info', children }: AlertProps) {
+  const { classes, icon } = TONE[tone];
+
   return (
-    <div role="alert" className={`rounded-md border px-3 py-2 text-sm ${TONE_CLASSES[tone]}`}>
-      {children}
+    <div
+      role="alert"
+      className={`flex items-start gap-2.5 rounded-md border px-3.5 py-2.5 text-sm ${classes}`}
+    >
+      <span aria-hidden="true" className="mt-px shrink-0 font-semibold leading-5">
+        {icon}
+      </span>
+      <span className="leading-relaxed">{children}</span>
     </div>
   );
 }

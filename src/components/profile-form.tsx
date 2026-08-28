@@ -66,7 +66,7 @@ export function ProfileForm({ user }: { user: PublicUser }) {
         setFieldErrors(error.fieldErrors);
         setFormError(error.message);
       } else {
-        setFormError('Could not reach the server. Please try again.');
+        setFormError('Could not reach the server — your profile was not saved. Check your connection and try again.');
       }
     } finally {
       setIsSubmitting(false);
@@ -80,13 +80,16 @@ export function ProfileForm({ user }: { user: PublicUser }) {
 
       <div>
         <span className="field-label">Email</span>
-        <p className="text-sm text-slate-600">
-          {user.email}
-          <span className="ml-2 rounded bg-slate-100 px-2 py-0.5 text-xs">{user.role}</span>
+        <p className="flex flex-wrap items-center gap-2 text-sm text-ink-soft">
+          <span className="break-all">{user.email}</span>
+          <span
+            className="rounded-full bg-petrol-50 px-2 py-0.5 text-[0.6875rem] font-semibold
+              uppercase tracking-wide text-petrol-700"
+          >
+            {user.role}
+          </span>
         </p>
-        <p className="mt-1 text-xs text-slate-500">
-          Email and role cannot be changed from this page.
-        </p>
+        <p className="field-hint">Email and role cannot be changed from this page.</p>
       </div>
 
       <TextField
@@ -131,8 +134,8 @@ export function ProfileForm({ user }: { user: PublicUser }) {
       />
 
       {isCandidate ? (
-        <fieldset className="rounded-lg border border-slate-200 bg-slate-50 p-4">
-          <legend className="px-1 text-sm font-semibold text-slate-800">
+        <fieldset className="rounded-card border border-mist-300 bg-mist-100 p-4 sm:p-5">
+          <legend className="px-1.5 font-display text-sm font-semibold text-ink">
             Recruiter visibility
           </legend>
 
@@ -143,14 +146,14 @@ export function ProfileForm({ user }: { user: PublicUser }) {
               type="checkbox"
               checked={isSearchable}
               onChange={(event) => setIsSearchable(event.target.checked)}
-              className="mt-0.5 h-4 w-4 shrink-0 rounded border-slate-400 text-brand-600
-                focus:ring-2 focus:ring-brand-200"
+              className="mt-0.5 h-[18px] w-[18px] shrink-0 rounded border-mist-400
+                text-petrol-600 accent-petrol-600"
             />
             <span>
-              <span className="block text-sm font-medium text-slate-900">
+              <span className="block text-sm font-medium text-ink">
                 Make my profile visible to recruiters
               </span>
-              <span className="mt-1 block text-sm text-slate-600">
+              <span className="mt-1.5 block text-sm leading-relaxed text-ink-muted">
                 HR users will be able to find you by name, headline or skill, and will see your{' '}
                 <strong className="font-medium">
                   email address, phone number and uploaded resume
@@ -161,7 +164,7 @@ export function ProfileForm({ user }: { user: PublicUser }) {
             </span>
           </label>
 
-          <p className="mt-3 text-xs text-slate-500">
+          <p className="mt-3 text-xs leading-relaxed text-ink-muted">
             {isSearchable
               ? 'You are currently discoverable, and recruiters can see your contact details and download your resume. Untick this and save to revoke all of that immediately.'
               : 'You are not currently discoverable, and nobody can see your contact details or resume through search. This is off by default.'}
@@ -188,17 +191,17 @@ export function ProfileForm({ user }: { user: PublicUser }) {
             {fieldErrors.experienceLevel?.length ? (
               <p className="field-error">{fieldErrors.experienceLevel.join(' ')}</p>
             ) : (
-              <p className="mt-1 text-xs text-slate-500">
-                Lets recruiters filter by seniority. Optional.
-              </p>
+              <p className="field-hint">Lets recruiters filter by seniority. Optional.</p>
             )}
           </div>
         </fieldset>
       ) : null}
 
-      <button type="submit" className="btn-primary" disabled={isSubmitting}>
-        {isSubmitting ? 'Saving…' : 'Save profile'}
-      </button>
+      <div className="border-t border-mist-200 pt-5">
+        <button type="submit" className="btn-primary" disabled={isSubmitting}>
+          {isSubmitting ? 'Saving…' : 'Save profile'}
+        </button>
+      </div>
     </form>
   );
 }

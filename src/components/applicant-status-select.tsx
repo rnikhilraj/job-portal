@@ -35,23 +35,24 @@ export function ApplicantStatusSelect({
     } catch {
       // Roll back so the control never shows a status the server did not accept.
       setStatus(previous);
-      setError('Could not update status.');
+      // Says what was kept, since the control has just rolled back visually.
+      setError('Status not saved — still showing as before. Try again in a moment.');
     } finally {
       setIsSaving(false);
     }
   }
 
   return (
-    <div className="flex flex-col items-start gap-1">
-      <label htmlFor={`status-${applicationId}`} className="sr-only">
-        Application status
+    <div className="flex w-full flex-col items-start">
+      <label htmlFor={`status-${applicationId}`} className="field-label">
+        Move to stage
       </label>
       <select
         id={`status-${applicationId}`}
         value={status}
         disabled={isSaving}
         onChange={(event) => handleChange(event.target.value as ApplicationStatus)}
-        className="field-input w-44 py-1.5"
+        className="field-input w-full min-h-11 lg:w-52"
       >
         {APPLICATION_STATUSES.map((value) => (
           <option key={value} value={value}>
@@ -59,7 +60,9 @@ export function ApplicantStatusSelect({
           </option>
         ))}
       </select>
-      {error ? <span className="text-xs text-red-600">{error}</span> : null}
+      {error ? (
+        <span className="mt-1.5 text-xs font-medium text-status-rejected">{error}</span>
+      ) : null}
     </div>
   );
 }

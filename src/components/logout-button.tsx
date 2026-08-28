@@ -5,7 +5,7 @@ import { useState } from 'react';
 
 import { apiFetch } from '@/lib/http';
 
-export function LogoutButton() {
+export function LogoutButton({ className = '' }: { className?: string }) {
   const router = useRouter();
   const [isPending, setIsPending] = useState(false);
 
@@ -21,7 +21,12 @@ export function LogoutButton() {
   }
 
   return (
-    <button type="button" onClick={handleLogout} disabled={isPending} className="btn-secondary">
+    <button
+      type="button"
+      onClick={handleLogout}
+      disabled={isPending}
+      className={`btn-secondary btn-sm ${className}`}
+    >
       {isPending ? 'Signing out…' : 'Sign out'}
     </button>
   );
