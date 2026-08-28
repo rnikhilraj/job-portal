@@ -5,15 +5,26 @@ const isProduction = process.env.NODE_ENV === 'production';
 /**
  * Content Security Policy.
  *
- * `'unsafe-inline'` for styles is unavoidable here: Next injects inline
- * `<style>` for its CSS and next/font emits inline font declarations. Scripts
- * are the part that matters for XSS, and those are restricted to same-origin —
- * with `'unsafe-eval'` allowed in development only, because the dev bundler
- * needs it and production does not.
+ * Be clear about what this does and does not buy, because the two inline
+ * allowances are not equivalent:
  *
- * The interesting directives are the last three. This app takes PDF uploads and
- * serves them back, so it explicitly forbids being framed, forbids embedding
- * anything as an object or plugin, and pins form submissions to its own origin.
+ * - `style-src 'unsafe-inline'` is unavoidable and low risk. Next injects
+ *   inline `<style>` for its CSS and next/font emits inline font declarations.
+ *
+ * - `script-src 'unsafe-inline'` IS a real weakening, and naming it as anything
+ *   else would be dishonest. It permits inline `<script>`, which is the main
+ *   thing a script-src is meant to stop, so this policy is not an XSS control —
+ *   it is defence in depth behind the app's actual control, which is that every
+ *   user-supplied string renders as text and never as HTML. Next's App Router
+ *   emits inline bootstrap and streaming-payload scripts; removing the
+ *   allowance means issuing a per-request nonce from middleware and threading
+ *   it through, which is the right fix and is listed as a known limitation.
+ *   `'unsafe-eval'` is separate and is development-only, for the dev bundler.
+ *
+ * The directives that do carry weight here are the last four. This app takes
+ * PDF uploads and serves them back, so it forbids being framed, forbids
+ * embedding anything as an object or plugin, pins form submissions and
+ * connections to its own origin, and blocks `<base>` rewriting.
  */
 function contentSecurityPolicy(): string {
   return [

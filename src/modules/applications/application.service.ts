@@ -1,6 +1,7 @@
 import type { FilterQuery, Types } from 'mongoose';
 
 import { ConflictError, ForbiddenError, NotFoundError } from '@/lib/api/errors';
+import { deleteResume, storeResume } from '@/lib/resume-storage';
 import { containsMatcher } from '@/lib/validation';
 import {
   APPLICATION_STATUSES,
@@ -13,7 +14,6 @@ import type {
   ApplicantsQuery,
   MyApplicationsQuery,
 } from '@/modules/applications/application.schema';
-import { deleteResume, storeResume } from '@/lib/resume-storage';
 import { Job, type JobType } from '@/modules/jobs/job.model';
 import { findOwnedJobOrFail } from '@/modules/jobs/job.service';
 import { User, type UserDocument } from '@/modules/users/user.model';

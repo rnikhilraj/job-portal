@@ -484,13 +484,23 @@ ReDoS vector. All query values are zod-parsed strings, so no object can be smugg
 filter.
 
 **Security headers are set app-wide** in `next.config.ts`: a Content Security
-Policy that pins scripts, connections and form actions to this origin and
-forbids framing and plugins outright, plus `Permissions-Policy` denying camera,
-microphone, geolocation, payment and USB, `Cross-Origin-Resource-Policy`,
-`Cross-Origin-Opener-Policy`, and HSTS in production only. Resume downloads get
-a far stricter `default-src 'none'; sandbox` through a later, more specific rule
-— a `next.config` header overrides one set inside a route handler, so the
-app-wide policy would otherwise have quietly replaced it.
+Policy that pins connections and form actions to this origin, blocks `<base>`
+rewriting, and forbids framing and plugins outright, plus `Permissions-Policy`
+denying camera, microphone, geolocation, payment and USB,
+`Cross-Origin-Resource-Policy`, `Cross-Origin-Opener-Policy`, and HSTS in
+production only. Resume downloads get a far stricter `default-src 'none';
+sandbox` through a later, more specific rule — a `next.config` header overrides
+one set inside a route handler, so the app-wide policy would otherwise have
+quietly replaced it.
+
+> **The CSP is not an XSS control, and it would be misleading to present it as
+> one.** `script-src` includes `'unsafe-inline'`, because Next's App Router
+> emits inline bootstrap and streaming-payload scripts. That allowance is
+> exactly what a `script-src` normally exists to remove, so the policy is
+> defence in depth, not the control. The control is that every user-supplied
+> string — job descriptions, cover notes, names, headlines — renders as text and
+> never as HTML. Closing the gap properly means per-request nonces issued from
+> middleware; see [Known limitations](#known-limitations).
 
 **The containers run with capabilities dropped.** The app has `cap_drop: ALL`, a
 read-only root filesystem with a tmpfs for `/tmp`, `no-new-privileges` and a
@@ -574,9 +584,11 @@ npm run build       # production build
 
 ## Local development without Docker
 
-Needs Node 20.9+ and a MongoDB reachable from the host. Node 22 LTS is what the
+Needs Node 22+ and a MongoDB reachable from the host. Node 22 LTS is what the
 container, CI and this project were developed against; Node 18 and 20 have both
-reached end of life.
+reached end of life. `.nvmrc` pins it, and `engine-strict` in `.npmrc` makes
+`npm install` refuse an older runtime rather than let the test suite fail
+later with a confusing `File is not defined`.
 
 ```bash
 npm install
@@ -726,6 +738,13 @@ Things deliberately left out or simplified, and what they would take to fix.
 - **Rate limiting is per process, in memory.** It blunts online password guessing against a single
   instance, but it neither survives a restart nor coordinates across replicas. Redis or an
   edge/WAF rule would be the real answer.
+- **The CSP allows inline scripts.** `script-src` carries `'unsafe-inline'` to
+  accommodate Next's inline bootstrap and streaming-payload scripts, which means
+  the policy does not stop injected inline script and is not the app's XSS
+  control. Escaping at render time is. The fix is a per-request nonce generated
+  in middleware, set on the CSP header and passed to Next — worth doing, and not
+  done here because `src/middleware.ts` is deliberately kept to cookie presence
+  and nothing else.
 - **No CSRF token.** Mutations are protected by `SameSite=lax` cookies, which stops cross-site
   form posts in current browsers, but a double-submit token or an Origin check would be stronger
   defence in depth.

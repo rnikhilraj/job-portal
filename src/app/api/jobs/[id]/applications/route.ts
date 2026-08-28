@@ -1,6 +1,7 @@
 import { BadRequestError } from '@/lib/api/errors';
 import { buildPaginationMeta, created, ok } from '@/lib/api/respond';
 import { withRoute } from '@/lib/api/route';
+import { assertContentLengthWithinLimit } from '@/lib/resume-storage';
 import { objectIdSchema, searchParamsToObject } from '@/lib/validation';
 import { requireRole } from '@/modules/auth/session';
 import {
@@ -8,7 +9,6 @@ import {
   applyToJobSchema,
 } from '@/modules/applications/application.schema';
 import { applyToJob, listApplicantsForJob } from '@/modules/applications/application.service';
-import { assertContentLengthWithinLimit } from '@/lib/resume-storage';
 
 /** GET /api/jobs/:id/applications — applicants for a listing, owner HR only. */
 export const GET = withRoute<{ id: string }>(async (request, params) => {

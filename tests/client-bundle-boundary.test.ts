@@ -31,6 +31,8 @@ const CLIENT_ENTRY_POINTS = [
   'src/components/site-header.tsx',
   'src/components/status-badge.tsx',
   'src/components/logout-button.tsx',
+  'src/components/mobile-nav.tsx',
+  'src/components/delete-job-button.tsx',
   'src/app/(auth)/login/login-form.tsx',
   'src/app/(auth)/signup/signup-form.tsx',
   'src/middleware.ts',

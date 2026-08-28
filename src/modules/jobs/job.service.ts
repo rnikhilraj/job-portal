@@ -1,8 +1,8 @@
 import type { FilterQuery, Types } from 'mongoose';
 
 import { ForbiddenError, NotFoundError } from '@/lib/api/errors';
-import { deleteApplicationsForJob } from '@/modules/applications/application.service';
 import { containsMatcher } from '@/lib/validation';
+import { deleteApplicationsForJob } from '@/modules/applications/application.service';
 import type {
   BrowseJobsQuery,
   CreateJobInput,
@@ -61,10 +61,6 @@ export async function updateJob(
 }
 
 /**
- * Detail view. Candidates only ever see OPEN listings; the HR user who owns a
- * listing also sees it while it is CLOSED, which is what the edit page needs.
- */
-/**
  * Deleting a listing also removes its applications and the resume files behind
  * them, so no orphaned records or files are left on the uploads volume.
  */
@@ -75,6 +71,10 @@ export async function deleteJob(jobId: string, ownerId: Types.ObjectId): Promise
   await job.deleteOne();
 }
 
+/**
+ * Detail view. Candidates only ever see OPEN listings; the HR user who owns a
+ * listing also sees it while it is CLOSED, which is what the edit page needs.
+ */
 export async function findJobForViewer(
   jobId: string,
   viewer: { id: Types.ObjectId; role: UserRole },
