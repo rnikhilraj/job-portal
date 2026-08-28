@@ -4,7 +4,7 @@ import { optionalSearchTerm, paginationSchema } from '@/lib/validation';
 import { APPLICATION_STATUSES } from '@/modules/applications/application.constants';
 
 /**
- * The resume itself is validated in resume.storage.ts, which inspects the bytes
+ * The resume itself is validated in lib/resume-storage.ts, which inspects the bytes
  * on disk rather than anything the client asserts. This schema covers only the
  * text fields that travel alongside it in the multipart body.
  */

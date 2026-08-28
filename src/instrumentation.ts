@@ -1,27 +1,15 @@
 /**
- * Next.js runs `register()` once when the server starts. Two things happen here:
+ * Next.js runs `register()` once when the server starts.
  *
- * 1. The environment is parsed eagerly, so a misconfigured deployment fails on
- *    boot instead of on the first request.
- * 2. The demo data is seeded when SEED_ON_BOOT is enabled, which is what makes
- *    `docker compose up --build` usable with no follow-up commands.
+ * The real work lives in instrumentation.node.ts and is reached through a
+ * dynamic import nested inside a positive `=== 'nodejs'` check. That exact
+ * shape matters: Next compiles this file for the Edge runtime as well, and only
+ * the positive form lets webpack eliminate the branch. With a negated guard it
+ * still tries to resolve the module graph behind it, which fails the build as
+ * soon as anything in it touches a `node:` builtin.
  */
 export async function register(): Promise<void> {
-  if (process.env.NEXT_RUNTIME !== 'nodejs') return;
-
-  const { getEnv } = await import('@/lib/env');
-  const env = getEnv();
-
-  if (!env.SEED_ON_BOOT) return;
-
-  try {
-    const { seedDatabase } = await import('@/lib/seed');
-    const summary = await seedDatabase();
-    console.info(
-      `[seed] complete — ${summary.usersCreated} user(s), ${summary.jobsCreated} job(s) created`,
-    );
-  } catch (error) {
-    // A seeding failure must not stop the server from serving traffic.
-    console.error('[seed] failed', error);
+  if (process.env.NEXT_RUNTIME === 'nodejs') {
+    await import('./instrumentation.node');
   }
 }

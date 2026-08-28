@@ -12,7 +12,7 @@ import type {
   ApplicantsQuery,
   MyApplicationsQuery,
 } from '@/modules/applications/application.schema';
-import { deleteResume, storeResume } from '@/modules/applications/resume.storage';
+import { deleteResume, storeResume } from '@/lib/resume-storage';
 import { Job, type JobType } from '@/modules/jobs/job.model';
 import { findOwnedJobOrFail } from '@/modules/jobs/job.service';
 import { User, type UserDocument } from '@/modules/users/user.model';

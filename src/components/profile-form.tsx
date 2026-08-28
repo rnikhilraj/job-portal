@@ -151,18 +151,20 @@ export function ProfileForm({ user }: { user: PublicUser }) {
                 Make my profile visible to recruiters
               </span>
               <span className="mt-1 block text-sm text-slate-600">
-                HR users will be able to find you by name, headline and skills, and see your
-                experience level. Your email, phone number, resumes and applications are{' '}
-                <strong className="font-medium">never</strong> shown in search — recruiters only
-                see those if you apply to one of their jobs.
+                HR users will be able to find you by name, headline or skill, and will see your{' '}
+                <strong className="font-medium">
+                  email address, phone number and uploaded resume
+                </strong>{' '}
+                along with your experience level. Leave this off and none of it is visible to
+                anyone.
               </span>
             </span>
           </label>
 
           <p className="mt-3 text-xs text-slate-500">
             {isSearchable
-              ? 'You are currently discoverable. Untick this and save to be removed from search immediately.'
-              : 'You are not currently discoverable. This is off by default.'}
+              ? 'You are currently discoverable, and recruiters can see your contact details and download your resume. Untick this and save to revoke all of that immediately.'
+              : 'You are not currently discoverable, and nobody can see your contact details or resume through search. This is off by default.'}
           </p>
 
           <div className="mt-4 max-w-xs">

@@ -1,22 +1,13 @@
 import { Schema, model, models, type HydratedDocument, type Model, type Types } from 'mongoose';
 
+import { resumeFileSchema, type ResumeFile } from '@/lib/resume-storage';
 import {
   APPLICATION_STATUSES,
   type ApplicationStatus,
 } from '@/modules/applications/application.constants';
 
 export { APPLICATION_STATUSES };
-export type { ApplicationStatus };
-
-/** Metadata about the stored resume. The file itself lives on the uploads volume. */
-export interface ResumeFile {
-  /** Random server-generated filename on disk — never anything the client sent. */
-  storedName: string;
-  /** Sanitised original filename, kept only to label the download. */
-  originalName: string;
-  sizeBytes: number;
-  contentType: string;
-}
+export type { ApplicationStatus, ResumeFile };
 
 export interface ApplicationAttributes {
   job: Types.ObjectId;
@@ -30,16 +21,6 @@ export interface ApplicationAttributes {
 
 export type ApplicationDocument = HydratedDocument<ApplicationAttributes>;
 
-const resumeSchema = new Schema<ResumeFile>(
-  {
-    storedName: { type: String, required: true },
-    originalName: { type: String, required: true, maxlength: 255 },
-    sizeBytes: { type: Number, required: true },
-    contentType: { type: String, required: true },
-  },
-  { _id: false },
-);
-
 const applicationSchema = new Schema<ApplicationAttributes>(
   {
     job: { type: Schema.Types.ObjectId, ref: 'Job', required: true, index: true },
@@ -51,7 +32,7 @@ const applicationSchema = new Schema<ApplicationAttributes>(
       default: 'APPLIED',
     },
     coverNote: { type: String, trim: true, maxlength: 2000 },
-    resume: { type: resumeSchema, required: true },
+    resume: { type: resumeFileSchema, required: true },
   },
   { timestamps: true },
 );

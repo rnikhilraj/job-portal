@@ -1,7 +1,7 @@
 import { GET as downloadResume } from '@/app/api/applications/[id]/resume/route';
 import { POST as apply } from '@/app/api/jobs/[id]/applications/route';
 import { Application } from '@/modules/applications/application.model';
-import { sanitizeOriginalName } from '@/modules/applications/resume.storage';
+import { sanitizeOriginalName } from '@/lib/resume-storage';
 import type { PublicApplication } from '@/modules/applications/application.service';
 
 import { createCandidate, createHr } from './helpers/auth';

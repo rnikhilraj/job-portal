@@ -2,9 +2,36 @@ import { randomUUID } from 'node:crypto';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 
+import { Schema } from 'mongoose';
+
 import { BadRequestError, NotFoundError } from '@/lib/api/errors';
 import { getEnv } from '@/lib/env';
-import type { ResumeFile } from '@/modules/applications/application.model';
+
+/**
+ * An uploaded PDF resume: its metadata, its validation rules and its place on
+ * disk. This lives in lib/ rather than a domain module because two domains
+ * embed it — an application carries the resume sent for that job, and a
+ * candidate profile carries a general one for recruiter search.
+ */
+export interface ResumeFile {
+  /** Random server-generated filename on disk — never anything the client sent. */
+  storedName: string;
+  /** Sanitised original filename, kept only to label the download. */
+  originalName: string;
+  sizeBytes: number;
+  contentType: string;
+}
+
+/** Embedded sub-document shared by the Application and User models. */
+export const resumeFileSchema = new Schema<ResumeFile>(
+  {
+    storedName: { type: String, required: true },
+    originalName: { type: String, required: true, maxlength: 255 },
+    sizeBytes: { type: Number, required: true },
+    contentType: { type: String, required: true },
+  },
+  { _id: false },
+);
 
 const PDF_MAGIC_BYTES = '%PDF-';
 const PDF_CONTENT_TYPE = 'application/pdf';
@@ -144,4 +171,27 @@ export async function deleteResume(storedName: string): Promise<void> {
       console.error(`[resume] failed to delete ${storedName}`, error);
     }
   }
+}
+
+/**
+ * Headers for serving a stored resume.
+ *
+ * Shared by both download routes so the protections cannot drift apart: the
+ * filename is quoted and percent-encoded (it is already sanitised on upload,
+ * but this closes off header injection for good), and the response is
+ * attachment-only, un-sniffable, uncacheable by proxies and inert under CSP.
+ */
+export function resumeDownloadHeaders(originalName: string, byteLength: number): HeadersInit {
+  const asciiFallback = originalName
+    .replace(/[^\x20-\x7e]/g, '_')
+    .replace(/["\\]/g, '_');
+
+  return {
+    'Content-Type': 'application/pdf',
+    'Content-Length': String(byteLength),
+    'Content-Disposition': `attachment; filename="${asciiFallback}"; filename*=UTF-8''${encodeURIComponent(originalName)}`,
+    'Cache-Control': 'private, no-store',
+    'X-Content-Type-Options': 'nosniff',
+    'Content-Security-Policy': "default-src 'none'; sandbox",
+  };
 }

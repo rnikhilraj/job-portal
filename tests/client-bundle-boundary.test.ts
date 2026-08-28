@@ -22,6 +22,8 @@ const CLIENT_ENTRY_POINTS = [
   'src/components/apply-form.tsx',
   'src/components/applicant-status-select.tsx',
   'src/components/profile-form.tsx',
+  'src/components/profile-resume.tsx',
+  'src/components/candidate-summary.tsx',
   'src/components/site-header.tsx',
   'src/components/status-badge.tsx',
   'src/components/logout-button.tsx',
@@ -31,6 +33,16 @@ const CLIENT_ENTRY_POINTS = [
 ];
 
 const FORBIDDEN_PACKAGES = ['mongoose', 'bcryptjs', 'jose'];
+
+/**
+ * Node builtins break the client and Edge bundles outright. `src/instrumentation.ts`
+ * is deliberately not an entry point here: it reaches them on purpose, behind a
+ * `process.env.NEXT_RUNTIME === 'nodejs'` branch that webpack eliminates, which a
+ * static walk cannot model. `npm run build` is the guard for that one.
+ */
+const isNodeBuiltin = (specifier: string) =>
+  specifier.startsWith('node:') ||
+  ['fs', 'path', 'crypto', 'os', 'child_process'].includes(specifier);
 
 /** Matches both `import … from '…'` and bare `import '…'`, type imports included. */
 const IMPORT_PATTERN = /(?:^|\n)\s*import\s+(?:[^'"]*?\sfrom\s+)?['"]([^'"]+)['"]/g;
@@ -76,6 +88,9 @@ function findForbiddenImport(entry: string): { chain: string[]; pkg: string } | 
       );
       if (forbidden) {
         return { chain: current.chain, pkg: forbidden };
+      }
+      if (isNodeBuiltin(specifier)) {
+        return { chain: current.chain, pkg: specifier };
       }
 
       const resolved = resolveModule(specifier, current.file);

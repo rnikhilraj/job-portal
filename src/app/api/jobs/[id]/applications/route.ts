@@ -8,7 +8,7 @@ import {
   applyToJobSchema,
 } from '@/modules/applications/application.schema';
 import { applyToJob, listApplicantsForJob } from '@/modules/applications/application.service';
-import { assertContentLengthWithinLimit } from '@/modules/applications/resume.storage';
+import { assertContentLengthWithinLimit } from '@/lib/resume-storage';
 
 /** GET /api/jobs/:id/applications — applicants for a listing, owner HR only. */
 export const GET = withRoute<{ id: string }>(async (request, params) => {

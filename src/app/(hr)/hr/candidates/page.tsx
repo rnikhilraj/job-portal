@@ -1,5 +1,7 @@
 import Link from 'next/link';
 
+import { CandidateSummary } from '@/components/candidate-summary';
+
 import { Pagination } from '@/components/pagination';
 import { buildPageHref, toQueryRecord, type RawSearchParams } from '@/lib/query';
 import { requirePageUser } from '@/modules/auth/session';
@@ -36,8 +38,9 @@ export default async function CandidateSearchPage({
     <>
       <h1 className="mb-1 text-2xl font-semibold">Candidate search</h1>
       <p className="mb-6 text-sm text-slate-600">
-        Candidates who have opted in to being found by recruiters. Contact details and resumes
-        are not shown here — those are visible only for people who apply to your listings.
+        Candidates who have chosen to be found by recruiters. Each of them has explicitly agreed
+        to share their contact details and resume here. Anyone who has not opted in does not
+        appear, and their details are never shown.
       </p>
 
       <form method="get" action="/hr/candidates" className="card mb-6 grid gap-4 sm:grid-cols-4">
@@ -95,32 +98,7 @@ export default async function CandidateSearchPage({
         <ul className="space-y-4">
           {candidates.map((candidate) => (
             <li key={candidate.id} className="card">
-              <div className="flex flex-wrap items-start justify-between gap-3">
-                <div>
-                  <h2 className="text-lg font-semibold">{candidate.name}</h2>
-                  {candidate.headline ? (
-                    <p className="mt-1 text-sm text-slate-700">{candidate.headline}</p>
-                  ) : null}
-                </div>
-                {candidate.experienceLevel ? (
-                  <span className="inline-flex rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-700">
-                    {EXPERIENCE_LEVEL_LABELS[candidate.experienceLevel]}
-                  </span>
-                ) : null}
-              </div>
-
-              {candidate.skills.length > 0 ? (
-                <ul className="mt-3 flex flex-wrap gap-1.5">
-                  {candidate.skills.map((skill) => (
-                    <li
-                      key={skill}
-                      className="rounded bg-slate-100 px-2 py-0.5 text-xs text-slate-700"
-                    >
-                      {skill}
-                    </li>
-                  ))}
-                </ul>
-              ) : null}
+              <CandidateSummary candidate={candidate} headingLevel="h2" />
             </li>
           ))}
         </ul>

@@ -1,5 +1,6 @@
 import { connectToDatabase } from '@/lib/db';
 import { getEnv } from '@/lib/env';
+import { storeResume, type ResumeFile } from '@/lib/resume-storage';
 import { hashPassword } from '@/modules/auth/password';
 import { Job, type JobType } from '@/modules/jobs/job.model';
 import { User, type ExperienceLevel, type UserRole } from '@/modules/users/user.model';
@@ -19,7 +20,27 @@ type SeedAccount = {
   /** Candidate-only. Omitted means opted out, which is the real default. */
   isSearchable?: boolean;
   experienceLevel?: ExperienceLevel;
+  /** Give this account a general profile resume so downloads are demonstrable. */
+  withResume?: boolean;
 };
+
+/**
+ * A minimal but structurally valid PDF, generated rather than committed as a
+ * binary fixture. It only has to satisfy the same magic-byte check a real
+ * upload does.
+ */
+function placeholderResume(name: string): File {
+  const body = `%PDF-1.4
+1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj
+2 0 obj<</Type/Pages/Kids[]/Count 0>>endobj
+% Placeholder resume for the seeded demo account: ${name}
+trailer<</Root 1 0 R>>
+%%EOF
+`;
+  return new File([new Uint8Array(Buffer.from(body, 'latin1'))], `${name}.pdf`, {
+    type: 'application/pdf',
+  });
+}
 
 function seedAccounts(): SeedAccount[] {
   const { SEED_HR_PASSWORD, SEED_CANDIDATE_PASSWORD } = getEnv();
@@ -53,6 +74,7 @@ function seedAccounts(): SeedAccount[] {
     },
     {
       email: 'asha@example.com',
+      withResume: true,
       name: 'Asha Nair',
       role: 'CANDIDATE',
       password: SEED_CANDIDATE_PASSWORD,
@@ -63,6 +85,7 @@ function seedAccounts(): SeedAccount[] {
     },
     {
       email: 'marco@example.com',
+      withResume: true,
       name: 'Marco Ferreira',
       role: 'CANDIDATE',
       password: SEED_CANDIDATE_PASSWORD,
@@ -73,6 +96,7 @@ function seedAccounts(): SeedAccount[] {
     },
     {
       email: 'lena@example.com',
+      withResume: true,
       name: 'Lena Fischer',
       role: 'CANDIDATE',
       password: SEED_CANDIDATE_PASSWORD,
@@ -171,6 +195,13 @@ export async function seedDatabase(): Promise<SeedSummary> {
     const exists = await User.exists({ email: account.email });
     if (exists) continue;
 
+    let resume: ResumeFile | undefined;
+    if (account.withResume) {
+      // Goes through the same validation and random-filename path as a real
+      // upload, so the seeded files are indistinguishable from user ones.
+      resume = await storeResume(placeholderResume(`${account.name} CV`));
+    }
+
     await User.create({
       email: account.email,
       name: account.name,
@@ -180,6 +211,7 @@ export async function seedDatabase(): Promise<SeedSummary> {
       skills: account.skills ?? [],
       isSearchable: account.isSearchable ?? false,
       experienceLevel: account.experienceLevel,
+      resume,
     });
     usersCreated += 1;
   }

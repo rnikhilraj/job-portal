@@ -31,7 +31,7 @@ export function jsonRequest(path: string, options: RequestInitOptions = {}): Nex
 export function formRequest(
   path: string,
   form: FormData,
-  options: { method?: 'POST' | 'PATCH'; cookie?: string } = {},
+  options: { method?: 'POST' | 'PUT' | 'PATCH'; cookie?: string } = {},
 ): NextRequest {
   const headers = new Headers();
   if (options.cookie) headers.set('cookie', options.cookie);

@@ -33,20 +33,42 @@ export type PublicUser = {
   isSearchable: boolean;
   /** Candidate-only. Null until the candidate sets it. */
   experienceLevel: ExperienceLevel | null;
+  /** Candidate-only. The general profile resume, if one has been uploaded. */
+  resume: ResumeSummary | null;
+};
+
+/** Summary of a candidate's uploaded general resume. Never includes the path on disk. */
+export type ResumeSummary = {
+  originalName: string;
+  sizeBytes: number;
 };
 
 /**
- * A candidate as seen by HR through the opt-in candidate search.
+ * A candidate as seen by HR through the opt-in candidate directory.
  *
- * Deliberately narrower than PublicUser: no email, no phone, no application or
- * resume data. Those stay scoped to candidates who actually applied to one of
- * that HR user's listings. Discoverability and contactability are separate
- * things, and opting into search grants only the first.
+ * INVARIANT: a value of this type may only ever be constructed for a candidate
+ * whose `isSearchable` is true. The name says "discoverable" rather than
+ * "candidate" for that reason — it is not a general-purpose user shape, and it
+ * must never be used to render someone who has not opted in.
+ *
+ * `toDiscoverableCandidate()` in user.model.ts is the only constructor, and it
+ * throws rather than returning a partially redacted object if handed a
+ * candidate who is not opted in. The queries that feed it pin
+ * `isSearchable: true`, so the throw is a backstop against a future caller, not
+ * the primary control.
+ *
+ * Contact details are here because opting in is what grants them. Application
+ * history and per-application resumes are NOT here — those stay scoped to
+ * candidates who actually applied to that HR user's listings.
  */
-export type SearchableCandidate = {
+export type DiscoverableCandidate = {
   id: string;
   name: string;
   headline: string | null;
   skills: string[];
   experienceLevel: ExperienceLevel | null;
+  email: string;
+  phone: string | null;
+  /** Null when the candidate has not uploaded a general resume. */
+  resume: ResumeSummary | null;
 };
