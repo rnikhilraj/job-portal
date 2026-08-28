@@ -542,7 +542,8 @@ npm run build       # production build
 
 ## Local development without Docker
 
-Needs Node 18.18+ and a MongoDB reachable from the host.
+Needs Node 20.9+ (22 LTS recommended — it is what the container and CI run) and a
+MongoDB reachable from the host.
 
 ```bash
 npm install
@@ -674,7 +675,7 @@ a fourth position, because that is what actually happened.
 | Auth | jose 5 (HS256 JWT) in httpOnly cookies, bcryptjs 2 for password hashing |
 | Styling | Tailwind CSS 3, Archivo + IBM Plex Sans via next/font (self-hosted) |
 | Testing | Jest 29 with in-process route handlers and mongodb-memory-server 10 |
-| Tooling | ESLint, Docker Compose v2 |
+| Tooling | ESLint, Docker Compose v2, GitHub Actions CI |
 
 zod schemas are the single source of truth: the client imports the same module the API validates
 with, so the two cannot drift. Because those schemas are shared, each domain keeps its enums and
