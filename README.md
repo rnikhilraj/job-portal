@@ -486,7 +486,7 @@ markup into another user's page.
 
 ```bash
 npm install       # once
-npm test          # 237 tests across 14 suites (api + component projects)
+npm test          # 245 tests across 15 suites (api + component projects)
 npm run test:coverage
 npx jest tests/applications.test.ts     # a single suite
 npx jest -t 'applying twice'            # a single test by name
@@ -514,6 +514,7 @@ hermetic.
 | `client-bundle-boundary.test.ts` | that no client component can reach Mongoose, bcrypt or the JWT key |
 | `components/pipeline-rail.test.tsx` | the status rail: accessible description, the seen-status memory, reduced motion, frame cleanup |
 | `components/applicant-status-select.test.tsx` | optimistic update and rollback, and that a 403 surfaces the server's reason |
+| `components/mobile-nav.test.tsx` | disclosure behaviour: Escape, outside click, and closing on navigation |
 
 The edge cases called out in the brief are covered explicitly: duplicate signup email → 409,
 wrong password → 401, applying twice to the same job → 409, one HR user touching another's
@@ -675,7 +676,7 @@ a fourth position, because that is what actually happened.
 | Auth | jose 5 (HS256 JWT) in httpOnly cookies, bcryptjs 2 for password hashing |
 | Styling | Tailwind CSS 3, Archivo + IBM Plex Sans via next/font (self-hosted) |
 | Testing | Jest 29 with in-process route handlers and mongodb-memory-server 10 |
-| Tooling | ESLint, Docker Compose v2, GitHub Actions CI |
+| Tooling | ESLint 9 (flat config), Jest 30, Docker Compose v2, GitHub Actions CI |
 
 zod schemas are the single source of truth: the client imports the same module the API validates
 with, so the two cannot drift. Because those schemas are shared, each domain keeps its enums and

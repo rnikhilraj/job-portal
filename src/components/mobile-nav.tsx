@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { LogoutButton } from '@/components/logout-button';
 import type { PublicUser } from '@/modules/users/user.constants';
@@ -21,13 +21,24 @@ export function MobileNav({
   user: PublicUser | null;
   links: Array<{ href: string; label: string }>;
 }) {
-  const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
 
-  useEffect(() => {
-    setIsOpen(false);
-  }, [pathname]);
+  /*
+   * The panel remembers which route it was opened on, and "open" is derived by
+   * comparing that to the current one. Navigating therefore closes it for free.
+   *
+   * The obvious alternative — an effect that calls setIsOpen(false) whenever
+   * pathname changes — schedules a second render just to undo the first, which
+   * is what react-hooks/set-state-in-effect exists to catch.
+   */
+  const [openedOnPath, setOpenedOnPath] = useState<string | null>(null);
+  const isOpen = openedOnPath === pathname;
+
+  const setIsOpen = useCallback(
+    (open: boolean) => setOpenedOnPath(open ? pathname : null),
+    [pathname],
+  );
 
   useEffect(() => {
     if (!isOpen) return;
@@ -45,13 +56,13 @@ export function MobileNav({
       document.removeEventListener('keydown', onKeyDown);
       document.removeEventListener('mousedown', onPointerDown);
     };
-  }, [isOpen]);
+  }, [isOpen, setIsOpen]);
 
   return (
     <div ref={containerRef} className="relative">
       <button
         type="button"
-        onClick={() => setIsOpen((open) => !open)}
+        onClick={() => setIsOpen(!isOpen)}
         aria-expanded={isOpen}
         aria-controls="mobile-nav-panel"
         className="btn-secondary btn-sm min-h-11 px-3"

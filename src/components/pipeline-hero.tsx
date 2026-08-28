@@ -44,17 +44,28 @@ export function PipelineHero() {
       typeof window !== 'undefined' &&
       window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-    if (prefersReduced) {
-      setActive('SHORTLISTED');
-      setHasPlayed(true);
-      return;
-    }
+    /*
+     * Both branches go through the same scheduler so neither calls setState
+     * synchronously in the effect body — reduced motion simply jumps straight
+     * to the finished frame instead of stepping through it.
+     */
+    const schedule: Array<[delay: number, run: () => void]> = prefersReduced
+      ? [
+          [
+            0,
+            () => {
+              setActive('SHORTLISTED');
+              setHasPlayed(true);
+            },
+          ],
+        ]
+      : [
+          [1100, () => setActive('REVIEWED')],
+          [2100, () => setActive('SHORTLISTED')],
+          [2900, () => setHasPlayed(true)],
+        ];
 
-    const timers = [
-      window.setTimeout(() => setActive('REVIEWED'), 1100),
-      window.setTimeout(() => setActive('SHORTLISTED'), 2100),
-      window.setTimeout(() => setHasPlayed(true), 2900),
-    ];
+    const timers = schedule.map(([delay, run]) => window.setTimeout(run, delay));
     return () => timers.forEach(window.clearTimeout);
   }, []);
 

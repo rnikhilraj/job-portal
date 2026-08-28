@@ -45,7 +45,10 @@ const config = {
     // the global pool, which is not what is wanted here.
     './src/modules/': { statements: 88, branches: 74, functions: 86, lines: 88 },
     './src/lib/api/': { statements: 94, branches: 84, functions: 100, lines: 94 },
-    global: { statements: 38, branches: 22, functions: 32, lines: 38 },
+    // Note this pool excludes the directory-keyed groups above, so it is not
+    // the same number the summary row prints — it covers components plus the
+    // non-api lib files.
+    global: { statements: 52, branches: 28, functions: 45, lines: 51 },
   },
   projects: [
     {
