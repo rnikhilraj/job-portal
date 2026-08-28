@@ -173,24 +173,38 @@ export function ProfileResume({
           </span>
         </p>
 
-        <form onSubmit={handleUpload} className="flex flex-col gap-3 sm:flex-row sm:items-end">
-          <div className="min-w-0 flex-1">
-            <label htmlFor="profileResume" className="field-label">
-              {resume ? 'Replace resume' : 'Upload resume'}
-            </label>
+        <form onSubmit={handleUpload}>
+          <label htmlFor="profileResume" className="field-label">
+            {resume ? 'Replace resume' : 'Upload resume'}
+          </label>
+
+          {/*
+            Input and button are the only children of the flex row, and the hint
+            sits outside it. Keeping the hint inside would make the row's
+            bottom edge the bottom of the hint text, which pushed the button
+            below the input instead of level with it.
+
+            Default `items-stretch` then makes the two exactly equal in height —
+            both carry min-h-11 — so they read as one control rather than two
+            adjacent ones.
+          */}
+          <div className="flex flex-col gap-2 sm:flex-row">
             <input
               id="profileResume"
               name="resume"
               type="file"
               accept="application/pdf,.pdf"
               ref={fileInputRef}
-              className="field-input py-2.5 file:mr-3 file:rounded file:border-0 file:bg-mist-200 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-ink-soft"
+              className="field-input min-w-0 flex-1 file:mr-3 file:rounded file:border-0
+                file:bg-mist-200 file:px-3 file:py-1.5 file:text-sm file:font-medium
+                file:text-ink-soft"
             />
-            <p className="field-hint">PDF only, up to {formatMegabytes(maxResumeBytes)}.</p>
+            <button type="submit" className="btn-primary shrink-0" disabled={isBusy}>
+              {isBusy ? 'Working…' : resume ? 'Replace' : 'Upload'}
+            </button>
           </div>
-          <button type="submit" className="btn-primary shrink-0" disabled={isBusy}>
-            {isBusy ? 'Working…' : resume ? 'Replace' : 'Upload'}
-          </button>
+
+          <p className="field-hint">PDF only, up to {formatMegabytes(maxResumeBytes)}.</p>
         </form>
       </div>
     </section>
