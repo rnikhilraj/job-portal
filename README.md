@@ -679,6 +679,9 @@ Things deliberately left out or simplified, and what they would take to fix.
 - **No refresh tokens or server-side session revocation.** A JWT stays valid until it expires;
   logging out only clears the cookie. Deleting or demoting an account does take effect
   immediately, because the role is re-read from the database on every request.
+- **No password reset flow.** A candidate or HR user who forgets their password currently has no
+  self-service recovery path — this would require an email delivery service in a production
+  deployment.
 - **PDF validation stops at the magic bytes.** The file is not parsed, so a malformed or malicious
   PDF is stored as-is. It is never executed or rendered by the app, and downloads are sandboxed by
   CSP, but a production system would put uploads through antivirus and a PDF sanitiser.
