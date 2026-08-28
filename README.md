@@ -543,8 +543,9 @@ npm run build       # production build
 
 ## Local development without Docker
 
-Needs Node 20.9+ (22 LTS recommended — it is what the container and CI run) and a
-MongoDB reachable from the host.
+Needs Node 20.9+ and a MongoDB reachable from the host. Node 22 LTS is what the
+container, CI and this project were developed against; Node 18 and 20 have both
+reached end of life.
 
 ```bash
 npm install
