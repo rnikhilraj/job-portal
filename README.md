@@ -474,6 +474,21 @@ only by an application-level check. Two concurrent submissions cannot both succe
 ReDoS vector. All query values are zod-parsed strings, so no object can be smuggled into a Mongo
 filter.
 
+**Security headers are set app-wide** in `next.config.ts`: a Content Security
+Policy that pins scripts, connections and form actions to this origin and
+forbids framing and plugins outright, plus `Permissions-Policy` denying camera,
+microphone, geolocation, payment and USB, `Cross-Origin-Resource-Policy`,
+`Cross-Origin-Opener-Policy`, and HSTS in production only. Resume downloads get
+a far stricter `default-src 'none'; sandbox` through a later, more specific rule
+— a `next.config` header overrides one set inside a route handler, so the
+app-wide policy would otherwise have quietly replaced it.
+
+**The containers run with capabilities dropped.** The app has `cap_drop: ALL`, a
+read-only root filesystem with a tmpfs for `/tmp`, `no-new-privileges` and a
+512 MB limit; only the uploads volume is writable. Mongo drops all capabilities
+too and re-adds exactly the five its entrypoint needs to fix ownership and drop
+to the mongodb user.
+
 **Error responses do not leak internals.** Unhandled exceptions are logged server-side and
 returned as a generic 500; stack traces and driver messages never reach the client.
 
@@ -670,7 +685,7 @@ a fourth position, because that is what actually happened.
 
 | Layer | Choice |
 | --- | --- |
-| Framework | Next.js 15 (App Router), React 19 — UI and API in one deployable |
+| Framework | Next.js 16 (App Router, Turbopack), React 19 — UI and API in one deployable |
 | Language | TypeScript 5.7, `strict` plus `noUncheckedIndexedAccess` |
 | Database | MongoDB 7 via Mongoose 8 |
 | Validation | zod 3 — the same schemas run on the client and the server |

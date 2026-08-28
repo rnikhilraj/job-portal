@@ -9,6 +9,25 @@ services:
       MONGO_INITDB_DATABASE: ${MONGO_DB_NAME}
     volumes:
       - mongo_data:/data/db
+    # Mongo writes its own data and lock files, so it cannot run read-only.
+    # Its entrypoint starts as root, walks /data/db to fix ownership, then drops
+    # to the mongodb user — which needs exactly these five capabilities and
+    # nothing else. Dropping DAC_OVERRIDE or FOWNER makes that walk fail with
+    # "Permission denied" on an existing volume.
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - DAC_OVERRIDE
+      - FOWNER
+      - SETUID
+      - SETGID
+    security_opt:
+      - no-new-privileges:true
+    deploy:
+      resources:
+        limits:
+          memory: 1g
     # Not published to the host by default — only the app needs to reach Mongo.
     # Uncomment to inspect the database with a local client.
     # ports:
@@ -36,6 +55,20 @@ services:
     volumes:
       # Uploaded resumes survive container rebuilds.
       - resume_uploads:/app/uploads
+    # The app writes only to the uploads volume, so the rest of its filesystem
+    # is mounted read-only. Next needs a writable /tmp, which is provided as a
+    # tmpfs rather than by relaxing the root filesystem.
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    deploy:
+      resources:
+        limits:
+          memory: 512m
     depends_on:
       mongo:
         condition: service_healthy
