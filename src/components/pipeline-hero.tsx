@@ -1,11 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useSyncExternalStore } from 'react';
 
 import { APPLICATION_STATUS_LABELS } from '@/modules/applications/application.constants';
 import { StatusChip } from '@/components/pipeline';
 import { JOB_TYPE_LABELS } from '@/modules/jobs/job.constants';
 import { FEATURED_SAMPLE_JOB, SAMPLE_EMPLOYERS } from '@/modules/jobs/job.samples';
+import { fromLocalDay, localToday } from '@/lib/local-day';
 
 /**
  * The landing hero: one application on the product's real status rail.
@@ -46,22 +47,61 @@ const DEMO_JOB = FEATURED_SAMPLE_JOB;
 const DEMO_EMPLOYER = SAMPLE_EMPLOYERS[DEMO_JOB.ownerEmail];
 
 /**
- * The stamp reads as today because the application is notionally being made
- * now. Formatted on the server at render time, and the page is rendered per
- * request, so it never serves a stale date from a cached build.
- *
- * `undefined` for the locale matches the rest of the app (see job-card.tsx),
- * which means the day/month order follows the runtime's locale rather than
- * being hardcoded to one region's convention.
+ * Days each stage sits behind the latest one, keeping the spacing of the
+ * original 12 → 14 → 18 Mar example: two days to be read, four more to be
+ * shortlisted. The most recent stage is always today, so the trail runs
+ * backwards into the past and never advertises a future date.
  */
-function today(): string {
-  return new Date().toLocaleDateString(undefined, { day: 'numeric', month: 'short' });
+const DAYS_FROM_APPLIED = [0, 2, 6] as const;
+
+/**
+ * The stamps are formatted with a FIXED locale, unlike the rest of the app.
+ *
+ * Everywhere else `undefined` is right: the value is server data and the server
+ * formats it once. Here the date is recomputed in the browser, so the same day
+ * has to render byte-identically on both sides of hydration or React reports a
+ * mismatch — and locale is the other half of that, not just timezone. en-GB
+ * also gives the day-then-month order the original example used.
+ */
+function formatStamp(date: Date): string {
+  return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
 }
 
-export function PipelineHero() {
+/** The day never changes under us, so there is nothing to subscribe to. */
+const NEVER_CHANGES = () => () => {};
+
+export function PipelineHero({ serverDay }: { serverDay: string }) {
   /* Opens at the resting stage; only a press ever changes it. */
   const [active, setActive] = useState<Stage>(RESTING_STAGE);
+
+  /**
+   * The day the receipt is dated from.
+   *
+   * This is the one value that is legitimately different on the server and in
+   * the browser, which is exactly what useSyncExternalStore exists for: React
+   * renders the server's day through hydration, then re-renders with the
+   * viewer's own. Computing it during render instead would put the container's
+   * timezone in the markup and the browser's in the hydration pass — which is
+   * how a page ends up showing yesterday to everyone east of the server.
+   *
+   * The store never emits, so subscribe is a no-op teardown: the day is read
+   * once after mount and does not chase midnight.
+   */
+  const day = useSyncExternalStore(NEVER_CHANGES, localToday, () => serverDay);
+
   const reachedIndex = STAGES.indexOf(active);
+
+  /**
+   * Stamps run backwards from the stage reached: the latest is today and the
+   * earlier ones are spaced behind it, so the receipt reads as a history rather
+   * than as one date printed three times.
+   */
+  const stampFor = (index: number): string => {
+    const daysAgo = DAYS_FROM_APPLIED[reachedIndex]! - DAYS_FROM_APPLIED[index]!;
+    const date = fromLocalDay(day);
+    date.setDate(date.getDate() - daysAgo);
+    return formatStamp(date);
+  };
 
   return (
     <div className="w-full">
@@ -146,12 +186,12 @@ export function PipelineHero() {
           className="mt-7 flex flex-wrap items-center gap-x-2 gap-y-1.5 border-t border-mist-300
             pt-4 text-xs text-ink-muted"
         >
-          {STAGES.slice(0, reachedIndex + 1).map((stage) => (
+          {STAGES.slice(0, reachedIndex + 1).map((stage, index) => (
             <li key={stage}>
               <span className="font-medium text-ink-soft">
                 {APPLICATION_STATUS_LABELS[stage]}
               </span>{' '}
-              {today()}
+              {stampFor(index)}
             </li>
           ))}
         </ol>

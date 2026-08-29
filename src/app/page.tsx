@@ -5,6 +5,7 @@ import { ExamplePostings } from '@/components/example-postings';
 import { PipelineHero } from '@/components/pipeline-hero';
 import { ProductStory } from '@/components/product-story';
 import { Reveal } from '@/components/reveal';
+import { localToday } from '@/lib/local-day';
 import {
   APPLICATION_STATUS_LABELS,
   type ApplicationStatus,
@@ -93,7 +94,7 @@ export default async function HomePage() {
               thing a visitor touches.
             */}
             <div className="rise-in [animation-delay:120ms]">
-              <PipelineHero />
+              <PipelineHero serverDay={localToday()} />
             </div>
           </div>
         </div>

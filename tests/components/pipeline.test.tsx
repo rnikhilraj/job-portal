@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event';
 
 import { PipelineFunnel, StatusChip } from '@/components/pipeline';
 import { PipelineHero } from '@/components/pipeline-hero';
+import { localToday } from '@/lib/local-day';
 import { StatusBadge } from '@/components/status-badge';
 import { FEATURED_SAMPLE_JOB } from '@/modules/jobs/job.samples';
 
@@ -101,7 +102,7 @@ describe('PipelineHero', () => {
   it('rests at Applied and never moves off it', async () => {
     jest.useFakeTimers();
     try {
-      render(<PipelineHero />);
+      render(<PipelineHero serverDay={localToday()} />);
       expect(screen.getByText(/your application is in/i)).toBeInTheDocument();
 
       // A minute of virtual time later it has not advanced a single stage.
@@ -119,7 +120,7 @@ describe('PipelineHero', () => {
   it('schedules nothing at all', () => {
     jest.useFakeTimers();
     try {
-      render(<PipelineHero />);
+      render(<PipelineHero serverDay={localToday()} />);
       // No autoplay, no crossings, no cleanup to get wrong.
       expect(jest.getTimerCount()).toBe(0);
     } finally {
@@ -128,7 +129,7 @@ describe('PipelineHero', () => {
   });
 
   it('runs no animation of its own', () => {
-    const { container } = render(<PipelineHero />);
+    const { container } = render(<PipelineHero serverDay={localToday()} />);
 
     // Nothing plays on load; the only motion is a transition after a press.
     expect(container.querySelector('.hero-rail-fill')).toBeNull();
@@ -144,7 +145,7 @@ describe('PipelineHero', () => {
     ['Reviewed', /someone has actually opened it/i],
     ['Shortlisted', /through to the next round/i],
   ])('moves to %s when its stage is pressed', async (label, blurb) => {
-    render(<PipelineHero />);
+    render(<PipelineHero serverDay={localToday()} />);
 
     await userEvent.click(screen.getByRole('button', { name: `Show the ${label} stage` }));
 
@@ -156,7 +157,7 @@ describe('PipelineHero', () => {
   });
 
   it('fills the rail further the later the stage pressed', async () => {
-    const { container } = render(<PipelineHero />);
+    const { container } = render(<PipelineHero serverDay={localToday()} />);
     const fill = () => container.querySelector('.bg-petrol-500') as HTMLElement;
 
     expect(fill().style.transform).toBe('scaleX(0)');
@@ -169,7 +170,7 @@ describe('PipelineHero', () => {
   });
 
   it('can be pressed back down the rail again', async () => {
-    render(<PipelineHero />);
+    render(<PipelineHero serverDay={localToday()} />);
 
     await userEvent.click(screen.getByRole('button', { name: /show the shortlisted stage/i }));
     await userEvent.click(screen.getByRole('button', { name: /show the applied stage/i }));
@@ -179,7 +180,7 @@ describe('PipelineHero', () => {
 
   it('still responds to a press under reduced motion', async () => {
     setPrefersReducedMotion(true);
-    render(<PipelineHero />);
+    render(<PipelineHero serverDay={localToday()} />);
 
     await userEvent.click(screen.getByRole('button', { name: /show the shortlisted stage/i }));
 
@@ -189,24 +190,69 @@ describe('PipelineHero', () => {
   });
 
   it('announces the stage, since every change is one the visitor asked for', () => {
-    render(<PipelineHero />);
+    render(<PipelineHero serverDay={localToday()} />);
     expect(screen.getByText(/your application is in/i)).toHaveAttribute('aria-live', 'polite');
   });
 
-  it('stamps the receipt with today, not a hardcoded date', () => {
-    render(<PipelineHero />);
+  /*
+   * The receipt is a history, so its dates have to read as one: distinct, in
+   * order, and ending today. Three copies of the same day is the failure this
+   * pins against, and so is a hardcoded month.
+   */
+  const stamp = (daysAgo: number): string => {
+    const date = new Date();
+    date.setDate(date.getDate() - daysAgo);
+    return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+  };
 
-    const expected = new Date().toLocaleDateString(undefined, {
-      day: 'numeric',
-      month: 'short',
-    });
-    expect(screen.getByText(new RegExp(expected))).toBeInTheDocument();
+  it('dates the only stamp today when just Applied is showing', () => {
+    render(<PipelineHero serverDay={localToday()} />);
+
+    expect(screen.getByText(new RegExp(stamp(0)))).toBeInTheDocument();
     // The date it used to ship with, pinned so it cannot creep back.
     expect(screen.queryByText(/12 Mar/)).not.toBeInTheDocument();
   });
 
+  it('staggers the stamps backwards from today as stages are pressed', async () => {
+    const { container } = render(<PipelineHero serverDay={localToday()} />);
+    const receipt = () => container.querySelectorAll('ol')[1] as HTMLElement;
+
+    await userEvent.click(screen.getByRole('button', { name: /show the shortlisted stage/i }));
+
+    const dates = Array.from(receipt().querySelectorAll('li')).map((li) =>
+      li.textContent?.replace(/^(Applied|Reviewed|Shortlisted)\s*/, '').trim(),
+    );
+
+    // Applied six days back, Reviewed four, Shortlisted today — the 12 → 14 →
+    // 18 Mar spacing of the original, anchored to now.
+    expect(dates).toEqual([stamp(6), stamp(4), stamp(0)]);
+    expect(new Set(dates).size).toBe(3);
+  });
+
+  it('never dates a stage in the future', async () => {
+    render(<PipelineHero serverDay={localToday()} />);
+
+    await userEvent.click(screen.getByRole('button', { name: /show the reviewed stage/i }));
+
+    // The stage just reached is today; nothing is ahead of it.
+    expect(screen.getByText(new RegExp(stamp(0)))).toBeInTheDocument();
+    expect(screen.getByText(new RegExp(stamp(2)))).toBeInTheDocument();
+  });
+
+  it('re-dates from the viewer local day rather than trusting the server', async () => {
+    // A server a day behind the viewer — exactly the UTC container case.
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    const staleDay = `${yesterday.getFullYear()}-${`${yesterday.getMonth() + 1}`.padStart(2, '0')}-${`${yesterday.getDate()}`.padStart(2, '0')}`;
+
+    render(<PipelineHero serverDay={staleDay} />);
+
+    // The mount effect corrects it to the browser own day.
+    expect(await screen.findByText(new RegExp(stamp(0)))).toBeInTheDocument();
+  });
+
   it('shows one stamp on load, and more as stages are pressed', async () => {
-    const { container } = render(<PipelineHero />);
+    const { container } = render(<PipelineHero serverDay={localToday()} />);
     const receipt = () => container.querySelectorAll('ol')[1];
 
     expect(receipt()?.querySelectorAll('li')).toHaveLength(1);
@@ -217,7 +263,7 @@ describe('PipelineHero', () => {
   });
 
   it('keeps the card content it is meant to keep', () => {
-    render(<PipelineHero />);
+    render(<PipelineHero serverDay={localToday()} />);
 
     expect(screen.getByText(FEATURED_SAMPLE_JOB.title)).toBeInTheDocument();
     expect(screen.getByText(new RegExp(FEATURED_SAMPLE_JOB.location))).toBeInTheDocument();
@@ -227,7 +273,7 @@ describe('PipelineHero', () => {
   });
 
   it('names every stage in words, even the ones not reached', () => {
-    render(<PipelineHero />);
+    render(<PipelineHero serverDay={localToday()} />);
 
     for (const label of ['Applied', 'Reviewed', 'Shortlisted']) {
       expect(screen.getAllByText(label).length).toBeGreaterThan(0);
