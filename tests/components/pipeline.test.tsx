@@ -4,6 +4,7 @@ import userEvent from '@testing-library/user-event';
 import { PipelineFunnel, StatusChip } from '@/components/pipeline';
 import { PipelineHero } from '@/components/pipeline-hero';
 import { StatusBadge } from '@/components/status-badge';
+import { FEATURED_SAMPLE_JOB } from '@/modules/jobs/job.samples';
 
 import { setPrefersReducedMotion } from '../../jest.setup.components';
 
@@ -92,72 +93,144 @@ describe('PipelineFunnel', () => {
 });
 
 describe('PipelineHero', () => {
-  it('opens on Applied and walks forward on its own', async () => {
+  /**
+   * The hero is static now, and static is the thing worth guarding: it is a
+   * server component with no state, no timers and no JavaScript, and the easy
+   * regression is for someone to reintroduce motion or a dead control.
+   */
+  it('rests at Applied and never moves off it', async () => {
     jest.useFakeTimers();
     try {
       render(<PipelineHero />);
       expect(screen.getByText(/your application is in/i)).toBeInTheDocument();
 
+      // A minute of virtual time later it has not advanced a single stage.
       await act(async () => {
-        jest.advanceTimersByTime(1200);
+        jest.advanceTimersByTime(60_000);
       });
-      expect(screen.getByText(/someone has actually opened it/i)).toBeInTheDocument();
-
-      await act(async () => {
-        jest.advanceTimersByTime(1200);
-      });
-      expect(screen.getByText(/through to the next round/i)).toBeInTheDocument();
+      expect(screen.getByText(/your application is in/i)).toBeInTheDocument();
+      expect(screen.queryByText(/someone has actually opened it/i)).not.toBeInTheDocument();
+      expect(screen.queryByText(/through to the next round/i)).not.toBeInTheDocument();
     } finally {
       jest.useRealTimers();
     }
   });
 
-  it('lands on the finished frame immediately under reduced motion', async () => {
-    setPrefersReducedMotion(true);
+  it('schedules nothing at all', () => {
     jest.useFakeTimers();
     try {
       render(<PipelineHero />);
-      // No journey — the sequence is skipped, not merely sped up.
-      await act(async () => {
-        jest.advanceTimersByTime(1);
-      });
-      expect(screen.getByText(/through to the next round/i)).toBeInTheDocument();
+      // No autoplay, no crossings, no cleanup to get wrong.
+      expect(jest.getTimerCount()).toBe(0);
     } finally {
       jest.useRealTimers();
     }
   });
 
-  it('lets a visitor scrub to any stage', async () => {
+  it('runs no animation of its own', () => {
+    const { container } = render(<PipelineHero />);
+
+    // Nothing plays on load; the only motion is a transition after a press.
+    expect(container.querySelector('.hero-rail-fill')).toBeNull();
+    expect(container.querySelector('.hero-card-travel')).toBeNull();
+  });
+
+  /*
+   * The stages are the hero's only interaction, so each one is pinned: it moves
+   * the card, it reports itself as pressed, and it is reachable by its name
+   * rather than by a 24px dot with no text.
+   */
+  it.each([
+    ['Reviewed', /someone has actually opened it/i],
+    ['Shortlisted', /through to the next round/i],
+  ])('moves to %s when its stage is pressed', async (label, blurb) => {
     render(<PipelineHero />);
+
+    await userEvent.click(screen.getByRole('button', { name: `Show the ${label} stage` }));
+
+    expect(screen.getByText(blurb)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: `Show the ${label} stage` })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+  });
+
+  it('fills the rail further the later the stage pressed', async () => {
+    const { container } = render(<PipelineHero />);
+    const fill = () => container.querySelector('.bg-petrol-500') as HTMLElement;
+
+    expect(fill().style.transform).toBe('scaleX(0)');
 
     await userEvent.click(screen.getByRole('button', { name: /show the reviewed stage/i }));
+    expect(fill().style.transform).toBe('scaleX(0.5)');
 
-    expect(screen.getByText(/someone has actually opened it/i)).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: /show the shortlisted stage/i }));
+    expect(fill().style.transform).toBe('scaleX(1)');
   });
 
-  it('shows the rejection branch, and reads as terminal rather than punitive', async () => {
+  it('can be pressed back down the rail again', async () => {
     render(<PipelineHero />);
 
-    await userEvent.click(screen.getByRole('button', { name: /see a rejection/i }));
+    await userEvent.click(screen.getByRole('button', { name: /show the shortlisted stage/i }));
+    await userEvent.click(screen.getByRole('button', { name: /show the applied stage/i }));
 
-    expect(screen.getByText(/the rail stops rather than pretending otherwise/i)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /replay the journey/i })).toBeInTheDocument();
+    expect(screen.getByText(/your application is in/i)).toBeInTheDocument();
   });
 
-  it('announces the stage change politely', () => {
+  it('still responds to a press under reduced motion', async () => {
+    setPrefersReducedMotion(true);
+    render(<PipelineHero />);
+
+    await userEvent.click(screen.getByRole('button', { name: /show the shortlisted stage/i }));
+
+    // The preference removes the travel, never the ability to get there: the
+    // app-wide rule collapses the transition, so the click lands instantly.
+    expect(screen.getByText(/through to the next round/i)).toBeInTheDocument();
+  });
+
+  it('announces the stage, since every change is one the visitor asked for', () => {
     render(<PipelineHero />);
     expect(screen.getByText(/your application is in/i)).toHaveAttribute('aria-live', 'polite');
   });
 
-  it('cleans up its timers on unmount', () => {
-    jest.useFakeTimers();
-    try {
-      const { unmount } = render(<PipelineHero />);
-      unmount();
-      // Nothing should still be queued to fire into a dead component.
-      expect(jest.getTimerCount()).toBe(0);
-    } finally {
-      jest.useRealTimers();
+  it('stamps the receipt with today, not a hardcoded date', () => {
+    render(<PipelineHero />);
+
+    const expected = new Date().toLocaleDateString(undefined, {
+      day: 'numeric',
+      month: 'short',
+    });
+    expect(screen.getByText(new RegExp(expected))).toBeInTheDocument();
+    // The date it used to ship with, pinned so it cannot creep back.
+    expect(screen.queryByText(/12 Mar/)).not.toBeInTheDocument();
+  });
+
+  it('shows one stamp on load, and more as stages are pressed', async () => {
+    const { container } = render(<PipelineHero />);
+    const receipt = () => container.querySelectorAll('ol')[1];
+
+    expect(receipt()?.querySelectorAll('li')).toHaveLength(1);
+    expect(receipt()?.textContent).toMatch(/Applied/);
+
+    await userEvent.click(screen.getByRole('button', { name: /show the shortlisted stage/i }));
+    expect(receipt()?.querySelectorAll('li')).toHaveLength(3);
+  });
+
+  it('keeps the card content it is meant to keep', () => {
+    render(<PipelineHero />);
+
+    expect(screen.getByText(FEATURED_SAMPLE_JOB.title)).toBeInTheDocument();
+    expect(screen.getByText(new RegExp(FEATURED_SAMPLE_JOB.location))).toBeInTheDocument();
+    expect(screen.getByText(/Northwind Labs/)).toBeInTheDocument();
+    // Status still reads as a word, not colour alone.
+    expect(screen.getAllByText('Applied').length).toBeGreaterThan(0);
+  });
+
+  it('names every stage in words, even the ones not reached', () => {
+    render(<PipelineHero />);
+
+    for (const label of ['Applied', 'Reviewed', 'Shortlisted']) {
+      expect(screen.getAllByText(label).length).toBeGreaterThan(0);
     }
   });
 });

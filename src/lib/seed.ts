@@ -2,7 +2,11 @@ import { connectToDatabase } from '@/lib/db';
 import { getEnv } from '@/lib/env';
 import { storeResume, type ResumeFile } from '@/lib/resume-storage';
 import { hashPassword } from '@/modules/auth/password';
-import { Job, type JobType } from '@/modules/jobs/job.model';
+import { Job } from '@/modules/jobs/job.model';
+import {
+  SAMPLE_JOBS,
+  sampleEmployerHeadline,
+} from '@/modules/jobs/job.samples';
 import { User, type ExperienceLevel, type UserRole } from '@/modules/users/user.model';
 
 /**
@@ -51,14 +55,14 @@ function seedAccounts(): SeedAccount[] {
       name: 'Priya Menon',
       role: 'HR',
       password: SEED_HR_PASSWORD,
-      headline: 'Talent Partner, Northwind Labs',
+      headline: sampleEmployerHeadline('hr1@example.com'),
     },
     {
       email: 'hr2@example.com',
       name: 'Daniel Okafor',
       role: 'HR',
       password: SEED_HR_PASSWORD,
-      headline: 'Recruiting Lead, Aurora Systems',
+      headline: sampleEmployerHeadline('hr2@example.com'),
     },
     {
       // Seeded opted OUT on purpose: log in as this account, tick "Make my
@@ -118,67 +122,12 @@ function seedAccounts(): SeedAccount[] {
   ];
 }
 
-/** Sample listings, keyed by the email of the HR user who owns them. */
-type SeedJob = {
-  ownerEmail: string;
-  title: string;
-  description: string;
-  location: string;
-  jobType: JobType;
-  status?: 'OPEN' | 'CLOSED';
-};
-
-const SEED_JOBS: SeedJob[] = [
-  {
-    ownerEmail: 'hr1@example.com',
-    title: 'Senior Backend Engineer',
-    description:
-      'Design and operate the services behind our payments platform. You will own APIs end to end, from schema design through deployment and on-call. We work in TypeScript and Go against MongoDB and Postgres.',
-    location: 'Bengaluru, India',
-    jobType: 'FULL_TIME',
-  },
-  {
-    ownerEmail: 'hr1@example.com',
-    title: 'Frontend Engineer (React)',
-    description:
-      'Build the candidate-facing surfaces of our hiring product. Strong React and TypeScript skills expected, along with a real eye for accessible, responsive interfaces.',
-    location: 'Remote (India)',
-    jobType: 'REMOTE',
-  },
-  {
-    ownerEmail: 'hr1@example.com',
-    title: 'Engineering Intern - Platform',
-    description:
-      'A six-month internship on the platform team. You will ship real infrastructure work with a mentor, covering CI pipelines, container builds and observability.',
-    location: 'Pune, India',
-    jobType: 'INTERNSHIP',
-  },
-  {
-    ownerEmail: 'hr1@example.com',
-    title: 'Site Reliability Engineer (closed)',
-    description:
-      'This listing is already filled and is seeded as CLOSED so the status filter on the HR listings page has something to show.',
-    location: 'Hyderabad, India',
-    jobType: 'FULL_TIME',
-    status: 'CLOSED',
-  },
-  {
-    ownerEmail: 'hr2@example.com',
-    title: 'Data Analyst',
-    description:
-      'Turn product and hiring funnel data into decisions. Comfortable with SQL, Python and dashboarding, and able to explain findings to non-technical stakeholders.',
-    location: 'Mumbai, India',
-    jobType: 'FULL_TIME',
-  },
-  {
-    ownerEmail: 'hr2@example.com',
-    title: 'Technical Writer',
-    description:
-      'Own our developer documentation. This is a part-time contract role suited to someone who enjoys reading source code and turning it into clear prose.',
-    location: 'Remote (worldwide)',
-    jobType: 'PART_TIME',
-  },
-];
+/**
+ * The listings themselves live in `job.samples.ts`, which the landing page also
+ * reads. Keeping one copy means the postings a visitor sees on the marketing
+ * page are the postings this seeder actually writes.
+ */
+const SEED_JOBS = SAMPLE_JOBS;
 
 export type SeedSummary = { usersCreated: number; jobsCreated: number };
 
