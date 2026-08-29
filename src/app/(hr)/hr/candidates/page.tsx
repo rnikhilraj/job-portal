@@ -43,7 +43,7 @@ export default async function CandidateSearchPage({
       <PageHeader
         eyebrow="Opt-in directory"
         title="Candidate search"
-        lede="Everyone here chose to be found. They have agreed to share their contact details and resume with recruiters — anyone who hasn't opted in never appears, however well they match."
+        lede="Everyone here chose to be found, and has agreed to share their contact details and resume with recruiters. Anyone who has not opted in never appears, however well they match."
       />
 
       <form method="get" action="/hr/candidates" className="enter-2 card mb-6">
@@ -122,15 +122,15 @@ async function CandidateResults({
       {candidates.length === 0 ? (
         query.q || query.experienceLevel ? (
           <EmptyState
-            title="Nobody here matches — yet"
+            title="No one matches those filters"
             description="No one who's opted in fits that keyword or experience level. People who haven't opted in never appear here, however well they'd match."
             action={{ href: '/hr/candidates', label: 'Clear the filters' }}
           />
         ) : (
           <EmptyState
             title="Nobody's opted in yet"
-            description="This directory only lists people who've turned on recruiter visibility themselves — it's their call, not ours. Post a role in the meantime and applicants will come to you."
-            secondary={{ href: '/hr/jobs/new', label: 'Post a role instead' }}
+            description="This directory lists only people who have turned on recruiter visibility themselves. Post a listing in the meantime and applicants will come to you."
+            secondary={{ href: '/hr/jobs/new', label: 'Post a listing instead' }}
           />
         )
       ) : (

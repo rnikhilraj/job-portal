@@ -127,7 +127,7 @@ export function ApplyForm({ jobId, maxResumeBytes }: ApplyFormProps) {
           maxLength={2000}
           value={coverNote}
           onChange={(event) => setCoverNote(event.target.value)}
-          placeholder="Optional, but the ones who write something are the ones we remember."
+          placeholder="Optional. It sits beside your resume when a recruiter opens this."
           className={`field-input ${fieldErrors.coverNote?.length ? 'border-status-rejected' : ''}`}
         />
         {fieldErrors.coverNote?.length ? (
@@ -138,7 +138,7 @@ export function ApplyForm({ jobId, maxResumeBytes }: ApplyFormProps) {
         ) : (
           <p className="field-hint">
             {coverNote.length === 0
-              ? 'A few honest sentences beat a page of adjectives.'
+              ? 'Why this role, in a few sentences. Nobody is counting words.'
               : `${coverNote.length} of 2000 characters.`}
           </p>
         )}

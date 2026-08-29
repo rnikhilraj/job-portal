@@ -166,7 +166,7 @@ export function ProfileForm({ user }: { user: PublicUser }) {
 
           <p className="mt-3 text-xs leading-relaxed text-ink-muted">
             {isSearchable
-              ? 'You are discoverable right now — recruiters can see your contact details and download your resume. Untick and save to pull all of it back immediately.'
+              ? 'You are discoverable right now. Recruiters can see your contact details and download your resume; untick and save to pull all of it back immediately.'
               : "You're invisible to recruiters right now, which is the default and entirely fine. Nothing here is shared with anyone until you say so."}
           </p>
 

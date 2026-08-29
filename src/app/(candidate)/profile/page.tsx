@@ -16,7 +16,7 @@ export default async function ProfilePage() {
       <PageHeader
         eyebrow="Your details"
         title="Your profile"
-        lede="This is what a recruiter sees next to your application. Worth five minutes."
+        lede="This is what a recruiter sees next to your application."
       />
 
       <div className="enter-2 space-y-6">

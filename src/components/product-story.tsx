@@ -210,7 +210,7 @@ const STAGES = [
   {
     number: '03',
     title: 'Track',
-    copy: 'Every application carries its own rail. When a recruiter opens yours, the position moves — so silence and progress stop looking the same.',
+    copy: 'Every application carries its own rail. When a recruiter opens yours, the position moves, so silence and progress stop looking the same.',
     demo: <TrackDemo />,
   },
   {

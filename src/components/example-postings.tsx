@@ -60,7 +60,7 @@ export function ExamplePostings() {
           Six example postings, written on first run
         </h2>
         <p className="page-lede">
-          These are fixtures, not customers — the seed script creates them so there is something
+          These are fixtures, not customers. The seed script creates them so there is something
           real to search, apply to and move through the pipeline the moment you sign in.
         </p>
       </div>

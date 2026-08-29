@@ -165,14 +165,14 @@ async function ApplicantResults({
       {applicants.length === 0 ? (
         isFiltered ? (
           <EmptyState
-            title="Nobody here matches"
+            title="No applicant matches those filters"
             description="No applicant to this role fits that name or stage. Clear the filters to see the whole pipeline again."
             action={{ href: basePath, label: 'Show me everyone' }}
           />
         ) : (
           <EmptyState
             title="Quiet so far"
-            description="Nobody's applied yet. When they do, they'll show up here with their resume and cover note, and you can move them along without opening a spreadsheet."
+            description="Nobody has applied yet. When they do, they arrive here with their resume and cover note, and you move them along from this page."
             secondary={{ href: '/hr/candidates', label: 'Go find people instead' }}
           />
         )

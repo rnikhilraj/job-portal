@@ -36,7 +36,7 @@ export default async function HrJobsPage({
         lede="Only roles you posted. Open ones are visible to candidates; closed ones stay here for your records."
         action={
           <Link href="/hr/jobs/new" className="btn-primary">
-            <span aria-hidden="true">+</span> Post a job
+            <span aria-hidden="true">+</span> Post a listing
           </Link>
         }
       />
@@ -77,14 +77,14 @@ async function OwnedJobResults({
       {jobs.length === 0 ? (
         isFiltered ? (
           <EmptyState
-            title="Nothing matches those filters"
+            title="None of your listings match"
             description="None of your listings fit that title or status. Clear the filters to see everything you've posted."
             action={{ href: '/hr/jobs', label: 'Show me everything' }}
           />
         ) : (
           <EmptyState
             title="Your first listing goes here"
-            description="Post a role and this page turns into your pipeline — every applicant, their resume and cover note, and a funnel you can actually move people through."
+            description="Post a listing and this page becomes your pipeline: every applicant, their resume and cover note, and a funnel you can move people through."
             action={{ href: '/hr/jobs/new', label: 'Post the first one' }}
           />
         )

@@ -73,14 +73,14 @@ async function JobResults({
   if (jobs.length === 0) {
     return isFiltered ? (
       <EmptyState
-        title="Nothing matched — this time"
+        title="No roles match those filters"
         description="No open role fits all three filters at once. Loosening the location is usually the one that helps."
         action={{ href: '/jobs', label: 'Clear the filters' }}
       />
     ) : (
       <EmptyState
         title="The board is empty"
-        description="No roles are open at the moment. New ones show up here the moment a team posts them — good time to make sure your profile is ready for when they do."
+        description="No roles are open at the moment. New ones appear here as soon as a team posts them, so a finished profile is worth having ready."
         action={{ href: '/profile', label: 'Get my profile ready' }}
       />
     );

@@ -142,14 +142,14 @@ describe('PageHeader and MetaRow', () => {
         eyebrow="Your pipeline"
         title="My applications"
         lede="Where each one stands."
-        action={<button type="button">Post a job</button>}
+        action={<button type="button">Post a listing</button>}
       />,
     );
 
     expect(screen.getByText('Your pipeline')).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'My applications' })).toBeInTheDocument();
     expect(screen.getByText('Where each one stands.')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Post a job' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Post a listing' })).toBeInTheDocument();
   });
 
   it('works with only the required parts', () => {

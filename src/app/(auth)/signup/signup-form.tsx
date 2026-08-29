@@ -40,7 +40,7 @@ export function SignupForm() {
         setFieldErrors(error.fieldErrors);
         setFormError(error.message);
       } else {
-        setFormError('Could not reach the server. Nothing was submitted — try again in a moment.');
+        setFormError('Could not reach the server — no account was created. Try again in a moment.');
       }
       setIsSubmitting(false);
     }

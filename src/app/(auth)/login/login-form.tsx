@@ -47,7 +47,7 @@ export function LoginForm() {
         setFieldErrors(error.fieldErrors);
         setFormError(error.message);
       } else {
-        setFormError('Could not reach the server. Nothing was submitted — try again in a moment.');
+        setFormError('Could not reach the server — you are not signed in. Try again in a moment.');
       }
       setIsSubmitting(false);
     }

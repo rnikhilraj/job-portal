@@ -128,7 +128,10 @@ describe('ApplyForm — the client-side courtesy checks', () => {
   it('counts the cover note only once something is typed', async () => {
     render(<ApplyForm jobId="job-1" maxResumeBytes={MAX_BYTES} />);
 
-    expect(screen.getByText(/a few honest sentences/i)).toBeInTheDocument();
+    // Asserted on the counter rather than on the hint that precedes it: the
+    // hint is copy, and coupling a behaviour test to a sentence means every
+    // wording pass turns red for no reason.
+    expect(screen.queryByText(/of 2000 characters/i)).not.toBeInTheDocument();
     await userEvent.type(screen.getByLabelText(/cover note/i), 'Hello');
     expect(screen.getByText(/5 of 2000 characters/i)).toBeInTheDocument();
   });
