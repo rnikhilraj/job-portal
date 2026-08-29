@@ -160,6 +160,8 @@ src/
 │   ├── auth/              auth.schema · auth.service · password · jwt · session · cookie
 │   ├── users/             user.model · user.schema · user.service · user.constants
 │   ├── jobs/              job.model · job.schema · job.service · job.constants
+│   │                      · job.samples (the demo listings, read by both the
+│   │                      seeder and the landing page so they cannot drift)
 │   └── applications/      application.model · application.schema · application.service
 │                          · application.constants
 │
@@ -174,6 +176,8 @@ src/
 │   │                      both applications and user profiles embed a resume
 │   ├── query.ts           search-param normalisation for the list pages
 │   ├── http.ts            client-side fetch wrapper over the JSON envelope
+│   ├── local-day.ts       calendar-day helpers — deliberately not in a client
+│   │                      module, because the server calls them too
 │   └── seed.ts            idempotent demo data
 │
 ├── components/            shared UI, including the pipeline rail, hero and funnel

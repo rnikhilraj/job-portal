@@ -136,6 +136,15 @@ flushes a 200 shell before the page's auth guard runs, turning a 307 redirect or
 scoped to the result list *inside* the page instead. The `/hr` route group also
 resolves its role gate in the layout, above every boundary, for the same reason.
 
+**A function exported from a `'use client'` module cannot be called on the
+server.** It arrives there as a client *reference*, and invoking it throws
+`Attempted to call x() from the server` — a 500 on every request. What makes it
+expensive is that nothing catches it first: `tsc`, ESLint, `next build` and the
+whole Jest suite all pass, because Jest does not enforce the RSC boundary and
+the compiler does not either. Only requesting the page finds it. Helpers both
+sides need go in a neutral module — `src/lib/local-day.ts` exists for exactly
+this reason.
+
 **Next rewrites `tsconfig.json` on every build.** Reformatting it by hand just
 produces a dirty tree after the next build. Leave it in Next's shape.
 
@@ -180,7 +189,7 @@ it as anything stronger.
 ## Design system
 
 Tokens live in `tailwind.config.ts`; motion vocabulary and component classes in
-`src/app/globals.css`. Two conventions worth preserving:
+`src/app/globals.css`. Three conventions worth preserving:
 
 - **`petrol` is the only interactive colour** and is never a status; the semantic
   ramp (slate/amber/green/rose) is never interactive chrome.
@@ -210,6 +219,13 @@ about who is reading:
   `/api/jobs` routes, params, component and file names. Never appears in new
   user-facing copy.
 - ***opening*, *position*, *vacancy*** — retired. Do not reintroduce them.
+
+`tests/copy-terminology.test.ts` enforces this: it walks every file under
+`src/app` and `src/components` and fails on the retired forms. It checks only
+the unambiguous plurals, because "without opening a spreadsheet" and "the
+position moves along the rail" are honest English this product uses. **Prose in
+README.md and this file is not covered** — that is where "browse openings"
+survived a whole terminology pass.
 
 The existing `/jobs` URLs and the `Job` model keep their names; renaming routes
 is a separate change from renaming copy.
