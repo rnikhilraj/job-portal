@@ -40,10 +40,10 @@ export async function findOwnedJobOrFail(
   ownerId: Types.ObjectId,
 ): Promise<JobDocument> {
   const job = await Job.findById(jobId);
-  if (!job) throw new NotFoundError('Job listing not found.');
+  if (!job) throw new NotFoundError('We could not find that listing.');
 
   if (!job.postedBy.equals(ownerId)) {
-    throw new ForbiddenError('You can only manage job listings you posted.');
+    throw new ForbiddenError('You can only change listings you posted.');
   }
 
   return job;
@@ -82,7 +82,7 @@ export async function findJobForViewer(
   const job = await Job.findById(jobId);
 
   const visible = job && (job.status === 'OPEN' || (viewer.role === 'HR' && job.postedBy.equals(viewer.id)));
-  if (!job || !visible) throw new NotFoundError('Job listing not found.');
+  if (!job || !visible) throw new NotFoundError('We could not find that listing.');
 
   return toPublicJob(job);
 }

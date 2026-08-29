@@ -81,7 +81,7 @@ export function withRoute<P extends RouteParams = RouteParams>(
 
 export function toErrorResponse(error: unknown, request?: NextRequest): NextResponse {
   if (error instanceof ZodError) {
-    return fail(400, 'VALIDATION_ERROR', 'Request validation failed.', flattenZodError(error));
+    return fail(400, 'VALIDATION_ERROR', 'Some of those fields need another look.', flattenZodError(error));
   }
 
   if (error instanceof AppError) {
@@ -89,15 +89,15 @@ export function toErrorResponse(error: unknown, request?: NextRequest): NextResp
   }
 
   if (isDuplicateKeyError(error)) {
-    return fail(409, 'CONFLICT', 'That record already exists.');
+    return fail(409, 'CONFLICT', 'That already exists.');
   }
 
   if (isCastError(error)) {
-    return fail(400, 'VALIDATION_ERROR', 'Malformed identifier in request.');
+    return fail(400, 'VALIDATION_ERROR', 'That link does not point at anything.');
   }
 
   if (isMongooseValidationError(error)) {
-    return fail(400, 'VALIDATION_ERROR', 'Request validation failed.');
+    return fail(400, 'VALIDATION_ERROR', 'Some of those fields need another look.');
   }
 
   console.error(

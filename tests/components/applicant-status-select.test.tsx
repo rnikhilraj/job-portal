@@ -84,7 +84,7 @@ describe('ApplicantStatusSelect', () => {
 
   it('rolls back to the previous stage when the server refuses', async () => {
     respondWith(403, {
-      error: { code: 'FORBIDDEN', message: 'You can only manage job listings you posted.' },
+      error: { code: 'FORBIDDEN', message: 'You can only change listings you posted.' },
     });
 
     render(<ApplicantStatusSelect applicationId="app-7" status="APPLIED" />);
@@ -96,13 +96,13 @@ describe('ApplicantStatusSelect', () => {
 
   it('surfaces the server’s own reason, not a guess about the network', async () => {
     respondWith(403, {
-      error: { code: 'FORBIDDEN', message: 'You can only manage job listings you posted.' },
+      error: { code: 'FORBIDDEN', message: 'You can only change listings you posted.' },
     });
 
     render(<ApplicantStatusSelect applicationId="app-7" status="APPLIED" />);
     await userEvent.selectOptions(screen.getByRole('combobox'), 'SHORTLISTED');
 
-    const message = await screen.findByText(/You can only manage job listings you posted/);
+    const message = await screen.findByText(/You can only change listings you posted/);
     // ...and says what is still true, since the control just moved back.
     expect(message).toHaveTextContent(/still showing as applied/i);
   });

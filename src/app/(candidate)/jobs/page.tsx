@@ -37,8 +37,8 @@ export default async function BrowseJobsPage({
   return (
     <>
       <PageHeader
-        eyebrow="Open roles"
-        title="Open positions"
+        eyebrow="Browse"
+        title="Open roles"
         lede="Everything here is live and taking applications right now."
       />
 
@@ -50,7 +50,7 @@ export default async function BrowseJobsPage({
       <div className="enter-3">
         <Suspense
           key={JSON.stringify(query)}
-          fallback={<SkeletonList label="Loading open positions…" />}
+          fallback={<SkeletonList label="Loading open roles…" />}
         >
           <JobResults query={query} rawParams={rawParams} />
         </Suspense>

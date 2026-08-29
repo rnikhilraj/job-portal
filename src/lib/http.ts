@@ -48,7 +48,7 @@ export async function apiFetch<T>(path: string, init: RequestInit = {}): Promise
   try {
     body = (await response.json()) as Envelope<T>;
   } catch {
-    throw new ApiRequestError(response.status, 'INTERNAL_ERROR', 'Unexpected server response.', {});
+    throw new ApiRequestError(response.status, 'INTERNAL_ERROR', 'The server sent something we could not read.', {});
   }
 
   if (!response.ok || body.error) {
@@ -56,7 +56,7 @@ export async function apiFetch<T>(path: string, init: RequestInit = {}): Promise
     throw new ApiRequestError(
       response.status,
       error?.code ?? 'INTERNAL_ERROR',
-      error?.message ?? 'Request failed.',
+      error?.message ?? 'Something went wrong, and the server did not say what.',
       toFieldErrors(error?.details),
     );
   }

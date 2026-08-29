@@ -204,7 +204,7 @@ describe('ProfileForm — failures', () => {
     respondWith(400, {
       error: {
         code: 'VALIDATION_ERROR',
-        message: 'Request validation failed.',
+        message: 'Some of those fields need another look.',
         details: { phone: ['Digits and + ( ) - . only, please.'] },
       },
     });

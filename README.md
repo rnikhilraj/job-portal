@@ -1,6 +1,6 @@
 # Job Application Tracker
 
-A full-stack job application tracker with two roles. **Candidates** browse openings, apply with
+A full-stack job application tracker with two roles. **Candidates** browse open roles, apply with
 a PDF resume and follow their status. **HR** users post listings, review the applicants for
 their own listings and move them through a hiring pipeline.
 
@@ -557,8 +557,10 @@ hermetic.
 | `components/applicant-status-select.test.tsx` | optimistic update and rollback, and that a 403 surfaces the server's reason |
 | `components/mobile-nav.test.tsx` | disclosure behaviour: Escape, outside click, and closing on navigation |
 | `components/apply-form.test.tsx` | client-side upload checks, and that a rejected file never reaches the network |
-| `components/pipeline.test.tsx` | the signature element: chip labels, funnel maths, hero sequence and reduced motion |
+| `components/pipeline.test.tsx` | the signature element: chip labels, funnel maths, and the hero rail — static on load, scrubbable by press |
 | `components/presentational.test.tsx` | field errors, empty states, pagination, page header, job card, skeletons |
+| `components/landing.test.tsx` | the landing sections: postings framed as fixtures, the four real stages, keyboard-reachable strip |
+| `copy-terminology.test.ts` | the one-noun rule from CLAUDE.md, and that error defaults are not REST jargon |
 
 The edge cases called out in the brief are covered explicitly: duplicate signup email → 409,
 wrong password → 401, applying twice to the same job → 409, one HR user touching another's

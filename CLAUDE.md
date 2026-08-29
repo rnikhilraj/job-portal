@@ -191,6 +191,44 @@ Tokens live in `tailwind.config.ts`; motion vocabulary and component classes in
   form and the applicant funnel. One elevated moment per role. Spending it
   elsewhere turns a signature into wallpaper.
 
+## Copy
+
+### One noun per concept
+
+Five words for one object had crept in — *job*, *listing*, *role*, *position*,
+*opening* — including a page whose eyebrow said "Open roles" directly above a
+title saying "Open positions". The rule is about **the thing being named**, not
+about who is reading:
+
+- **role** — the work itself. Candidates browse, apply to, and get shortlisted
+  for roles. HR describes a role when writing its title, location and
+  description.
+- **listing** — the published record advertising a role. It is posted, edited,
+  closed, deleted and owned. "My listings", "Close a listing without deleting
+  it", "You can only change listings you posted".
+- **job** — **code only**: the Mongoose model, the collection, `/jobs` and
+  `/api/jobs` routes, params, component and file names. Never appears in new
+  user-facing copy.
+- ***opening*, *position*, *vacancy*** — retired. Do not reintroduce them.
+
+The existing `/jobs` URLs and the `Job` model keep their names; renaming routes
+is a separate change from renaming copy.
+
+### Error messages are product copy
+
+`src/lib/api/errors.ts` holds the defaults, and every one is user-facing — they
+are what a caller sees when a service throws without its own message. They must
+read like the rest of the product, not like a REST library: "We could not find
+that", never "Resource not found"; "That link does not point at anything", never
+"Malformed identifier in request". Prefer overriding at the call site with a
+message that names the actual thing.
+
+The same applies to `src/lib/http.ts`, which is the last line of defence when a
+response cannot be parsed at all.
+
+`tests/api-envelope.test.ts` pins the 500 body **exactly**, so that one string
+can only change deliberately.
+
 ## Testing conventions
 
 - API suites invoke App Router handlers directly with a real `NextRequest`, a
@@ -203,3 +241,13 @@ Tokens live in `tailwind.config.ts`; motion vocabulary and component classes in
   the UI actually puts on the wire.
 - `tests/api-envelope.test.ts` asserts the 500 body **exactly**, on purpose, so
   that copy can only change deliberately.
+
+<!-- BEGIN:nextjs-agent-rules -->
+
+# This is NOT the Next.js you know
+
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+
+This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+
+<!-- END:nextjs-agent-rules -->

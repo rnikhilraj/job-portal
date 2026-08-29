@@ -184,7 +184,7 @@ describe('JobForm — when the server refuses', () => {
     respondWith(400, {
       error: {
         code: 'VALIDATION_ERROR',
-        message: 'Request validation failed.',
+        message: 'Some of those fields need another look.',
         details: { title: ['That title is already taken.'] },
       },
     });
@@ -193,7 +193,7 @@ describe('JobForm — when the server refuses', () => {
     await userEvent.click(screen.getByRole('button', { name: /post this role/i }));
 
     expect(await screen.findByText('That title is already taken.')).toBeInTheDocument();
-    expect(screen.getByRole('alert')).toHaveTextContent('Request validation failed.');
+    expect(screen.getByRole('alert')).toHaveTextContent('Some of those fields need another look.');
     expect(push).not.toHaveBeenCalled();
   });
 

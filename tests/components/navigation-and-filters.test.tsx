@@ -178,14 +178,14 @@ describe('DeleteJobButton', () => {
   it('prefers the server’s reason over a generic connection message', async () => {
     const confirmSpy = jest.spyOn(window, 'confirm').mockReturnValue(true);
     respondWith(403, {
-      error: { code: 'FORBIDDEN', message: 'You can only manage job listings you posted.' },
+      error: { code: 'FORBIDDEN', message: 'You can only change listings you posted.' },
     });
     render(<DeleteJobButton jobId="job-1" jobTitle="Staff Engineer" />);
 
     await userEvent.click(screen.getByRole('button', { name: /delete/i }));
 
     expect(
-      await screen.findByText(/You can only manage job listings you posted\./),
+      await screen.findByText(/You can only change listings you posted\./),
     ).toBeInTheDocument();
     expect(screen.getByText(/the listing is unchanged/i)).toBeInTheDocument();
     confirmSpy.mockRestore();

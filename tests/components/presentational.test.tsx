@@ -153,8 +153,8 @@ describe('PageHeader and MetaRow', () => {
   });
 
   it('works with only the required parts', () => {
-    render(<PageHeader eyebrow="Open roles" title="Open positions" />);
-    expect(screen.getByRole('heading', { name: 'Open positions' })).toBeInTheDocument();
+    render(<PageHeader eyebrow="Browse" title="Open roles" />);
+    expect(screen.getByRole('heading', { name: 'Open roles' })).toBeInTheDocument();
   });
 
   it('lists each meta item with its glyph hidden from screen readers', () => {

@@ -82,12 +82,12 @@ export type ApplyToJobParams = {
 export async function applyToJob(params: ApplyToJobParams): Promise<PublicApplication> {
   const job = await Job.findOne({ _id: params.jobId, status: 'OPEN' });
   if (!job) {
-    throw new NotFoundError('This listing has closed — it is no longer accepting applications.');
+    throw new NotFoundError('That role has closed and is not taking applications.');
   }
 
   const alreadyApplied = await Application.exists({ job: job._id, candidate: params.candidateId });
   if (alreadyApplied) {
-    throw new ConflictError('You have already applied to this job.');
+    throw new ConflictError('You have already applied to this role.');
   }
 
   const resume = await storeResume(params.file);
@@ -122,7 +122,7 @@ export async function applyToJob(params: ApplyToJobParams): Promise<PublicApplic
     await deleteResume(resume.storedName);
 
     if (isDuplicateKeyError(error)) {
-      throw new ConflictError('You have already applied to this job.');
+      throw new ConflictError('You have already applied to this role.');
     }
     throw error;
   }
