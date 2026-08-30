@@ -1,6 +1,6 @@
-# Job Application Tracker
+# Shortlist
 
-A full-stack job application tracker with two roles. **Candidates** browse open roles, apply with
+A full-stack hiring platform with two roles. **Candidates** browse open roles, apply with
 a PDF resume and follow their status. **HR** users post listings, review the applicants for
 their own listings and move them through a hiring pipeline.
 

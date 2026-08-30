@@ -5,7 +5,7 @@ import { getEnv } from '@/lib/env';
 import { requirePageUser } from '@/modules/auth/session';
 import { toPublicUser } from '@/modules/users/user.model';
 
-export const metadata = { title: 'Profile · Job Application Tracker' };
+export const metadata = { title: 'Profile · Shortlist' };
 
 export default async function ProfilePage() {
   const user = await requirePageUser();

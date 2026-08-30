@@ -29,7 +29,7 @@ function Wordmark() {
         <span className="h-0.5 w-1.5 bg-mist-400" />
         <span className="h-1.5 w-1.5 rounded-full border border-mist-400 bg-white" />
       </span>
-      <span className="font-display tracking-tight">Tracker</span>
+      <span className="font-display tracking-tight">Shortlist</span>
     </Link>
   );
 }

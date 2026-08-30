@@ -1,8 +1,8 @@
 {
-  "name": "job-application-tracker",
+  "name": "shortlist",
   "version": "1.0.0",
   "private": true,
-  "description": "Full-stack Job Application Tracker for HR and Candidate roles",
+  "description": "Shortlist — a full-stack hiring platform for HR and Candidate roles",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
