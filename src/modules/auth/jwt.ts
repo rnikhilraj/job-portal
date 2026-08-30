@@ -5,7 +5,7 @@ import { getEnv } from '@/lib/env';
 import { USER_ROLES, type UserRole } from '@/modules/users/user.constants';
 
 const JWT_ALGORITHM = 'HS256';
-const JWT_ISSUER = 'job-application-tracker';
+const JWT_ISSUER = 'shortlist';
 
 export type SessionPayload = {
   userId: string;

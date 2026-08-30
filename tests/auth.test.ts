@@ -1,3 +1,5 @@
+import { SignJWT } from 'jose';
+
 import { POST as login } from '@/app/api/auth/login/route';
 import { GET as me } from '@/app/api/auth/me/route';
 import { POST as logout } from '@/app/api/auth/logout/route';
@@ -272,5 +274,36 @@ describe('POST /api/auth/logout', () => {
 
     expect(response.status).toBe(200);
     expect(response.headers.get('set-cookie')).toContain('Max-Age=0');
+  });
+});
+
+describe('session token issuer', () => {
+  /*
+   * The issuer moved from 'job-application-tracker' to 'shortlist' when the
+   * product was renamed, which is what signs every pre-rename session out.
+   * Nothing asserted the issuer before, so that rename was invisible to the
+   * suite — this pins the rejection so a future change to the string is a
+   * deliberate one that also logs everyone out.
+   */
+  it('rejects a token signed with the old issuer', async () => {
+    const secret = new TextEncoder().encode(process.env.JWT_SECRET);
+    const issuedAt = Math.floor(Date.now() / 1000);
+
+    const staleToken = await new SignJWT({ email: 'ada@example.com', role: 'CANDIDATE' })
+      .setProtectedHeader({ alg: 'HS256' })
+      .setSubject('000000000000000000000000')
+      .setIssuer('job-application-tracker')
+      .setIssuedAt(issuedAt)
+      .setExpirationTime(issuedAt + 3600)
+      .sign(secret);
+
+    expect(await verifySessionToken(staleToken)).toBeNull();
+  });
+
+  it('accepts a token the current signer produced', async () => {
+    const candidate = await createCandidate();
+    const token = candidate.cookie.split('=').slice(1).join('=');
+
+    expect(await verifySessionToken(token)).not.toBeNull();
   });
 });
