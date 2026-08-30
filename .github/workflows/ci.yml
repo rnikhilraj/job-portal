@@ -31,7 +31,7 @@ jobs:
       # mongodb-memory-server downloads a mongod binary on first run; caching it
       # keeps CI from re-fetching ~80 MB on every push.
       - name: Cache mongodb-memory-server binary
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: ~/.cache/mongodb-binaries
           key: mongo-binaries-${{ runner.os }}
