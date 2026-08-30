@@ -36,6 +36,27 @@ ENV NEXT_TELEMETRY_DISABLED=1
 ENV PORT=3000
 ENV HOSTNAME=0.0.0.0
 
+# Patch the base image's OS packages, then delete npm.
+#
+# `output: 'standalone'` emits a server that runs as `node server.js` and never
+# shells out to a package manager, so npm is dead weight in this stage — and not
+# harmless dead weight: every HIGH/CRITICAL CVE the image scan reported came
+# from npm's own bundled dependencies (tar, sigstore, pacote, brace-expansion),
+# not from anything this app installs. Removing it drops the whole class and
+# shrinks the runtime attack surface to the Node binary and the traced modules.
+#
+# The `apk upgrade` covers the other half — libssl3/libcrypto3 lag the base tag
+# between releases, so pinning the tag alone leaves known-fixed OS CVEs in place.
+RUN apk --no-cache upgrade \
+  && rm -rf /usr/local/lib/node_modules/npm \
+    /usr/local/lib/node_modules/corepack \
+    /usr/local/bin/npm \
+    /usr/local/bin/npx \
+    /usr/local/bin/corepack \
+    /opt/yarn-v* \
+    /usr/local/bin/yarn \
+    /usr/local/bin/yarnpkg
+
 # Run as an unprivileged user rather than root.
 RUN addgroup --system --gid 1001 nodejs \
   && adduser --system --uid 1001 nextjs

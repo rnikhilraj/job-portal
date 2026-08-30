@@ -694,6 +694,15 @@ readable message listing every problem at once.
   resumes on the named volume `resume_uploads` and a `wget` healthcheck against `/api/health`.
   It waits for `mongo` to report healthy before starting.
 
+**The runtime stage carries no package manager.** `apk upgrade` patches the base image's OS
+packages, then npm, npx, yarn and corepack are deleted: the standalone server runs as
+`node server.js` and never shells out to one, so they are attack surface with no purpose. That is
+not housekeeping — every HIGH and CRITICAL the image scan reported came from npm's own bundled
+dependencies (`tar`, `sigstore`, `pacote`, `brace-expansion`) rather than from anything this app
+installs, and the OS half was `libssl3`/`libcrypto3` lagging the pinned tag. With both addressed
+the image scans clean at HIGH and CRITICAL, which is what lets CI gate on it with `exit-code: 1`
+instead of printing a report nobody reads.
+
 Both volumes survive `docker compose down` and are removed by `docker compose down -v`.
 
 ---
