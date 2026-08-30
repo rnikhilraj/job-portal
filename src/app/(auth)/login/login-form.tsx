@@ -6,6 +6,7 @@ import { useState } from 'react';
 import { Alert } from '@/components/alert';
 import { TextField } from '@/components/text-field';
 import { ApiRequestError, postJson } from '@/lib/http';
+import { safeRedirectPath } from '@/lib/safe-redirect';
 import { loginSchema } from '@/modules/auth/auth.schema';
 import type { PublicUser } from '@/modules/users/user.constants';
 
@@ -17,7 +18,10 @@ function defaultDestination(role: PublicUser['role']): string {
 export function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const nextPath = searchParams.get('next');
+  // Validated, never used raw: `next` is attacker-controlled, and sending the
+  // browser to it after a successful sign-in is exactly when a redirect off
+  // this origin would be believed. See src/lib/safe-redirect.ts.
+  const nextPath = safeRedirectPath(searchParams.get('next'));
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');

@@ -4,9 +4,16 @@ import nextJest from 'next/jest.js';
 const createJestConfig = nextJest({ dir: './' });
 
 /**
- * Two projects, because the suites need different environments: API and domain
- * tests run against Node with a real in-memory MongoDB, while component tests
- * need a DOM.
+ * Three projects, because the suites need different environments: API and
+ * domain tests run against Node with a real in-memory MongoDB, component tests
+ * need a DOM, and `unit` covers everything that needs neither.
+ *
+ * That third project is not cosmetic. Every file in the `api` project boots its
+ * own MongoMemoryServer via jest.setup.ts, and six suites were paying for one
+ * they never queried. Under load that boot can exceed mongodb-memory-server's
+ * 10s limit and fail a suite that does nothing but read files off disk — which
+ * is exactly how the import-graph guard once went red. Suites that need no
+ * database now say so by living in tests/unit/.
  *
  * `collectCoverageFrom` deliberately includes src/components. It previously did
  * not, which meant the headline coverage figure was computed over a narrowing
@@ -20,7 +27,19 @@ const shared = {
 const config = {
   // A shared in-memory MongoDB instance per file means suites must not overlap.
   maxWorkers: 1,
-  testTimeout: 30_000,
+  /*
+   * 60s, not 30s, because some API tests are slow by design rather than by
+   * accident. bcrypt runs at cost 12 and login answers a miss with an
+   * equivalent comparison against a dummy hash, so the rate-limit test spends
+   * ~250ms per attempt on this machine purely to exhaust the limit — eleven
+   * real bcrypt operations is the thing it is testing.
+   *
+   * Reducing the cost factor under NODE_ENV=test would be the other way to buy
+   * the headroom, and is deliberately not done: it would put a branch in a
+   * security-critical file and mean the suite no longer exercises the hashing
+   * the README describes. Waiting is cheaper than that trade.
+   */
+  testTimeout: 60_000,
   collectCoverageFrom: [
     'src/app/api/**/*.ts',
     'src/modules/**/*.ts',
@@ -61,7 +80,17 @@ const config = {
       displayName: 'api',
       testEnvironment: 'node',
       setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
+      // tests/unit is excluded: those suites need no database, and the `unit`
+      // project below runs them without starting one.
       testMatch: ['<rootDir>/tests/**/*.test.ts'],
+      testPathIgnorePatterns: ['<rootDir>/tests/unit/'],
+    },
+    {
+      ...shared,
+      displayName: 'unit',
+      testEnvironment: 'node',
+      setupFilesAfterEnv: ['<rootDir>/jest.setup.unit.ts'],
+      testMatch: ['<rootDir>/tests/unit/**/*.test.ts'],
     },
     {
       ...shared,

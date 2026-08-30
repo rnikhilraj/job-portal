@@ -22,18 +22,28 @@ fails.
 
 ### Running a single test
 
-Jest runs **two projects** — `api` (Node environment, real in-memory MongoDB) and
-`components` (jsdom). Filtering by path works across both; `--selectProjects`
-narrows to one:
+Jest runs **three projects** — `unit` (Node, no database), `api` (Node, real
+in-memory MongoDB) and `components` (jsdom). Filtering by path works across all
+three; `--selectProjects` narrows to one:
 
 ```bash
 npx jest tests/jobs.test.ts --runInBand
+npx jest --selectProjects unit --runInBand        # ~0.6s, boots no mongod
 npx jest --selectProjects components --runInBand
 npx jest -t 'rejects a second application' --runInBand   # by test name
 ```
 
 `--runInBand` matters: each API suite boots its own MongoMemoryServer, and
 parallel workers trip over each other.
+
+**A suite that needs no database goes in `tests/unit/`.** Everything in the
+`api` project boots a MongoMemoryServer through `jest.setup.ts`, whether or not
+the file ever queries it. Six suites were paying that cost for nothing, and the
+bill came due as flakiness rather than slowness: under load the boot can exceed
+mongodb-memory-server's own 10s limit, so a suite that does nothing but read
+files off disk fails with `Instance failed to start`. If a new suite touches no
+model, no factory and no handler, put it in `tests/unit/` — it will run in
+milliseconds and cannot fail for a reason unrelated to its assertions.
 
 ### Docker
 
@@ -286,6 +296,14 @@ can only change deliberately.
 
 - API suites invoke App Router handlers directly with a real `NextRequest`, a
   genuinely signed cookie and an ephemeral MongoDB. No mocking of auth.
+- **Fixture passwords are hashed once, not once per user.** `tests/helpers/auth.ts`
+  memoises the bcrypt hash per distinct password. Cost 12 is ~250ms, fixtures are
+  created ~190 times a run, and that arithmetic was most of the suite's runtime —
+  `candidate-search.test.ts` went from 27.7s to 1.8s. The cached value is a real
+  hash of that password, so sign-in still exercises the real comparison; only the
+  per-fixture salt is shared, which nothing asserts on. Do not "fix" this by
+  lowering `SALT_ROUNDS` under `NODE_ENV=test` — that puts a branch in a
+  security-critical file and stops the suite testing what the README describes.
 - Prove a new test is not vacuous: break the thing it guards and watch it fail.
   Three tests in this repo have passed with the bug present before being
   rewritten. The latest drove a raw `{experienceLevel: ''}` body that the browser

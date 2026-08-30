@@ -410,6 +410,16 @@ registered. Both credential endpoints are rate limited.
 **Sessions.** HS256 JWTs signed with `JWT_SECRET` (rejected at under 32 characters), carried in a
 cookie that is `httpOnly`, `SameSite=lax`, `Secure` in production, and scoped to `/`.
 
+**The post-sign-in redirect cannot leave this origin.** `src/middleware.ts` sends an anonymous
+visitor to `/login?next=<where they were going>`, and that parameter is set by whoever wrote the
+link. It is validated by `safeRedirectPath()` before the browser is sent anywhere, so a crafted
+`/login?next=https://evil.example` lands the user on their own role's home instead. The check
+resolves the value against a fixed base and requires the origin to survive, rather than comparing
+strings: `//evil.example` is scheme-relative and `/\evil.example` is normalised to the same thing
+by the URL parser, and both start with `/`. `javascript:` and `data:` are refused by the same
+rule. This matters more than an ordinary open redirect because the bounce happens *after* a
+genuine sign-in, when the user has just been shown the real site and has no reason to look again.
+
 **Resume uploads never trust the client.**
 
 - The declared content type is checked, but the decisive test is the file's own leading bytes:
@@ -531,7 +541,7 @@ markup into another user's page.
 
 ```bash
 npm install       # once
-npm test          # 479 tests across 26 suites (api + component projects)
+npm test          # 495 tests across 28 suites (unit + api + component projects)
 npm run test:coverage
 npx jest tests/applications.test.ts     # a single suite
 npx jest -t 'applying twice'            # a single test by name
@@ -553,10 +563,11 @@ hermetic.
 | `users.test.ts` | profile editing, privilege-escalation attempts |
 | `candidate-search.test.ts` | the opt-in boundary, profile resume upload, recruiter resume access, HR-only access, search/filter/pagination |
 | `page-guards.test.ts` | requirePageUser: redirect target and status for every signed-out and wrong-role case |
-| `middleware.test.ts` | redirect behaviour, and that it is not an access control |
-| `api-envelope.test.ts` | error-to-status mapping, no internal leakage |
-| `query-helpers.test.ts` | URL/pagination helpers |
-| `client-bundle-boundary.test.ts` | that no client component can reach Mongoose, bcrypt or the JWT key |
+| `unit/middleware.test.ts` | redirect behaviour, and that it is not an access control |
+| `unit/api-envelope.test.ts` | error-to-status mapping, no internal leakage |
+| `unit/query-helpers.test.ts` | URL/pagination helpers |
+| `unit/safe-redirect.test.ts` | that a `?next=` destination cannot leave this origin — scheme-relative, backslash and `javascript:` forms included |
+| `unit/client-bundle-boundary.test.ts` | that no client component can reach Mongoose, bcrypt or the JWT key |
 | `health.test.ts` | the probe's envelope, its connection-state reporting, and that it needs no session |
 | `delete-cascade-order.test.ts` | that rows are deleted before the files they point at, so a failed unlink cannot orphan a live record |
 | `components/pipeline-rail.test.tsx` | the status rail: accessible description, the seen-status memory, reduced motion, frame cleanup |
@@ -565,12 +576,13 @@ hermetic.
 | `components/apply-form.test.tsx` | client-side upload checks, and that a rejected file never reaches the network |
 | `components/pipeline.test.tsx` | the signature element: chip labels, funnel maths, and the hero rail — static on load, scrubbable by press |
 | `components/presentational.test.tsx` | field errors, empty states, pagination, page header, job card, skeletons |
+| `components/login-form.test.tsx` | role-based landing, that a legitimate `next` survives, and that a hostile one is never followed |
 | `components/job-form.test.tsx` | posting vs editing, defaults, client-side validation, and how a server refusal surfaces |
 | `components/profile-form.test.tsx` | that only profile fields are sent, skill normalisation, and the opt-in naming what it exposes |
 | `components/profile-resume.test.tsx` | upload, replace and remove, local PDF/size checks, and refusal vs unreachable server |
 | `components/navigation-and-filters.test.tsx` | role-aware navigation, logout failure handling, and the delete-cascade confirmation |
 | `components/landing.test.tsx` | the landing sections: postings framed as fixtures, the four real stages, keyboard-reachable strip |
-| `copy-terminology.test.ts` | the one-noun rule from CLAUDE.md, and that error defaults are not REST jargon |
+| `unit/copy-terminology.test.ts` | the one-noun rule from CLAUDE.md, and that error defaults are not REST jargon |
 
 The edge cases called out in the brief are covered explicitly: duplicate signup email → 409,
 wrong password → 401, applying twice to the same job → 409, one HR user touching another's
@@ -590,8 +602,16 @@ has two jobs: one running typecheck, lint, tests and build, and one booting the
 Compose stack from scratch to prove the README's single-command claim.
 
 Config lives in `eslint.config.mjs` (ESLint 9 flat config), `jest.config.mjs`
-(two projects — Node for the API suites, jsdom for components) and the two
-setup files `jest.setup.ts` and `jest.setup.components.ts`.
+(three projects — `unit` for suites needing no database, `api` for Node plus an
+ephemeral MongoDB, `components` for jsdom) and the three setup files
+`jest.setup.unit.ts`, `jest.setup.ts` and `jest.setup.components.ts`.
+
+The `unit` project exists so that a suite which only reads files off disk does
+not boot a MongoMemoryServer it never queries. Six did, and on a loaded machine
+that boot can exceed mongodb-memory-server's own 10s limit — which is how a
+static import-graph walk once failed for a reason having nothing to do with
+imports. Suites that need a database live in `tests/`; those that do not live in
+`tests/unit/` and run in well under a second.
 
 Other quality gates:
 

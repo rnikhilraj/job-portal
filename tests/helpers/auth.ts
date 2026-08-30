@@ -15,6 +15,32 @@ export type TestUser = {
 let sequence = 0;
 
 /**
+ * bcrypt hashes, memoised per distinct password.
+ *
+ * Fixtures are the dominant cost in the API suites: they are created ~190 times
+ * across the run and almost all of them use the same default password, so
+ * without this the suite pays for the same cost-12 hash again and again. The
+ * one that timed out under a full run was doing nothing but creating two users.
+ *
+ * The value produced is a genuine bcrypt hash of that password — it is only
+ * computed once instead of once per fixture — so a test that signs in with the
+ * password still exercises the real comparison. What is lost is a distinct salt
+ * per fixture, which nothing asserts on and which carries no meaning here.
+ * Production hashing is untouched: `hashPassword` is called normally, and the
+ * signup path that tests assert against does not come through this helper.
+ */
+const hashCache = new Map<string, Promise<string>>();
+
+function cachedHash(password: string): Promise<string> {
+  let hash = hashCache.get(password);
+  if (!hash) {
+    hash = hashPassword(password);
+    hashCache.set(password, hash);
+  }
+  return hash;
+}
+
+/**
  * Creates a persisted user and a real signed session cookie, so tests go
  * through the same verification path as production traffic.
  */
@@ -31,7 +57,7 @@ export async function createTestUser(
     email,
     name: overrides.name ?? `${role} User ${sequence}`,
     role,
-    passwordHash: await hashPassword(password),
+    passwordHash: await cachedHash(password),
     skills: [],
   });
 

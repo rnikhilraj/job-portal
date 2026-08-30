@@ -1,7 +1,7 @@
 import { middleware } from '@/middleware';
 import { SESSION_COOKIE_NAME } from '@/modules/auth/cookie';
 
-import { jsonRequest } from './helpers/request';
+import { jsonRequest } from '../helpers/request';
 
 /**
  * The middleware is a UX convenience, not an access-control boundary: it only
