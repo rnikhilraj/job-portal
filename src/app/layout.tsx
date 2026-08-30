@@ -36,7 +36,7 @@ export const metadata: Metadata = {
     default: 'Shortlist',
     template: '%s · Shortlist',
   },
-  description: 'Post jobs, apply with a resume, and track application status.',
+  description: 'Post listings, apply with a resume, and track application status.',
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {

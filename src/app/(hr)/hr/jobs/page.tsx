@@ -32,7 +32,7 @@ export default async function HrJobsPage({
     <>
       <PageHeader
         eyebrow="Your listings"
-        title="My job listings"
+        title="My listings"
         lede="Only roles you posted. Open ones are visible to candidates; closed ones stay here for your records."
         action={
           <Link href="/hr/jobs/new" className="btn-primary">

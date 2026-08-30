@@ -49,7 +49,7 @@ export function JobFilters({ q, location, jobType }: JobFiltersProps) {
 
         <div>
           <label htmlFor="jobType" className="field-label">
-            Job type
+            Role type
           </label>
           <select id="jobType" name="jobType" defaultValue={jobType ?? ''} className="field-input">
             <option value="">Any</option>

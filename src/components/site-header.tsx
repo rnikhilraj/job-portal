@@ -10,7 +10,7 @@ const HR_LINKS = [
 ];
 
 const CANDIDATE_LINKS = [
-  { href: '/jobs', label: 'Browse jobs' },
+  { href: '/jobs', label: 'Browse roles' },
   { href: '/applications', label: 'My applications' },
   { href: '/profile', label: 'Profile' },
 ];

@@ -35,7 +35,7 @@ setup('sign in as the seeded HR user', async ({ page }) => {
   await page.getByRole('button', { name: 'Log in' }).click();
 
   await page.waitForURL('**/hr/jobs');
-  await expect(page.getByRole('heading', { name: 'My job listings' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'My listings' })).toBeVisible();
 
   await page.context().storageState({ path: HR_STATE });
 });

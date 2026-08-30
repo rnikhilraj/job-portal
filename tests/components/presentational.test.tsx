@@ -186,7 +186,7 @@ describe('JobCard', () => {
     updatedAt: '2026-08-01T00:00:00.000Z',
   };
 
-  it('links to the detail page and shows the human job type', () => {
+  it('links to the detail page and shows the human role type', () => {
     render(<JobCard job={job} />);
 
     expect(screen.getByRole('heading', { name: job.title })).toBeInTheDocument();

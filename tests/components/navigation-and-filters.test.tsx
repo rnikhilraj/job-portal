@@ -77,14 +77,14 @@ describe('SiteHeader', () => {
 
     expect(screen.getByRole('link', { name: /log in/i })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /sign up/i })).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: /sign out/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /log out/i })).not.toBeInTheDocument();
   });
 
   it('shows candidate destinations to a candidate, and no recruiter tools', () => {
     render(<SiteHeader user={user()} />);
     const nav = screen.getByRole('navigation', { name: 'Main' });
 
-    expect(nav).toHaveTextContent('Browse jobs');
+    expect(nav).toHaveTextContent('Browse roles');
     expect(nav).toHaveTextContent('My applications');
     expect(nav).toHaveTextContent('Profile');
     expect(nav).not.toHaveTextContent('Candidate search');
@@ -111,7 +111,7 @@ describe('LogoutButton', () => {
   it('posts to the logout endpoint and sends the user to the login page', async () => {
     render(<LogoutButton />);
 
-    await userEvent.click(screen.getByRole('button', { name: /sign out/i }));
+    await userEvent.click(screen.getByRole('button', { name: /log out/i }));
 
     await waitFor(() => expect(requests).toHaveLength(1));
     expect(requests[0]).toMatchObject({ url: '/api/auth/logout', method: 'POST' });
@@ -125,13 +125,13 @@ describe('LogoutButton', () => {
     }) as unknown as typeof fetch;
     render(<LogoutButton />);
 
-    await userEvent.click(screen.getByRole('button', { name: /sign out/i }));
+    await userEvent.click(screen.getByRole('button', { name: /log out/i }));
 
     // Clearing the cookie is server-side, so a failed POST leaves the user
     // signed in. Navigating anyway would tell them a comfortable lie.
     expect(await screen.findByRole('alert')).toHaveTextContent(/still signed in/i);
     expect(replace).not.toHaveBeenCalled();
-    expect(screen.getByRole('button', { name: /sign out/i })).toBeEnabled();
+    expect(screen.getByRole('button', { name: /log out/i })).toBeEnabled();
   });
 
   it('reports the server’s own reason when it refuses', async () => {
@@ -140,7 +140,7 @@ describe('LogoutButton', () => {
     });
     render(<LogoutButton />);
 
-    await userEvent.click(screen.getByRole('button', { name: /sign out/i }));
+    await userEvent.click(screen.getByRole('button', { name: /log out/i }));
 
     expect(await screen.findByRole('alert')).toHaveTextContent('Something broke on our side.');
     expect(replace).not.toHaveBeenCalled();
@@ -219,12 +219,12 @@ describe('JobFilters', () => {
 
     expect(screen.getByLabelText(/keyword/i)).toHaveValue('platform');
     expect(screen.getByLabelText(/location/i)).toHaveValue('Remote');
-    expect(screen.getByLabelText(/job type/i)).toHaveValue('CONTRACT');
+    expect(screen.getByLabelText(/role type/i)).toHaveValue('CONTRACT');
   });
 
-  it('offers "Any" as the unset job type', () => {
+  it('offers "Any" as the unset role type', () => {
     render(<JobFilters />);
-    expect(screen.getByLabelText(/job type/i)).toHaveValue('');
+    expect(screen.getByLabelText(/role type/i)).toHaveValue('');
     expect(screen.getByRole('option', { name: 'Any' })).toBeInTheDocument();
   });
 

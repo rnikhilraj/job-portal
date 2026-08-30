@@ -294,12 +294,22 @@ about who is reading:
   user-facing copy.
 - ***opening*, *position*, *vacancy*** — retired. Do not reintroduce them.
 
-`tests/copy-terminology.test.ts` enforces this: it walks every file under
+`tests/unit/copy-terminology.test.ts` enforces this: it walks every file under
 `src/app` and `src/components` and fails on the retired forms. It checks only
 the unambiguous plurals, because "without opening a spreadsheet" and "the
 position moves along the rail" are honest English this product uses. **Prose in
 README.md and this file is not covered** — that is where "browse openings"
 survived a whole terminology pass.
+
+The `job` half of the rule is enforced separately, and needed a different
+technique: the word is required in code (the `Job` model, `jobType`, `/jobs`,
+`JobCard`) and banned only in copy, so a raw source scan would flag hundreds of
+legitimate identifiers. `extractCopy()` pulls out just JSX text nodes, the
+values of copy-carrying props and route `metadata` titles, and checks those.
+It went unenforced long enough for the code to break the rule in ten places,
+including a page whose `metadata.title` said "My listings" directly above an
+`<h1>` reading "My job listings". Interpolated template literals are a stated
+blind spot — skipped rather than half-checked.
 
 The existing `/jobs` URLs and the `Job` model keep their names; renaming routes
 is a separate change from renaming copy.

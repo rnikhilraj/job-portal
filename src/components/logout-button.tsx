@@ -39,7 +39,7 @@ export function LogoutButton({ className = '' }: { className?: string }) {
         disabled={isPending}
         className={`btn-secondary btn-sm ${className}`}
       >
-        {isPending ? 'Signing out\u2026' : 'Sign out'}
+        {isPending ? 'Logging out\u2026' : 'Log out'}
       </button>
       {error ? (
         <span role="alert" className="mt-1.5 text-xs font-medium text-status-rejected">

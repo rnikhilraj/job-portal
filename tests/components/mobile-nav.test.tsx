@@ -112,7 +112,7 @@ describe('MobileNav', () => {
 
     expect(screen.getByText('Priya Menon')).toBeInTheDocument();
     expect(screen.getByText('HR')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /sign out/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /log out/i })).toBeInTheDocument();
   });
 
   it('offers log in and sign up when nobody is signed in', async () => {
@@ -121,6 +121,6 @@ describe('MobileNav', () => {
 
     expect(screen.getByRole('link', { name: /log in/i })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /sign up/i })).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: /sign out/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /log out/i })).not.toBeInTheDocument();
   });
 });

@@ -126,7 +126,7 @@ export function JobForm({ job }: { job?: PublicJob }) {
 
         <div>
           <label htmlFor="jobType" className="field-label">
-            Job type
+            Role type
           </label>
           <select
             id="jobType"

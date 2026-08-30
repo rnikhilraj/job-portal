@@ -56,7 +56,7 @@ function SearchDemo() {
 
       <div className="mt-3 grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
         <div>
-          <p className="field-label">Job type</p>
+          <p className="field-label">Role type</p>
           <div className="field-input flex items-center justify-between gap-2 text-ink">
             <span>Full time</span>
             <span aria-hidden="true" className="text-ink-faint">

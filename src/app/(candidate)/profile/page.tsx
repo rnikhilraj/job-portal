@@ -5,7 +5,9 @@ import { getEnv } from '@/lib/env';
 import { requirePageUser } from '@/modules/auth/session';
 import { toPublicUser } from '@/modules/users/user.model';
 
-export const metadata = { title: 'Profile · Shortlist' };
+// Bare title: the root layout applies the `%s · Shortlist` template, so a
+// brand suffix here would render as "Profile · Shortlist · Shortlist".
+export const metadata = { title: 'Profile' };
 
 export default async function ProfilePage() {
   const user = await requirePageUser();

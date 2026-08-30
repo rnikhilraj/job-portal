@@ -69,7 +69,7 @@ test.describe('as an HR user', () => {
   test('lands on their own listings', async ({ page }) => {
     await page.goto('/hr/jobs');
 
-    await expect(page.getByRole('heading', { name: 'My job listings' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'My listings' })).toBeVisible();
   });
 
   test('reaches the candidate directory', async ({ page }) => {
@@ -90,9 +90,9 @@ test.describe('signing out', () => {
   test('clears the session and re-protects the pages', async ({ page }) => {
     await page.goto('/jobs');
 
-    // The control reads "Sign out" — see the copy note in the review; the header
-    // one is the visible copy at desktop width.
-    await page.getByRole('banner').getByRole('button', { name: 'Sign out' }).click();
+    // Scoped to the header: the mobile nav renders the same control, hidden at
+    // this viewport but still in the tree.
+    await page.getByRole('banner').getByRole('button', { name: 'Log out' }).click();
 
     // The session is genuinely gone, not just visually: a protected page
     // bounces back to login.

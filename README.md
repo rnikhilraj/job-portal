@@ -233,10 +233,10 @@ becomes a status code:
 ### As a candidate — `candidate@example.com` / `Cand@Passw0rd123`
 
 1. **Sign up or log in.** `/signup` creates a candidate account; the role is fixed server-side.
-2. **Browse jobs** at `/jobs`. Search by keyword across title *and* description, filter by
-   location and job type, and page through results. Every filter lives in the URL, so results
+2. **Browse roles** at `/jobs`. Search by keyword across title *and* description, filter by
+   location and role type, and page through results. Every filter lives in the URL, so results
    are shareable and the page works without JavaScript.
-3. **View a job** at `/jobs/<id>`. Closed listings are not reachable.
+3. **View a role** at `/jobs/<id>`. Closed listings are not reachable.
 4. **Apply.** Attach a PDF (5 MB limit) and an optional cover note. Applying a second time to the
    same listing is refused with a clear message.
 5. **Track applications** at `/applications`: status per application (Applied / Reviewed /

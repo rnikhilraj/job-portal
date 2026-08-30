@@ -8,7 +8,7 @@ import { requirePageUser } from '@/modules/auth/session';
 import { toPublicJob } from '@/modules/jobs/job.model';
 import { findOwnedJobOrFail } from '@/modules/jobs/job.service';
 
-export const metadata = { title: 'Edit job' };
+export const metadata = { title: 'Edit listing' };
 
 export default async function EditJobPage({ params }: { params: Promise<{ id: string }> }) {
   const hr = await requirePageUser('HR');
@@ -33,7 +33,7 @@ export default async function EditJobPage({ params }: { params: Promise<{ id: st
         <span aria-hidden="true">←</span> Back to my listings
       </Link>
       <header className="mb-6 mt-4">
-        <h1 className="page-title">Edit job</h1>
+        <h1 className="page-title">Edit listing</h1>
         <p className="page-lede">
           Changes are visible to candidates immediately. Set the status to Closed to stop accepting
           applications.

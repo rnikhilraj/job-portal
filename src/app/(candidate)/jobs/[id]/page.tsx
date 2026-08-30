@@ -14,7 +14,7 @@ import { requirePageUser } from '@/modules/auth/session';
 import { JOB_TYPE_LABELS } from '@/modules/jobs/job.constants';
 import { findJobForViewer } from '@/modules/jobs/job.service';
 
-export const metadata = { title: 'Job detail' };
+export const metadata = { title: 'Role detail' };
 
 export default async function JobDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const user = await requirePageUser();
@@ -38,7 +38,7 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
   return (
     <article>
       <Link href="/jobs" className="link text-sm">
-        <span aria-hidden="true">←</span> Back to jobs
+        <span aria-hidden="true">←</span> Back to roles
       </Link>
 
       <header className="enter-1 mt-4 flex flex-wrap items-start justify-between gap-x-6 gap-y-3">

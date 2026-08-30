@@ -11,7 +11,7 @@ import { requirePageUser } from '@/modules/auth/session';
 import { browseJobsQuerySchema, type BrowseJobsQuery } from '@/modules/jobs/job.schema';
 import { browseJobs } from '@/modules/jobs/job.service';
 
-export const metadata = { title: 'Browse jobs' };
+export const metadata = { title: 'Browse roles' };
 
 /**
  * Only the result list is wrapped in Suspense, not the whole route.

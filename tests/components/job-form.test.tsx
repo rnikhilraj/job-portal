@@ -91,14 +91,14 @@ describe('JobForm — posting a new listing', () => {
 
   it('defaults to a full-time, open role without the user choosing', async () => {
     render(<JobForm />);
-    expect(screen.getByLabelText(/job type/i)).toHaveValue('FULL_TIME');
+    expect(screen.getByLabelText(/role type/i)).toHaveValue('FULL_TIME');
     expect(screen.getByLabelText(/status/i)).toHaveValue('OPEN');
   });
 
   it('sends the type and status the user picked', async () => {
     render(<JobForm />);
     await fillValidForm();
-    await userEvent.selectOptions(screen.getByLabelText(/job type/i), 'CONTRACT');
+    await userEvent.selectOptions(screen.getByLabelText(/role type/i), 'CONTRACT');
     await userEvent.selectOptions(screen.getByLabelText(/status/i), 'CLOSED');
     await userEvent.click(screen.getByRole('button', { name: /post this role/i }));
 
