@@ -98,17 +98,18 @@ export function ApplyForm({ jobId, maxResumeBytes }: ApplyFormProps) {
           ref={fileInputRef}
           onChange={(event) => setFileName(event.target.files?.[0]?.name ?? null)}
           aria-invalid={Boolean(fieldErrors.resume?.length)}
+          aria-describedby={fieldErrors.resume?.length ? 'resume-error' : 'resume-hint'}
           className={`field-input py-2.5 file:mr-3 file:rounded file:border-0 file:bg-mist-200
             file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-ink-soft
             ${fieldErrors.resume?.length ? 'border-status-rejected' : ''}`}
         />
         {fieldErrors.resume?.length ? (
-          <p className="field-error">
+          <p id="resume-error" className="field-error">
             <span aria-hidden="true">✕</span>
             <span>{fieldErrors.resume.join(' ')}</span>
           </p>
         ) : (
-          <p className="field-hint">
+          <p id="resume-hint" className="field-hint">
             {fileName
               ? `${fileName} — looks good.`
               : `PDF only, up to ${formatMegabytes(maxResumeBytes)}. The one you actually want them to read.`}
@@ -128,15 +129,17 @@ export function ApplyForm({ jobId, maxResumeBytes }: ApplyFormProps) {
           value={coverNote}
           onChange={(event) => setCoverNote(event.target.value)}
           placeholder="Optional. It sits beside your resume when a recruiter opens this."
+          aria-invalid={Boolean(fieldErrors.coverNote?.length)}
+          aria-describedby={fieldErrors.coverNote?.length ? 'coverNote-error' : 'coverNote-hint'}
           className={`field-input ${fieldErrors.coverNote?.length ? 'border-status-rejected' : ''}`}
         />
         {fieldErrors.coverNote?.length ? (
-          <p className="field-error">
+          <p id="coverNote-error" className="field-error">
             <span aria-hidden="true">✕</span>
             <span>{fieldErrors.coverNote.join(' ')}</span>
           </p>
         ) : (
-          <p className="field-hint">
+          <p id="coverNote-hint" className="field-hint">
             {coverNote.length === 0
               ? 'Why this role, in a few sentences. Nobody is counting words.'
               : `${coverNote.length} of 2000 characters.`}

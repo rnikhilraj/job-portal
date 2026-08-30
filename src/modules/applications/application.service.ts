@@ -1,6 +1,7 @@
 import type { FilterQuery, Types } from 'mongoose';
 
 import { ConflictError, ForbiddenError, NotFoundError } from '@/lib/api/errors';
+import { isDuplicateKeyError } from '@/lib/mongo-errors';
 import { deleteResume, storeResume } from '@/lib/resume-storage';
 import { containsMatcher } from '@/lib/validation';
 import {
@@ -126,15 +127,6 @@ export async function applyToJob(params: ApplyToJobParams): Promise<PublicApplic
     }
     throw error;
   }
-}
-
-function isDuplicateKeyError(error: unknown): boolean {
-  return (
-    typeof error === 'object' &&
-    error !== null &&
-    'code' in error &&
-    (error as { code?: unknown }).code === 11000
-  );
 }
 
 /** Used by the job detail page to swap the apply form for an "applied" notice. */

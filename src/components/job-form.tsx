@@ -94,15 +94,18 @@ export function JobForm({ job }: { job?: PublicJob }) {
           value={description}
           onChange={(event) => setDescription(event.target.value)}
           aria-invalid={Boolean(fieldErrors.description?.length)}
+          aria-describedby={
+            fieldErrors.description?.length ? 'description-error' : 'description-hint'
+          }
           className={`field-input ${fieldErrors.description?.length ? 'border-status-rejected' : ''}`}
         />
         {fieldErrors.description?.length ? (
-          <p className="field-error">
+          <p id="description-error" className="field-error">
             <span aria-hidden="true">✕</span>
             <span>{fieldErrors.description.join(' ')}</span>
           </p>
         ) : (
-          <p className="field-hint">
+          <p id="description-hint" className="field-hint">
             Candidates read this in full. What the work actually involves beats a list of
             adjectives.
           </p>

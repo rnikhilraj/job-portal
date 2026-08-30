@@ -531,7 +531,7 @@ markup into another user's page.
 
 ```bash
 npm install       # once
-npm test          # 294 tests across 18 suites (api + component projects)
+npm test          # 479 tests across 26 suites (api + component projects)
 npm run test:coverage
 npx jest tests/applications.test.ts     # a single suite
 npx jest -t 'applying twice'            # a single test by name
@@ -557,12 +557,18 @@ hermetic.
 | `api-envelope.test.ts` | error-to-status mapping, no internal leakage |
 | `query-helpers.test.ts` | URL/pagination helpers |
 | `client-bundle-boundary.test.ts` | that no client component can reach Mongoose, bcrypt or the JWT key |
+| `health.test.ts` | the probe's envelope, its connection-state reporting, and that it needs no session |
+| `delete-cascade-order.test.ts` | that rows are deleted before the files they point at, so a failed unlink cannot orphan a live record |
 | `components/pipeline-rail.test.tsx` | the status rail: accessible description, the seen-status memory, reduced motion, frame cleanup |
 | `components/applicant-status-select.test.tsx` | optimistic update and rollback, and that a 403 surfaces the server's reason |
 | `components/mobile-nav.test.tsx` | disclosure behaviour: Escape, outside click, and closing on navigation |
 | `components/apply-form.test.tsx` | client-side upload checks, and that a rejected file never reaches the network |
 | `components/pipeline.test.tsx` | the signature element: chip labels, funnel maths, and the hero rail — static on load, scrubbable by press |
 | `components/presentational.test.tsx` | field errors, empty states, pagination, page header, job card, skeletons |
+| `components/job-form.test.tsx` | posting vs editing, defaults, client-side validation, and how a server refusal surfaces |
+| `components/profile-form.test.tsx` | that only profile fields are sent, skill normalisation, and the opt-in naming what it exposes |
+| `components/profile-resume.test.tsx` | upload, replace and remove, local PDF/size checks, and refusal vs unreachable server |
+| `components/navigation-and-filters.test.tsx` | role-aware navigation, logout failure handling, and the delete-cascade confirmation |
 | `components/landing.test.tsx` | the landing sections: postings framed as fixtures, the four real stages, keyboard-reachable strip |
 | `copy-terminology.test.ts` | the one-noun rule from CLAUDE.md, and that error defaults are not REST jargon |
 
@@ -571,11 +577,13 @@ wrong password → 401, applying twice to the same job → 409, one HR user touc
 listing → 403, and a candidate hitting an HR-only route → 403.
 
 Coverage is reported over `src/app/api`, `src/modules`, `src/lib` **and**
-`src/components`, with per-directory thresholds acting as ratchets. The
-component floor is honestly low — most of the UI has no behavioural tests yet —
-and is meant to be raised as suites land rather than to imply the UI is well
-covered. `src/lib/seed.ts` reads 0% by design: it runs only at boot, and the
-docker job in CI asserts `[seed] complete` instead.
+`src/components`, with per-directory thresholds acting as ratchets rather than
+as a single global figure that would hide which layer regressed. What the
+numbers do **not** cover is worth naming: `src/lib/seed.ts` reads 0% by design —
+it runs only at boot, and the docker job in CI asserts `[seed] complete`
+instead — and nothing here drives a real browser, so every claim about how the
+app *looks* rests on reading served HTML and compiled CSS. See
+[Known limitations](#known-limitations).
 
 Every gate runs on push and pull request via `.github/workflows/ci.yml`, which
 has two jobs: one running typecheck, lint, tests and build, and one booting the
@@ -732,8 +740,8 @@ a fourth position, because that is what actually happened.
 | Validation | zod 3 — the same schemas run on the client and the server |
 | Auth | jose 5 (HS256 JWT) in httpOnly cookies, bcryptjs 2 for password hashing |
 | Styling | Tailwind CSS 3, Archivo + IBM Plex Sans via next/font (self-hosted) |
-| Testing | Jest 29 with in-process route handlers and mongodb-memory-server 10 |
-| Tooling | ESLint 9 (flat config), Jest 30, Docker Compose v2, GitHub Actions CI |
+| Testing | Jest 30 with in-process route handlers and mongodb-memory-server 10 |
+| Tooling | ESLint 9 (flat config), Docker Compose v2, GitHub Actions CI |
 
 zod schemas are the single source of truth: the client imports the same module the API validates
 with, so the two cannot drift. Because those schemas are shared, each domain keeps its enums and

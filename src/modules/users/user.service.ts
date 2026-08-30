@@ -91,8 +91,12 @@ export type CandidateSearchResult = { candidates: DiscoverableCandidate[]; total
  * and not merely hidden by the UI. Turning the toggle off removes them from
  * results immediately, because this reads live state on every request.
  *
- * Results are projected through toSearchableCandidate, so email and phone never
- * leave the service even if a future caller forgets to strip them.
+ * Results are projected through toDiscoverableCandidate(), which is the only
+ * constructor for the shape carrying contact details and throws rather than
+ * redacting if it is ever handed a user who is not an opted-in candidate. Email,
+ * phone and the profile resume ARE part of that shape — exposing them is what
+ * opting in grants — so the guarantee here is that they cannot be built for
+ * anyone who has not opted in, not that they stay inside the service.
  */
 export async function searchCandidates(
   query: CandidateSearchQuery,

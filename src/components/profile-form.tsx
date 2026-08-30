@@ -179,6 +179,12 @@ export function ProfileForm({ user }: { user: PublicUser }) {
               name="experienceLevel"
               value={experienceLevel}
               onChange={(event) => setExperienceLevel(event.target.value as ExperienceLevel | '')}
+              aria-invalid={Boolean(fieldErrors.experienceLevel?.length)}
+              aria-describedby={
+                fieldErrors.experienceLevel?.length
+                  ? 'experienceLevel-error'
+                  : 'experienceLevel-hint'
+              }
               className="field-input"
             >
               <option value="">Not specified</option>
@@ -189,9 +195,13 @@ export function ProfileForm({ user }: { user: PublicUser }) {
               ))}
             </select>
             {fieldErrors.experienceLevel?.length ? (
-              <p className="field-error">{fieldErrors.experienceLevel.join(' ')}</p>
+              <p id="experienceLevel-error" className="field-error">
+                {fieldErrors.experienceLevel.join(' ')}
+              </p>
             ) : (
-              <p className="field-hint">Helps recruiters filter by seniority. Optional.</p>
+              <p id="experienceLevel-hint" className="field-hint">
+                Helps recruiters filter by seniority. Optional.
+              </p>
             )}
           </div>
         </fieldset>

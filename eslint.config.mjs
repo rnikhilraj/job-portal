@@ -2,7 +2,7 @@ import nextCoreWebVitals from 'eslint-config-next/core-web-vitals';
 import nextTypescript from 'eslint-config-next/typescript';
 
 /**
- * ESLint 10 flat config.
+ * ESLint 9 flat config.
  *
  * eslint-config-next 16 exports flat config natively, so these are spread
  * directly — no FlatCompat bridge and no @eslint/eslintrc shim, both of which

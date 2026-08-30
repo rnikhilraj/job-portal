@@ -4,6 +4,11 @@ import { ZodError } from 'zod';
 import { AppError } from '@/lib/api/errors';
 import { fail } from '@/lib/api/respond';
 import { connectToDatabase } from '@/lib/db';
+import {
+  isCastError,
+  isDuplicateKeyError,
+  isMongooseValidationError,
+} from '@/lib/mongo-errors';
 
 /**
  * In the App Router, dynamic segment params arrive as a promise.
@@ -21,26 +26,6 @@ type WithRouteOptions = {
   /** Set to false for endpoints that must respond without touching Mongo. */
   connectDb?: boolean;
 };
-
-/** Shape of the duplicate-key error Mongo raises against a unique index. */
-function isDuplicateKeyError(error: unknown): boolean {
-  return (
-    typeof error === 'object' &&
-    error !== null &&
-    'code' in error &&
-    (error as { code?: unknown }).code === 11000
-  );
-}
-
-function isCastError(error: unknown): boolean {
-  return (
-    error instanceof Error && error.name === 'CastError'
-  );
-}
-
-function isMongooseValidationError(error: unknown): boolean {
-  return error instanceof Error && error.name === 'ValidationError';
-}
 
 function flattenZodError(error: ZodError): Record<string, string[]> {
   const fieldErrors: Record<string, string[]> = {};

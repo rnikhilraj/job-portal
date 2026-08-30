@@ -52,6 +52,31 @@ describe('API error envelope', () => {
     expect((await readBody(response)).error.code).toBe('CONFLICT');
   });
 
+  /*
+   * Mongoose reports both of these by `name` rather than by an exported error
+   * class, so these two cases are what stops a rename in the driver from
+   * silently demoting a handled 400 to a logged 500.
+   */
+  it('maps a CastError to 400 rather than letting it reach the 500 branch', async () => {
+    const response = toErrorResponse(Object.assign(new Error('bad id'), { name: 'CastError' }));
+
+    expect(response.status).toBe(400);
+    const body = await readBody(response);
+    expect(body.error.code).toBe('VALIDATION_ERROR');
+    expect(body.error.message).toBe('That link does not point at anything.');
+  });
+
+  it('maps a Mongoose ValidationError to 400', async () => {
+    const response = toErrorResponse(
+      Object.assign(new Error('validation failed'), { name: 'ValidationError' }),
+    );
+
+    expect(response.status).toBe(400);
+    const body = await readBody(response);
+    expect(body.error.code).toBe('VALIDATION_ERROR');
+    expect(body.error.message).toBe('Some of those fields need another look.');
+  });
+
   it('never leaks internal failure details to the client', async () => {
     jest.spyOn(console, 'error').mockImplementation(() => {});
 

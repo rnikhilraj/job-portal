@@ -4,8 +4,13 @@ import path from 'node:path';
 /**
  * Client components share zod schemas and constants with the server. If one of
  * those shared modules ever imports a model file, Mongoose is pulled into the
- * browser bundle — that regression once added ~160 kB of driver code to every
+ * browser bundle — that regression once shipped a 576 kB driver chunk to every
  * job page before it was caught.
+ *
+ * The figure is not folklore: reintroducing it by pointing one client component
+ * at `job.model` instead of `job.constants` takes the built client chunks under
+ * `.next/static/chunks` from 701,151 to 1,287,403 bytes, an added 586,252 bytes
+ * across one extra chunk.
  *
  * This walks the real import graph from each client entry point and fails if it
  * reaches Mongoose.

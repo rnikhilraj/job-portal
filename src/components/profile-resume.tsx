@@ -197,6 +197,7 @@ export function ProfileResume({
               type="file"
               accept="application/pdf,.pdf"
               ref={fileInputRef}
+              aria-describedby="profileResume-hint"
               className="field-input min-w-0 flex-1 file:mr-3 file:rounded file:border-0
                 file:bg-mist-200 file:px-3 file:py-1.5 file:text-sm file:font-medium
                 file:text-ink-soft"
@@ -206,7 +207,9 @@ export function ProfileResume({
             </button>
           </div>
 
-          <p className="field-hint">PDF only, up to {formatMegabytes(maxResumeBytes)}.</p>
+          <p id="profileResume-hint" className="field-hint">
+            PDF only, up to {formatMegabytes(maxResumeBytes)}.
+          </p>
         </form>
       </div>
     </section>
