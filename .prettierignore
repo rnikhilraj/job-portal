@@ -1,0 +1,13 @@
+# Next rewrites this on every build; hand-formatting it just dirties the tree.
+tsconfig.json
+
+# The design system is hand-set. Its motion ladders (.enter-1/2/3, the .stagger
+# nth-child run) are written as aligned one-liners because the alignment is what
+# makes the progression readable; Prettier expands each into a three-line block
+# and the ladder disappears.
+src/app/globals.css
+
+.next/
+coverage/
+node_modules/
+package-lock.json

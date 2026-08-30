@@ -8,9 +8,7 @@ import { listApplicationsForCandidate } from '@/modules/applications/application
 /** GET /api/applications — the signed-in candidate's own applications. */
 export const GET = withRoute(async (request) => {
   const candidate = await requireRole(request, 'CANDIDATE');
-  const query = myApplicationsQuerySchema.parse(
-    searchParamsToObject(request.nextUrl.searchParams),
-  );
+  const query = myApplicationsQuerySchema.parse(searchParamsToObject(request.nextUrl.searchParams));
 
   const { applications, total } = await listApplicationsForCandidate(candidate._id, query);
 

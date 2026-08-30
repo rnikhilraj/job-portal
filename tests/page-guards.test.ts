@@ -13,11 +13,7 @@
  * comparison — is the real implementation.
  */
 import { SESSION_COOKIE_NAME } from '@/modules/auth/cookie';
-import {
-  getCurrentUser,
-  getServerSession,
-  requirePageUser,
-} from '@/modules/auth/session';
+import { getCurrentUser, getServerSession, requirePageUser } from '@/modules/auth/session';
 import { User, type UserRole } from '@/modules/users/user.model';
 
 /** Mutable stand-in for the request's cookie jar. `mock` prefix satisfies jest hoisting. */

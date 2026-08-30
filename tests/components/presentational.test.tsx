@@ -159,7 +159,12 @@ describe('PageHeader and MetaRow', () => {
 
   it('lists each meta item with its glyph hidden from screen readers', () => {
     const { container } = render(
-      <MetaRow items={[{ glyph: '◎', label: 'Remote' }, { glyph: '◈', label: 'Full time' }]} />,
+      <MetaRow
+        items={[
+          { glyph: '◎', label: 'Remote' },
+          { glyph: '◈', label: 'Full time' },
+        ]}
+      />,
     );
 
     expect(screen.getByText('Remote')).toBeInTheDocument();

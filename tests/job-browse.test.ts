@@ -37,9 +37,18 @@ describe('GET /api/jobs (candidate browsing)', () => {
     const hr = await createHr();
     const candidate = await createCandidate();
 
-    await createJobFor(hr.id, { title: 'Kubernetes Engineer', description: 'Operate clusters at scale for our teams.' });
-    await createJobFor(hr.id, { title: 'Product Designer', description: 'You will work closely with kubernetes platform teams.' });
-    await createJobFor(hr.id, { title: 'Accountant', description: 'Manage the monthly financial close and reporting.' });
+    await createJobFor(hr.id, {
+      title: 'Kubernetes Engineer',
+      description: 'Operate clusters at scale for our teams.',
+    });
+    await createJobFor(hr.id, {
+      title: 'Product Designer',
+      description: 'You will work closely with kubernetes platform teams.',
+    });
+    await createJobFor(hr.id, {
+      title: 'Accountant',
+      description: 'Manage the monthly financial close and reporting.',
+    });
 
     const { titles } = await browse(candidate.cookie, '?q=kubernetes');
 
@@ -66,18 +75,28 @@ describe('GET /api/jobs (candidate browsing)', () => {
     // As a pattern `.*` would match everything; escaped, it matches nothing.
     expect((await browse(candidate.cookie, '?q=.*')).titles).toEqual([]);
     // A literal `++` should still find the C++ listing.
-    expect((await browse(candidate.cookie, '?q=C%2B%2B')).titles).toEqual([
-      'C++ Systems Engineer',
-    ]);
+    expect((await browse(candidate.cookie, '?q=C%2B%2B')).titles).toEqual(['C++ Systems Engineer']);
   });
 
   it('filters by location and job type, and combines them with the keyword', async () => {
     const hr = await createHr();
     const candidate = await createCandidate();
 
-    await createJobFor(hr.id, { title: 'Remote React Dev', location: 'Remote (India)', jobType: 'REMOTE' });
-    await createJobFor(hr.id, { title: 'Onsite React Dev', location: 'Bengaluru', jobType: 'FULL_TIME' });
-    await createJobFor(hr.id, { title: 'Remote Data Intern', location: 'Remote (India)', jobType: 'INTERNSHIP' });
+    await createJobFor(hr.id, {
+      title: 'Remote React Dev',
+      location: 'Remote (India)',
+      jobType: 'REMOTE',
+    });
+    await createJobFor(hr.id, {
+      title: 'Onsite React Dev',
+      location: 'Bengaluru',
+      jobType: 'FULL_TIME',
+    });
+    await createJobFor(hr.id, {
+      title: 'Remote Data Intern',
+      location: 'Remote (India)',
+      jobType: 'INTERNSHIP',
+    });
 
     expect((await browse(candidate.cookie, '?location=remote')).titles.sort()).toEqual([
       'Remote Data Intern',

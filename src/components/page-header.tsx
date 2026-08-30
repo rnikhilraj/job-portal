@@ -46,7 +46,9 @@ export function MetaRow({
   className?: string;
 }) {
   return (
-    <ul className={`flex flex-wrap items-center gap-x-4 gap-y-1.5 text-sm text-ink-muted ${className}`}>
+    <ul
+      className={`flex flex-wrap items-center gap-x-4 gap-y-1.5 text-sm text-ink-muted ${className}`}
+    >
       {items.map((item) => (
         <li key={item.label} className="inline-flex items-center gap-1.5">
           <span aria-hidden="true" className="text-petrol-500">

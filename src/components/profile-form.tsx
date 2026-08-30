@@ -66,7 +66,9 @@ export function ProfileForm({ user }: { user: PublicUser }) {
         setFieldErrors(error.fieldErrors);
         setFormError(error.message);
       } else {
-        setFormError('Could not reach the server — your profile was not saved. Check your connection and try again.');
+        setFormError(
+          'Could not reach the server — your profile was not saved. Check your connection and try again.',
+        );
       }
     } finally {
       setIsSubmitting(false);

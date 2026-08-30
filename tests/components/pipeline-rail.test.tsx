@@ -114,19 +114,15 @@ describe('PipelineRail — remembering what the viewer last saw', () => {
   });
 
   it('degrades quietly when storage is unavailable', async () => {
-    const getItem = jest
-      .spyOn(Storage.prototype, 'getItem')
-      .mockImplementation(() => {
-        throw new Error('storage blocked');
-      });
+    const getItem = jest.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
+      throw new Error('storage blocked');
+    });
     const setItem = jest.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
       throw new Error('storage blocked');
     });
 
     // Private browsing and blocked site data must not break the page.
-    expect(() =>
-      render(<PipelineRail status="SHORTLISTED" applicationId="app-1" />),
-    ).not.toThrow();
+    expect(() => render(<PipelineRail status="SHORTLISTED" applicationId="app-1" />)).not.toThrow();
     expect(currentDescription()).toBe('Shortlisted — stage 3 of 3');
 
     getItem.mockRestore();

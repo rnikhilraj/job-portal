@@ -61,7 +61,9 @@ export function JobForm({ job }: { job?: PublicJob }) {
         setFieldErrors(error.fieldErrors);
         setFormError(error.message);
       } else {
-        setFormError('Could not reach the server — nothing was saved. Check your connection and try again.');
+        setFormError(
+          'Could not reach the server — nothing was saved. Check your connection and try again.',
+        );
       }
       setIsSubmitting(false);
     }

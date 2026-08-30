@@ -44,9 +44,7 @@ export function EmptyState({
       <GhostRail />
 
       <h2 className="font-display text-lg font-semibold text-ink">{title}</h2>
-      <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-ink-muted">
-        {description}
-      </p>
+      <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-ink-muted">{description}</p>
 
       {action || secondary ? (
         <div className="mt-6 flex flex-wrap items-center justify-center gap-3">

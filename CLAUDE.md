@@ -9,6 +9,8 @@ npm run dev              # local dev server (needs a reachable MongoDB)
 npm run build            # production build (Turbopack)
 npm run typecheck        # tsc --noEmit
 npm run lint             # eslint, zero warnings tolerated
+npm run format           # prettier --write, the repo's one formatting authority
+npm run format:check     # fails on drift; what CI would run
 npm test                 # all suites, both Jest projects
 npm run test:coverage    # adds coverage + enforces thresholds
 npm run seed             # idempotent demo data, for local dev only
@@ -186,6 +188,35 @@ a more specific rule was added *below* the catch-all. Note also that the app-wid
 render-time escaping is. See the security section of README.md before describing
 it as anything stronger.
 
+**Changing `JWT_ISSUER` signs everybody out, and nothing used to notice.**
+`verifySessionToken` checks the issuer, so a token minted under the old string
+fails verification and every live session dies on deploy. What made it dangerous
+is that the constant had exactly one occurrence in the repo and no test asserted
+it: every suite signs through `signSessionToken` and inherits whatever the
+constant says, so the whole suite stayed green straight through the rename.
+`tests/auth.test.ts` now signs a token carrying the old issuer and asserts it
+verifies to `null`. Move the string only on a deploy where a forced sign-out is
+acceptable.
+
+**A `vw`-based font size keeps growing after its container has stopped.** The
+landing hero's text column is capped by `max-w-6xl`, so past ~1184px the box is
+fixed while the viewport is not — a `clamp()` or `min()` in `vw` goes on scaling
+and the headline wraps at exactly the widths it was meant to fit. Size against
+the column instead: `container-type: inline-size` on the parent and `cqw` on the
+text, which is what `.hero-column` / `.hero-headline` in `globals.css` do. The
+`9.3cqw` ceiling there is measured from the subsetted Archivo file `next/font`
+ships — the string advances 10.481em at display-lg's `-0.02em` tracking — not
+guessed. A materially longer headline needs it re-measured, not nudged.
+
+**There is a Prettier config, and it is load-bearing.** The repo went a long time
+without one, and an editor running its own defaults quietly rewrote whole files
+to double quotes and four-space indent on save — twice turning a one-line copy
+change into a 250-line diff. `.prettierrc` pins the existing style (single
+quotes, two-space, 100 columns) and `npm run format:check` fails on drift.
+`.prettierignore` carries two deliberate exemptions with reasons: `tsconfig.json`,
+which Next rewrites anyway, and `src/app/globals.css`, whose motion ladders are
+aligned one-liners that Prettier expands into three-line blocks.
+
 ## Design system
 
 Tokens live in `tailwind.config.ts`; motion vocabulary and component classes in
@@ -199,6 +230,12 @@ Tokens live in `tailwind.config.ts`; motion vocabulary and component classes in
 - **`.panel-feature` is used exactly three times** — the landing hero, the apply
   form and the applicant funnel. One elevated moment per role. Spending it
   elsewhere turns a signature into wallpaper.
+
+The `(auth)` layout deliberately does **not** cap width — it sets the page gutter
+and nothing else, and each auth page owns its own measure. Login and signup both
+run a two-column split at `lg` (form right, supporting copy left) and constrain
+their own form column; a new auth page that forgets to set one will stretch the
+full `max-w-5xl`.
 
 ## Copy
 

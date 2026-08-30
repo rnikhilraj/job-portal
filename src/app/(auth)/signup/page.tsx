@@ -52,7 +52,10 @@ export default function SignupPage() {
 
         <ul className="mt-7 space-y-3">
           {ACCOUNT_POINTS.map((point) => (
-            <li key={point} className="flex items-start gap-2.5 text-sm leading-relaxed text-ink-soft">
+            <li
+              key={point}
+              className="flex items-start gap-2.5 text-sm leading-relaxed text-ink-soft"
+            >
               <span aria-hidden="true" className="mt-0.5 text-petrol-500">
                 ✓
               </span>

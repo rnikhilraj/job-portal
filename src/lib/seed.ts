@@ -3,10 +3,7 @@ import { getEnv } from '@/lib/env';
 import { storeResume, type ResumeFile } from '@/lib/resume-storage';
 import { hashPassword } from '@/modules/auth/password';
 import { Job } from '@/modules/jobs/job.model';
-import {
-  SAMPLE_JOBS,
-  sampleEmployerHeadline,
-} from '@/modules/jobs/job.samples';
+import { SAMPLE_JOBS, sampleEmployerHeadline } from '@/modules/jobs/job.samples';
 import { User, type ExperienceLevel, type UserRole } from '@/modules/users/user.model';
 
 /**

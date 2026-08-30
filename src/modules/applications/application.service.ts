@@ -217,10 +217,7 @@ export async function listApplicantsForJob(
       .sort({ createdAt: -1 })
       .skip((query.page - 1) * query.limit)
       .limit(query.limit)
-      .populate<{ candidate: PopulatedCandidate }>(
-        'candidate',
-        'name email phone headline skills',
-      ),
+      .populate<{ candidate: PopulatedCandidate }>('candidate', 'name email phone headline skills'),
     Application.countDocuments(filter),
   ]);
 
@@ -271,9 +268,10 @@ export async function countApplicantsByStatus(
     { $group: { _id: '$status', count: { $sum: 1 } } },
   ]);
 
-  const counts = Object.fromEntries(
-    APPLICATION_STATUSES.map((status) => [status, 0]),
-  ) as Record<ApplicationStatus, number>;
+  const counts = Object.fromEntries(APPLICATION_STATUSES.map((status) => [status, 0])) as Record<
+    ApplicationStatus,
+    number
+  >;
 
   let total = 0;
   for (const row of grouped) {

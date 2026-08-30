@@ -11,7 +11,9 @@ export const createJobSchema = z.object({
     .min(20, 'Candidates need more than 20 characters to go on.')
     .max(10_000),
   location: z.string().trim().min(2, 'Where is this role based? Remote counts.').max(120),
-  jobType: z.enum(JOB_TYPES, { errorMap: () => ({ message: 'Pick one of the listed job types.' }) }),
+  jobType: z.enum(JOB_TYPES, {
+    errorMap: () => ({ message: 'Pick one of the listed job types.' }),
+  }),
   status: z.enum(JOB_STATUSES).default('OPEN'),
 });
 

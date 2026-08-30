@@ -18,7 +18,11 @@ const envSchema = z.object({
   JWT_SECRET: z
     .string()
     .min(32, 'JWT_SECRET must be at least 32 characters to be a safe HS256 key'),
-  JWT_EXPIRES_IN_SECONDS: z.coerce.number().int().positive().default(60 * 60 * 24 * 7),
+  JWT_EXPIRES_IN_SECONDS: z.coerce
+    .number()
+    .int()
+    .positive()
+    .default(60 * 60 * 24 * 7),
 
   UPLOADS_DIR: z.string().min(1).default('/app/uploads'),
   MAX_RESUME_BYTES: z.coerce

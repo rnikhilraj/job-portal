@@ -7,13 +7,7 @@ import type { PublicApplication } from '@/modules/applications/application.servi
 import { createCandidate, createHr } from './helpers/auth';
 import { createJobFor } from './helpers/factories';
 import { applicationForm, pdfBytes, pdfFile } from './helpers/files';
-import {
-  formRequest,
-  jsonRequest,
-  readJson,
-  routeContext,
-  type ApiData,
-} from './helpers/request';
+import { formRequest, jsonRequest, readJson, routeContext, type ApiData } from './helpers/request';
 
 async function seedApplication(filename = 'my-cv.pdf') {
   const [owner, otherHr] = await Promise.all([createHr(), createHr()]);

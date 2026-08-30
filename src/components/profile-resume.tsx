@@ -82,11 +82,7 @@ export function ProfileResume({
   }
 
   async function handleRemove() {
-    if (
-      !window.confirm(
-        'Remove your resume? Recruiters will no longer be able to download it.',
-      )
-    ) {
+    if (!window.confirm('Remove your resume? Recruiters will no longer be able to download it.')) {
       return;
     }
 
@@ -112,8 +108,8 @@ export function ProfileResume({
     <section className="card">
       <h2 className="section-title">Your resume</h2>
       <p className="mt-1.5 max-w-prose text-sm leading-relaxed text-ink-muted">
-        Your default CV. Separate from the one you attach to a specific application, so you can
-        keep a good general version here and tailor the rest.
+        Your default CV. Separate from the one you attach to a specific application, so you can keep
+        a good general version here and tailor the rest.
       </p>
 
       <div className="mt-4 space-y-3">
@@ -123,10 +119,7 @@ export function ProfileResume({
         {resume ? (
           <div className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-mist-300 bg-mist-100 px-3.5 py-3">
             <p className="min-w-0 break-words text-sm text-ink-soft">
-              <a
-                href="/api/users/me/resume"
-                className="link"
-              >
+              <a href="/api/users/me/resume" className="link">
                 {resume.originalName}
               </a>
               <span className="ml-2 text-xs text-ink-faint">{formatSize(resume.sizeBytes)}</span>
@@ -159,19 +152,19 @@ export function ProfileResume({
             {isSearchable ? '!' : '🔒'}
           </span>
           <span>
-          {isSearchable ? (
-            <>
-              <strong className="font-medium">Recruiters can download this.</strong> Your
-              profile is visible, so any HR user can find you and take this file along with your
-              email and phone number. Switching visibility off stops that the moment you save.
-            </>
-          ) : (
-            <>
-              <strong className="font-medium">This is private right now.</strong> Only you can
-              download it. It reaches recruiters — along with your email and phone number — only
-              if you switch on <em>Make my profile visible to recruiters</em> below.
-            </>
-          )}
+            {isSearchable ? (
+              <>
+                <strong className="font-medium">Recruiters can download this.</strong> Your profile
+                is visible, so any HR user can find you and take this file along with your email and
+                phone number. Switching visibility off stops that the moment you save.
+              </>
+            ) : (
+              <>
+                <strong className="font-medium">This is private right now.</strong> Only you can
+                download it. It reaches recruiters — along with your email and phone number — only
+                if you switch on <em>Make my profile visible to recruiters</em> below.
+              </>
+            )}
           </span>
         </p>
 

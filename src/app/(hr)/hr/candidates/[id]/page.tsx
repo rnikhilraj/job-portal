@@ -15,11 +15,7 @@ export const metadata = { title: 'Candidate' };
  * findDiscoverableCandidate() re-reads the opt-in on every render, so this page
  * cannot show a cached view of somebody who has since opted out.
  */
-export default async function CandidateDetailPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
+export default async function CandidateDetailPage({ params }: { params: Promise<{ id: string }> }) {
   await requirePageUser('HR');
 
   const { id } = await params;
@@ -44,10 +40,12 @@ export default async function CandidateDetailPage({
       </div>
 
       <p className="mt-4 flex items-start gap-2 rounded-md bg-mist-200 px-3.5 py-2.5 text-xs leading-relaxed text-ink-muted">
-        <span aria-hidden="true" className="mt-px">ℹ</span>
+        <span aria-hidden="true" className="mt-px">
+          ℹ
+        </span>
         <span>
-          They chose to be listed here. If they change their mind, this page and their resume
-          link stop working the moment they save — no cached copy, no grace period.
+          They chose to be listed here. If they change their mind, this page and their resume link
+          stop working the moment they save — no cached copy, no grace period.
         </span>
       </p>
     </article>

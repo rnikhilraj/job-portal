@@ -81,7 +81,8 @@ export async function findJobForViewer(
 ): Promise<PublicJob> {
   const job = await Job.findById(jobId);
 
-  const visible = job && (job.status === 'OPEN' || (viewer.role === 'HR' && job.postedBy.equals(viewer.id)));
+  const visible =
+    job && (job.status === 'OPEN' || (viewer.role === 'HR' && job.postedBy.equals(viewer.id)));
   if (!job || !visible) throw new NotFoundError('We could not find that listing.');
 
   return toPublicJob(job);

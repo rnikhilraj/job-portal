@@ -56,12 +56,10 @@ export function ExamplePostings() {
     <section className="border-y border-mist-300 bg-mist-50 py-12 sm:py-14">
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
         <p className="eyebrow">What is in the demo dataset</p>
-        <h2 className="section-title mt-2">
-          Six example postings, written on first run
-        </h2>
+        <h2 className="section-title mt-2">Six example postings, written on first run</h2>
         <p className="page-lede">
-          These are fixtures, not customers. The seed script creates them so there is something
-          real to search, apply to and move through the pipeline the moment you sign in.
+          These are fixtures, not customers. The seed script creates them so there is something real
+          to search, apply to and move through the pipeline the moment you sign in.
         </p>
       </div>
 
@@ -84,7 +82,6 @@ export function ExamplePostings() {
           </ul>
         </div>
       </div>
-
     </section>
   );
 }

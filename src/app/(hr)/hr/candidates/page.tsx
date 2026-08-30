@@ -9,14 +9,8 @@ import { SkeletonList } from '@/components/skeleton';
 import { Pagination } from '@/components/pagination';
 import { buildPageHref, toQueryRecord, type RawSearchParams } from '@/lib/query';
 import { requirePageUser } from '@/modules/auth/session';
-import {
-  EXPERIENCE_LEVELS,
-  EXPERIENCE_LEVEL_LABELS,
-} from '@/modules/users/user.constants';
-import {
-  candidateSearchQuerySchema,
-  type CandidateSearchQuery,
-} from '@/modules/users/user.schema';
+import { EXPERIENCE_LEVELS, EXPERIENCE_LEVEL_LABELS } from '@/modules/users/user.constants';
+import { candidateSearchQuerySchema, type CandidateSearchQuery } from '@/modules/users/user.schema';
 import { searchCandidates } from '@/modules/users/user.service';
 
 export const metadata = { title: 'Candidate search' };
@@ -48,39 +42,38 @@ export default async function CandidateSearchPage({
 
       <form method="get" action="/hr/candidates" className="enter-2 card mb-6">
         <div className="grid gap-4 sm:grid-cols-3">
-        <div className="sm:col-span-2">
-          <label htmlFor="q" className="field-label">
-            Keyword
-          </label>
-          <input
-            id="q"
-            name="q"
-            type="search"
-            defaultValue={query.q ?? ''}
-            placeholder="Skill, headline, or name"
-            className="field-input"
-          />
-        </div>
+          <div className="sm:col-span-2">
+            <label htmlFor="q" className="field-label">
+              Keyword
+            </label>
+            <input
+              id="q"
+              name="q"
+              type="search"
+              defaultValue={query.q ?? ''}
+              placeholder="Skill, headline, or name"
+              className="field-input"
+            />
+          </div>
 
-        <div>
-          <label htmlFor="experienceLevel" className="field-label">
-            Experience level
-          </label>
-          <select
-            id="experienceLevel"
-            name="experienceLevel"
-            defaultValue={query.experienceLevel ?? ''}
-            className="field-input"
-          >
-            <option value="">Any</option>
-            {EXPERIENCE_LEVELS.map((level) => (
-              <option key={level} value={level}>
-                {EXPERIENCE_LEVEL_LABELS[level]}
-              </option>
-            ))}
-          </select>
-        </div>
-
+          <div>
+            <label htmlFor="experienceLevel" className="field-label">
+              Experience level
+            </label>
+            <select
+              id="experienceLevel"
+              name="experienceLevel"
+              defaultValue={query.experienceLevel ?? ''}
+              className="field-input"
+            >
+              <option value="">Any</option>
+              {EXPERIENCE_LEVELS.map((level) => (
+                <option key={level} value={level}>
+                  {EXPERIENCE_LEVEL_LABELS[level]}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
 
         <div className="mt-4 flex flex-wrap gap-2 border-t border-mist-200 pt-4">

@@ -73,7 +73,9 @@ export function ApplyForm({ jobId, maxResumeBytes }: ApplyFormProps) {
         setFieldErrors(error.fieldErrors);
         setFormError(error.message);
       } else {
-        setFormError('Could not reach the server — your application was not submitted. Check your connection and try again.');
+        setFormError(
+          'Could not reach the server — your application was not submitted. Check your connection and try again.',
+        );
       }
       setIsSubmitting(false);
     }

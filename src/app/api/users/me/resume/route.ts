@@ -10,11 +10,7 @@ import {
 } from '@/lib/resume-storage';
 import { enforceRateLimit, userKey } from '@/lib/rate-limit';
 import { requireUser } from '@/modules/auth/session';
-import {
-  findOwnResume,
-  removeOwnResume,
-  replaceOwnResume,
-} from '@/modules/users/user.service';
+import { findOwnResume, removeOwnResume, replaceOwnResume } from '@/modules/users/user.service';
 
 /**
  * GET /api/users/me/resume — the caller's own general resume.

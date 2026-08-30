@@ -133,10 +133,7 @@ describe('GET /api/candidates — the opt-in boundary', () => {
     const hr = await createHr();
     const candidate = await createCandidate({ name: 'Legacy Account' });
     // Simulate a document written before isSearchable existed.
-    await User.collection.updateOne(
-      { _id: candidate.user._id },
-      { $unset: { isSearchable: '' } },
-    );
+    await User.collection.updateOne({ _id: candidate.user._id }, { $unset: { isSearchable: '' } });
 
     expect((await search(hr.cookie)).names).toEqual([]);
   });
@@ -289,10 +286,7 @@ describe('GET /api/candidates — search, filter and pagination', () => {
       'Alice Kumar',
       'Carol Menon',
     ]);
-    expect((await search(hr.cookie, '?q=Go')).names.sort()).toEqual([
-      'Alice Kumar',
-      'Carol Menon',
-    ]);
+    expect((await search(hr.cookie, '?q=Go')).names.sort()).toEqual(['Alice Kumar', 'Carol Menon']);
   });
 
   it('matches case-insensitively', async () => {
@@ -369,10 +363,7 @@ describe('GET /api/candidates — search, filter and pagination', () => {
 
 describe('PATCH /api/users/me — the opt-in fields', () => {
   function patch(body: unknown, cookie: string) {
-    return patchProfile(
-      jsonRequest('/api/users/me', { method: 'PATCH', body, cookie }),
-      noParams,
-    );
+    return patchProfile(jsonRequest('/api/users/me', { method: 'PATCH', body, cookie }), noParams);
   }
 
   it('defaults a new candidate to not searchable', async () => {
@@ -386,9 +377,8 @@ describe('PATCH /api/users/me — the opt-in fields', () => {
     const response = await patch({ isSearchable: true, experienceLevel: 'MID' }, candidate.cookie);
 
     expect(response.status).toBe(200);
-    const { data } = await readJson<ApiData<{ isSearchable: boolean; experienceLevel: string }>>(
-      response,
-    );
+    const { data } =
+      await readJson<ApiData<{ isSearchable: boolean; experienceLevel: string }>>(response);
     expect(data).toMatchObject({ isSearchable: true, experienceLevel: 'MID' });
   });
 
@@ -629,9 +619,7 @@ describe('/api/users/me/resume — the candidate’s own general resume', () => 
     const candidate = await createCandidate();
 
     const response = await uploadResume(candidate.cookie, 'My CV.pdf');
-    const { data } = await readJson<ApiData<{ resume: { originalName: string } | null }>>(
-      response,
-    );
+    const { data } = await readJson<ApiData<{ resume: { originalName: string } | null }>>(response);
 
     expect(data.resume).toEqual({
       originalName: 'My CV.pdf',

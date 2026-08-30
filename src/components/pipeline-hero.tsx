@@ -171,9 +171,7 @@ export function PipelineHero({ serverDay }: { serverDay: string }) {
                   <span aria-hidden="true">✓</span>
                   <span className="sr-only">Show the {APPLICATION_STATUS_LABELS[stage]} stage</span>
                 </button>
-                <span
-                  className={`text-xs font-medium ${reached ? 'text-ink' : 'text-ink-faint'}`}
-                >
+                <span className={`text-xs font-medium ${reached ? 'text-ink' : 'text-ink-faint'}`}>
                   {APPLICATION_STATUS_LABELS[stage]}
                 </span>
               </li>
@@ -188,9 +186,7 @@ export function PipelineHero({ serverDay }: { serverDay: string }) {
         >
           {STAGES.slice(0, reachedIndex + 1).map((stage, index) => (
             <li key={stage}>
-              <span className="font-medium text-ink-soft">
-                {APPLICATION_STATUS_LABELS[stage]}
-              </span>{' '}
+              <span className="font-medium text-ink-soft">{APPLICATION_STATUS_LABELS[stage]}</span>{' '}
               {stampFor(index)}
             </li>
           ))}

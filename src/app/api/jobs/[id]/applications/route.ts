@@ -5,10 +5,7 @@ import { assertContentLengthWithinLimit } from '@/lib/resume-storage';
 import { enforceRateLimit, userKey } from '@/lib/rate-limit';
 import { objectIdSchema, searchParamsToObject } from '@/lib/validation';
 import { requireRole } from '@/modules/auth/session';
-import {
-  applicantsQuerySchema,
-  applyToJobSchema,
-} from '@/modules/applications/application.schema';
+import { applicantsQuerySchema, applyToJobSchema } from '@/modules/applications/application.schema';
 import { applyToJob, listApplicantsForJob } from '@/modules/applications/application.service';
 
 /** GET /api/jobs/:id/applications — applicants for a listing, owner HR only. */

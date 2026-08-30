@@ -18,8 +18,18 @@ async function readBody(response: Response) {
 
 describe('API error envelope', () => {
   const cases = [
-    { name: 'BadRequestError', error: () => new BadRequestError('bad'), status: 400, code: 'VALIDATION_ERROR' },
-    { name: 'UnauthorizedError', error: () => new UnauthorizedError(), status: 401, code: 'UNAUTHORIZED' },
+    {
+      name: 'BadRequestError',
+      error: () => new BadRequestError('bad'),
+      status: 400,
+      code: 'VALIDATION_ERROR',
+    },
+    {
+      name: 'UnauthorizedError',
+      error: () => new UnauthorizedError(),
+      status: 401,
+      code: 'UNAUTHORIZED',
+    },
     { name: 'ForbiddenError', error: () => new ForbiddenError(), status: 403, code: 'FORBIDDEN' },
     { name: 'NotFoundError', error: () => new NotFoundError(), status: 404, code: 'NOT_FOUND' },
     { name: 'ConflictError', error: () => new ConflictError(), status: 409, code: 'CONFLICT' },

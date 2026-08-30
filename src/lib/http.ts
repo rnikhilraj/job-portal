@@ -11,7 +11,12 @@ export class ApiRequestError extends Error {
   /** Per-field messages from server-side zod validation, when present. */
   readonly fieldErrors: Record<string, string[]>;
 
-  constructor(status: number, code: string, message: string, fieldErrors: Record<string, string[]>) {
+  constructor(
+    status: number,
+    code: string,
+    message: string,
+    fieldErrors: Record<string, string[]>,
+  ) {
     super(message);
     this.name = 'ApiRequestError';
     this.status = status;
@@ -48,7 +53,12 @@ export async function apiFetch<T>(path: string, init: RequestInit = {}): Promise
   try {
     body = (await response.json()) as Envelope<T>;
   } catch {
-    throw new ApiRequestError(response.status, 'INTERNAL_ERROR', 'The server sent something we could not read.', {});
+    throw new ApiRequestError(
+      response.status,
+      'INTERNAL_ERROR',
+      'The server sent something we could not read.',
+      {},
+    );
   }
 
   if (!response.ok || body.error) {

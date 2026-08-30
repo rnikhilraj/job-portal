@@ -75,9 +75,7 @@ describe('PipelineFunnel', () => {
   });
 
   it('omits a segment for a stage nobody is at', () => {
-    const { container } = render(
-      <PipelineFunnel counts={{ ...counts, REJECTED: 0 }} total={9} />,
-    );
+    const { container } = render(<PipelineFunnel counts={{ ...counts, REJECTED: 0 }} total={9} />);
     expect(container.querySelectorAll('[style*="width"]')).toHaveLength(3);
   });
 

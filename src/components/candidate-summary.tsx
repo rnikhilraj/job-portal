@@ -1,6 +1,9 @@
 import Link from 'next/link';
 
-import { EXPERIENCE_LEVEL_LABELS, type DiscoverableCandidate } from '@/modules/users/user.constants';
+import {
+  EXPERIENCE_LEVEL_LABELS,
+  type DiscoverableCandidate,
+} from '@/modules/users/user.constants';
 
 function formatSize(bytes: number): string {
   return bytes < 1024 * 1024

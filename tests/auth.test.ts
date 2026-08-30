@@ -10,7 +10,13 @@ import { verifySessionToken } from '@/modules/auth/jwt';
 import { User, type PublicUser } from '@/modules/users/user.model';
 
 import { cookieForDeletedUser, createCandidate } from './helpers/auth';
-import { jsonRequest, readJson, routeContext, type ApiData, type ApiError } from './helpers/request';
+import {
+  jsonRequest,
+  readJson,
+  routeContext,
+  type ApiData,
+  type ApiError,
+} from './helpers/request';
 
 const emptyContext = routeContext({});
 
@@ -204,9 +210,7 @@ describe('POST /api/auth/login', () => {
     );
 
     expect(unknownEmail.status).toBe(wrongPassword.status);
-    expect(await readJson<ApiError>(unknownEmail)).toEqual(
-      await readJson<ApiError>(wrongPassword),
-    );
+    expect(await readJson<ApiError>(unknownEmail)).toEqual(await readJson<ApiError>(wrongPassword));
   });
 
   it('rate limits repeated failed logins', async () => {

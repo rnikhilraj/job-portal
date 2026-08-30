@@ -96,8 +96,8 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
             <>
               <h2 className="section-title">Apply for this role</h2>
               <p className="mt-1.5 max-w-prose text-sm text-ink-muted">
-                Attach a PDF and you&rsquo;re done. You&rsquo;ll be able to watch this one move
-                from your applications page — no wondering whether it arrived.
+                Attach a PDF and you&rsquo;re done. You&rsquo;ll be able to watch this one move from
+                your applications page — no wondering whether it arrived.
               </p>
               <div className="mt-5">
                 <ApplyForm jobId={job.id} maxResumeBytes={getEnv().MAX_RESUME_BYTES} />
@@ -107,8 +107,8 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
             <>
               <h2 className="section-title">This one&rsquo;s closed</h2>
               <p className="mt-1.5 text-sm text-ink-muted">
-                The team has stopped taking applications for this role. Worth checking what else
-                is open.
+                The team has stopped taking applications for this role. Worth checking what else is
+                open.
               </p>
             </>
           )}

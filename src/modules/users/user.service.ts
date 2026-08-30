@@ -29,7 +29,8 @@ function optedInCandidateFilter(): FilterQuery<UserAttributes> {
  * Fields loaded for a recruiter-visible candidate. `role` and `isSearchable`
  * are included because toDiscoverableCandidate() re-checks them.
  */
-const DISCOVERABLE_FIELDS = 'name headline skills experienceLevel email phone resume role isSearchable';
+const DISCOVERABLE_FIELDS =
+  'name headline skills experienceLevel email phone resume role isSearchable';
 
 /** Fields only a candidate account may set. */
 const CANDIDATE_ONLY_FIELDS = ['isSearchable', 'experienceLevel'] as const;
@@ -151,9 +152,7 @@ export async function findDiscoverableCandidate(
  * had legitimate access a minute ago, and saying so is more honest than
  * pretending the record never existed.
  */
-export async function findCandidateResumeForRecruiter(
-  candidateId: string,
-): Promise<ResumeFile> {
+export async function findCandidateResumeForRecruiter(candidateId: string): Promise<ResumeFile> {
   const user = await User.findOne({ _id: candidateId, role: 'CANDIDATE' }).select(
     'resume isSearchable',
   );

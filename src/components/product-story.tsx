@@ -151,9 +151,7 @@ function TrackDemo() {
                 <span aria-hidden="true">{station.glyph}</span>
               </span>
               <span
-                className={`text-xs font-medium ${
-                  station.reached ? 'text-ink' : 'text-ink-faint'
-                }`}
+                className={`text-xs font-medium ${station.reached ? 'text-ink' : 'text-ink-faint'}`}
               >
                 {station.label}
               </span>
@@ -186,9 +184,9 @@ function ShortlistedDemo() {
       </div>
 
       <p className="mt-4 text-sm leading-relaxed text-ink-soft">
-        {employer.org} moved Asha to Shortlisted, and her rail advanced the next time she
-        looked. That is where this pipeline ends — the conversation continues off the
-        platform, and the product does not pretend otherwise.
+        {employer.org} moved Asha to Shortlisted, and her rail advanced the next time she looked.
+        That is where this pipeline ends — the conversation continues off the platform, and the
+        product does not pretend otherwise.
       </p>
     </div>
   );
@@ -228,8 +226,8 @@ export function ProductStory() {
         <p className="eyebrow">End to end</p>
         <h2 className="section-title mt-2">Four stages, and none of them invented</h2>
         <p className="page-lede">
-          Each panel below is built from the product&rsquo;s own interface, against rows that
-          exist in the demo dataset.
+          Each panel below is built from the product&rsquo;s own interface, against rows that exist
+          in the demo dataset.
         </p>
       </Reveal>
 

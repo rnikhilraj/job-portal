@@ -2,11 +2,7 @@ import { render, screen } from '@testing-library/react';
 
 import { ExamplePostings } from '@/components/example-postings';
 import { ProductStory } from '@/components/product-story';
-import {
-  SAMPLE_EMPLOYERS,
-  SAMPLE_JOBS,
-  sampleEmployerHeadline,
-} from '@/modules/jobs/job.samples';
+import { SAMPLE_EMPLOYERS, SAMPLE_JOBS, sampleEmployerHeadline } from '@/modules/jobs/job.samples';
 
 /**
  * The landing page's two narrative sections.

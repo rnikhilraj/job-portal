@@ -4,11 +4,7 @@ import { ZodError } from 'zod';
 import { AppError } from '@/lib/api/errors';
 import { fail } from '@/lib/api/respond';
 import { connectToDatabase } from '@/lib/db';
-import {
-  isCastError,
-  isDuplicateKeyError,
-  isMongooseValidationError,
-} from '@/lib/mongo-errors';
+import { isCastError, isDuplicateKeyError, isMongooseValidationError } from '@/lib/mongo-errors';
 
 /**
  * In the App Router, dynamic segment params arrive as a promise.
@@ -66,7 +62,12 @@ export function withRoute<P extends RouteParams = RouteParams>(
 
 export function toErrorResponse(error: unknown, request?: NextRequest): NextResponse {
   if (error instanceof ZodError) {
-    return fail(400, 'VALIDATION_ERROR', 'Some of those fields need another look.', flattenZodError(error));
+    return fail(
+      400,
+      'VALIDATION_ERROR',
+      'Some of those fields need another look.',
+      flattenZodError(error),
+    );
   }
 
   if (error instanceof AppError) {

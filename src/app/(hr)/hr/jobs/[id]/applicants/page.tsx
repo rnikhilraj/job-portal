@@ -66,12 +66,7 @@ export default async function ApplicantsPage({
         <span aria-hidden="true">←</span> Back to my listings
       </Link>
 
-      <PageHeader
-        eyebrow={job.location}
-        title="Applicants"
-        lede={job.title}
-        className="mt-4"
-      />
+      <PageHeader eyebrow={job.location} title="Applicants" lede={job.title} className="mt-4" />
 
       {/*
         The recruiter's equivalent of the candidate's rail — the shape of this
@@ -208,10 +203,7 @@ async function ApplicantResults({
 
                 <div className="flex shrink-0 flex-col gap-4 lg:w-64 lg:items-end">
                   <PipelineRail status={applicant.status} className="w-full" />
-                  <ApplicantStatusSelect
-                    applicationId={applicant.id}
-                    status={applicant.status}
-                  />
+                  <ApplicantStatusSelect applicationId={applicant.id} status={applicant.status} />
                 </div>
               </div>
 

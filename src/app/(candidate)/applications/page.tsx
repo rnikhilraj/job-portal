@@ -51,7 +51,12 @@ export default async function MyApplicationsPage({
           <label htmlFor="status" className="field-label">
             Filter by stage
           </label>
-          <select id="status" name="status" defaultValue={query.status ?? ''} className="field-input">
+          <select
+            id="status"
+            name="status"
+            defaultValue={query.status ?? ''}
+            className="field-input"
+          >
             <option value="">All stages</option>
             {APPLICATION_STATUSES.map((status) => (
               <option key={status} value={status}>
@@ -74,16 +79,12 @@ export default async function MyApplicationsPage({
 
       {/* Boundary sits below the guard so auth resolves before the first flush. */}
       <div className="enter-3">
-      <Suspense
-        key={JSON.stringify(query)}
-        fallback={<SkeletonList label="Loading your applications…" />}
-      >
-        <ApplicationResults
-          candidateId={candidate._id}
-          query={query}
-          rawParams={rawParams}
-        />
-      </Suspense>
+        <Suspense
+          key={JSON.stringify(query)}
+          fallback={<SkeletonList label="Loading your applications…" />}
+        >
+          <ApplicationResults candidateId={candidate._id} query={query} rawParams={rawParams} />
+        </Suspense>
       </div>
     </>
   );
@@ -127,7 +128,10 @@ async function ApplicationResults({
                   <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
                     <h2 className="font-display text-display-sm font-semibold">
                       {application.job ? (
-                        <Link href={`/jobs/${application.job.id}`} className="hover:text-petrol-700">
+                        <Link
+                          href={`/jobs/${application.job.id}`}
+                          className="hover:text-petrol-700"
+                        >
                           {application.job.title}
                         </Link>
                       ) : (

@@ -1,9 +1,5 @@
 import { GET as listJobs, POST as postJob } from '@/app/api/jobs/route';
-import {
-  DELETE as deleteJob,
-  GET as getJob,
-  PATCH as patchJob,
-} from '@/app/api/jobs/[id]/route';
+import { DELETE as deleteJob, GET as getJob, PATCH as patchJob } from '@/app/api/jobs/[id]/route';
 import { Job, type PublicJob } from '@/modules/jobs/job.model';
 
 import { createCandidate, createHr } from './helpers/auth';

@@ -46,10 +46,7 @@ describe('MobileNav', () => {
   it('starts closed and exposes that to assistive tech', () => {
     render(<MobileNav user={HR} links={LINKS} />);
 
-    expect(screen.getByRole('button', { name: /menu/i })).toHaveAttribute(
-      'aria-expanded',
-      'false',
-    );
+    expect(screen.getByRole('button', { name: /menu/i })).toHaveAttribute('aria-expanded', 'false');
     expect(screen.queryByRole('navigation')).not.toBeInTheDocument();
   });
 
@@ -57,10 +54,7 @@ describe('MobileNav', () => {
     render(<MobileNav user={HR} links={LINKS} />);
     await openMenu();
 
-    expect(screen.getByRole('button', { name: /menu/i })).toHaveAttribute(
-      'aria-expanded',
-      'true',
-    );
+    expect(screen.getByRole('button', { name: /menu/i })).toHaveAttribute('aria-expanded', 'true');
     expect(screen.getByRole('link', { name: 'My listings' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Candidate search' })).toBeInTheDocument();
   });
@@ -70,10 +64,7 @@ describe('MobileNav', () => {
     await openMenu();
     await openMenu();
 
-    expect(screen.getByRole('button', { name: /menu/i })).toHaveAttribute(
-      'aria-expanded',
-      'false',
-    );
+    expect(screen.getByRole('button', { name: /menu/i })).toHaveAttribute('aria-expanded', 'false');
   });
 
   it('closes on Escape', async () => {
@@ -82,10 +73,7 @@ describe('MobileNav', () => {
 
     await userEvent.keyboard('{Escape}');
 
-    expect(screen.getByRole('button', { name: /menu/i })).toHaveAttribute(
-      'aria-expanded',
-      'false',
-    );
+    expect(screen.getByRole('button', { name: /menu/i })).toHaveAttribute('aria-expanded', 'false');
   });
 
   it('closes on a click outside, but not on one inside', async () => {
@@ -99,35 +87,23 @@ describe('MobileNav', () => {
 
     // Inside the panel: stays open.
     await userEvent.click(screen.getByText('priya@example.com'));
-    expect(screen.getByRole('button', { name: /menu/i })).toHaveAttribute(
-      'aria-expanded',
-      'true',
-    );
+    expect(screen.getByRole('button', { name: /menu/i })).toHaveAttribute('aria-expanded', 'true');
 
     await userEvent.click(screen.getByRole('button', { name: 'elsewhere' }));
-    expect(screen.getByRole('button', { name: /menu/i })).toHaveAttribute(
-      'aria-expanded',
-      'false',
-    );
+    expect(screen.getByRole('button', { name: /menu/i })).toHaveAttribute('aria-expanded', 'false');
   });
 
   it('closes when the route changes, without an effect doing it', async () => {
     const { rerender } = render(<MobileNav user={HR} links={LINKS} />);
     await openMenu();
-    expect(screen.getByRole('button', { name: /menu/i })).toHaveAttribute(
-      'aria-expanded',
-      'true',
-    );
+    expect(screen.getByRole('button', { name: /menu/i })).toHaveAttribute('aria-expanded', 'true');
 
     // Navigation: the derived state closes it because the path no longer
     // matches the one it was opened on.
     pathname = '/hr/candidates';
     rerender(<MobileNav user={HR} links={LINKS} />);
 
-    expect(screen.getByRole('button', { name: /menu/i })).toHaveAttribute(
-      'aria-expanded',
-      'false',
-    );
+    expect(screen.getByRole('button', { name: /menu/i })).toHaveAttribute('aria-expanded', 'false');
   });
 
   it('shows the signed-in identity and a way out', async () => {

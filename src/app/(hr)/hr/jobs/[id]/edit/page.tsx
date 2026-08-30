@@ -35,7 +35,8 @@ export default async function EditJobPage({ params }: { params: Promise<{ id: st
       <header className="mb-6 mt-4">
         <h1 className="page-title">Edit job</h1>
         <p className="page-lede">
-          Changes are visible to candidates immediately. Set the status to Closed to stop accepting applications.
+          Changes are visible to candidates immediately. Set the status to Closed to stop accepting
+          applications.
         </p>
       </header>
       <JobForm job={toPublicJob(job)} />

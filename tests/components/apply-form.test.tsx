@@ -89,10 +89,7 @@ describe('ApplyForm — the client-side courtesy checks', () => {
 
   it('has accept="application/pdf" so the browser filters non-PDFs first', () => {
     render(<ApplyForm jobId="job-1" maxResumeBytes={MAX_BYTES} />);
-    expect(screen.getByLabelText(/resume/i)).toHaveAttribute(
-      'accept',
-      'application/pdf,.pdf',
-    );
+    expect(screen.getByLabelText(/resume/i)).toHaveAttribute('accept', 'application/pdf,.pdf');
   });
 
   it('rejects a non-PDF that gets past accept, before it reaches the network', async () => {

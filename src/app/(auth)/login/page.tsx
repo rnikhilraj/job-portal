@@ -56,9 +56,9 @@ export default function LoginPage() {
           Know where you stand.
         </h2>
         <p className="mt-3 max-w-prose text-sm leading-relaxed text-ink-muted">
-          Every application you send keeps its own rail, and moves along it the moment a
-          hiring team moves it — so the answer to “did anyone read it?” is on the screen
-          rather than in your inbox.
+          Every application you send keeps its own rail, and moves along it the moment a hiring team
+          moves it — so the answer to “did anyone read it?” is on the screen rather than in your
+          inbox.
         </p>
 
         <div className="mt-7 flex items-center gap-2">
@@ -73,8 +73,8 @@ export default function LoginPage() {
         </div>
 
         <p className="mt-7 border-t border-mist-300 pt-5 text-sm leading-relaxed text-ink-muted">
-          Hiring teams can find you in the candidate directory only if you switch it on. It is
-          off until you do.
+          Hiring teams can find you in the candidate directory only if you switch it on. It is off
+          until you do.
         </p>
       </aside>
     </div>

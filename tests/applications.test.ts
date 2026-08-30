@@ -2,10 +2,7 @@ import fs from 'node:fs/promises';
 
 import { GET as listMine } from '@/app/api/applications/route';
 import { PATCH as patchStatus } from '@/app/api/applications/[id]/route';
-import {
-  GET as listApplicants,
-  POST as apply,
-} from '@/app/api/jobs/[id]/applications/route';
+import { GET as listApplicants, POST as apply } from '@/app/api/jobs/[id]/applications/route';
 import { DELETE as deleteJobRoute } from '@/app/api/jobs/[id]/route';
 import { Application } from '@/modules/applications/application.model';
 import { getEnv } from '@/lib/env';
@@ -253,7 +250,10 @@ describe('GET /api/applications (my applications)', () => {
     await applyRequest(String(jobA._id), mine.cookie, applicationForm(pdfFile()));
     await applyRequest(String(jobB._id), theirs.cookie, applicationForm(pdfFile()));
 
-    const response = await listMine(jsonRequest('/api/applications', { cookie: mine.cookie }), noParams);
+    const response = await listMine(
+      jsonRequest('/api/applications', { cookie: mine.cookie }),
+      noParams,
+    );
     const body = await readJson<ApiData<PublicApplication[]>>(response);
 
     expect(body.data).toHaveLength(1);
@@ -287,7 +287,10 @@ describe('GET /api/applications (my applications)', () => {
 
   it('rejects an HR user with 403', async () => {
     const hr = await createHr();
-    const response = await listMine(jsonRequest('/api/applications', { cookie: hr.cookie }), noParams);
+    const response = await listMine(
+      jsonRequest('/api/applications', { cookie: hr.cookie }),
+      noParams,
+    );
     expect(response.status).toBe(403);
   });
 });
@@ -449,11 +452,7 @@ describe('countApplicantsByStatus (the pipeline funnel)', () => {
   it('counts each stage, and zero for stages nobody is at', async () => {
     const hr = await createHr();
     const job = await createJobFor(hr.id);
-    const [a, b, c] = await Promise.all([
-      createCandidate(),
-      createCandidate(),
-      createCandidate(),
-    ]);
+    const [a, b, c] = await Promise.all([createCandidate(), createCandidate(), createCandidate()]);
 
     for (const candidate of [a, b, c]) {
       await applyRequest(String(job._id), candidate.cookie, applicationForm(pdfFile()));
@@ -461,9 +460,7 @@ describe('countApplicantsByStatus (the pipeline funnel)', () => {
     await Application.updateOne({ candidate: b.id }, { status: 'SHORTLISTED' });
     await Application.updateOne({ candidate: c.id }, { status: 'REJECTED' });
 
-    const { countApplicantsByStatus } = await import(
-      '@/modules/applications/application.service'
-    );
+    const { countApplicantsByStatus } = await import('@/modules/applications/application.service');
     const { counts, total } = await countApplicantsByStatus(String(job._id), hr.user._id);
 
     expect(counts).toEqual({ APPLIED: 1, REVIEWED: 0, SHORTLISTED: 1, REJECTED: 1 });
@@ -474,9 +471,7 @@ describe('countApplicantsByStatus (the pipeline funnel)', () => {
     const hr = await createHr();
     const job = await createJobFor(hr.id);
 
-    const { countApplicantsByStatus } = await import(
-      '@/modules/applications/application.service'
-    );
+    const { countApplicantsByStatus } = await import('@/modules/applications/application.service');
     const { counts, total } = await countApplicantsByStatus(String(job._id), hr.user._id);
 
     expect(total).toBe(0);
@@ -491,9 +486,7 @@ describe('countApplicantsByStatus (the pipeline funnel)', () => {
     await applyRequest(String(mine._id), candidate.cookie, applicationForm(pdfFile()));
     await applyRequest(String(other._id), candidate.cookie, applicationForm(pdfFile()));
 
-    const { countApplicantsByStatus } = await import(
-      '@/modules/applications/application.service'
-    );
+    const { countApplicantsByStatus } = await import('@/modules/applications/application.service');
 
     expect((await countApplicantsByStatus(String(mine._id), hr.user._id)).total).toBe(1);
   });
@@ -502,22 +495,18 @@ describe('countApplicantsByStatus (the pipeline funnel)', () => {
     const [owner, intruder] = await Promise.all([createHr(), createHr()]);
     const job = await createJobFor(owner.id);
 
-    const { countApplicantsByStatus } = await import(
-      '@/modules/applications/application.service'
-    );
+    const { countApplicantsByStatus } = await import('@/modules/applications/application.service');
 
     // Ownership is enforced here too, not just on the list beside it.
-    await expect(
-      countApplicantsByStatus(String(job._id), intruder.user._id),
-    ).rejects.toMatchObject({ status: 403 });
+    await expect(countApplicantsByStatus(String(job._id), intruder.user._id)).rejects.toMatchObject(
+      { status: 403 },
+    );
   });
 
   it('reports a missing listing as 404', async () => {
     const hr = await createHr();
 
-    const { countApplicantsByStatus } = await import(
-      '@/modules/applications/application.service'
-    );
+    const { countApplicantsByStatus } = await import('@/modules/applications/application.service');
 
     await expect(
       countApplicantsByStatus('000000000000000000000000', hr.user._id),
@@ -566,18 +555,10 @@ describe('POST /api/jobs/:id/applications is rate limited', () => {
     for (let attempt = 0; attempt < 20; attempt += 1) {
       await applyRequest(String(job._id), heavy.cookie, applicationForm(pdfFile()));
     }
-    const blocked = await applyRequest(
-      String(job._id),
-      heavy.cookie,
-      applicationForm(pdfFile()),
-    );
+    const blocked = await applyRequest(String(job._id), heavy.cookie, applicationForm(pdfFile()));
     expect(blocked.status).toBe(429);
 
-    const allowed = await applyRequest(
-      String(job._id),
-      quiet.cookie,
-      applicationForm(pdfFile()),
-    );
+    const allowed = await applyRequest(String(job._id), quiet.cookie, applicationForm(pdfFile()));
     expect(allowed.status).toBe(201);
   });
 

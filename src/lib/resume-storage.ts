@@ -182,9 +182,7 @@ export async function deleteResume(storedName: string): Promise<void> {
  * attachment-only, un-sniffable, uncacheable by proxies and inert under CSP.
  */
 export function resumeDownloadHeaders(originalName: string, byteLength: number): HeadersInit {
-  const asciiFallback = originalName
-    .replace(/[^\x20-\x7e]/g, '_')
-    .replace(/["\\]/g, '_');
+  const asciiFallback = originalName.replace(/[^\x20-\x7e]/g, '_').replace(/["\\]/g, '_');
 
   return {
     'Content-Type': 'application/pdf',
