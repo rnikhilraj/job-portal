@@ -21,7 +21,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
-      - uses: actions/setup-node@v5
+      - uses: actions/setup-node@v7
         with:
           # Matches the Dockerfile. Node 20 reached end of life in April 2026,
           # so neither CI nor the shipped image should still be on it.
@@ -101,7 +101,7 @@ jobs:
       # proven healthy, rather than starting a second copy of the app. Only
       # chromium is installed: the suite asserts behaviour, not rendering, so a
       # second engine would double the minutes for no extra signal.
-      - uses: actions/setup-node@v5
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
