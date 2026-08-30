@@ -104,6 +104,30 @@
     @apply rounded-card border border-mist-300 bg-white p-5 shadow-card;
   }
 
+  /*
+   * The hero headline, held to a single line at every width.
+   *
+   * Its size is a share of the COLUMN it sits in, not of the viewport. The
+   * column stops growing at max-w-6xl while the viewport does not, so a vw-based
+   * clamp goes on growing after the box has stopped and the line breaks anyway —
+   * which is exactly how the old 3.25rem headline came to wrap at 1280px and up.
+   * `cqw` reads the column, so the ceiling tracks the real constraint.
+   *
+   * 9.3cqw is measured rather than guessed: "Apply. Track. Get Hired!" advances
+   * 10.48em in Archivo SemiBold at the -0.02em tracking display-lg carries, so
+   * anything at or below 9.54cqw fits. The margin absorbs kerning differences
+   * and the fallback-font frame before the webfont lands. A materially longer
+   * headline needs this number re-measured, not nudged.
+   */
+  .hero-column {
+    container-type: inline-size;
+  }
+  .hero-headline {
+    @apply text-display-lg;
+    font-size: min(3.25rem, 9.3cqw);
+    white-space: nowrap;
+  }
+
   /* Page furniture */
   .page-title {
     @apply font-display text-display-md font-semibold text-ink;

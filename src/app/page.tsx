@@ -57,15 +57,15 @@ export default async function HomePage() {
       <section className="border-b border-mist-300 bg-white">
         <div className="mx-auto max-w-6xl px-4 py-14 sm:px-6 sm:py-20">
           <div className="grid gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] lg:items-center lg:gap-16">
-            <div className="rise-in">
+            <div className="rise-in hero-column">
               {/*
                 The eyebrow is the product's real stage labels, not a slogan
                 about them — so if a stage is ever renamed, the headline above
                 the hero cannot go on advertising one that no longer exists.
               */}
               <p className="eyebrow">{FORWARD_STAGE_LABELS}</p>
-              <h1 className="mt-3 font-display text-display-lg font-semibold text-ink sm:text-[3.25rem]">
-                Silence isn&rsquo;t a status.
+              <h1 className="hero-headline mt-3 font-display font-semibold text-ink">
+                Apply. Track. Get Hired!
               </h1>
               {/*
                 The headline is the hook and the eyebrow names the stages, so
