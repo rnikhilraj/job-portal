@@ -1,22 +1,19 @@
 import type { FilterQuery, Types } from 'mongoose';
 
-import { ForbiddenError, NotFoundError } from '@/lib/api/errors';
+import { NotFoundError } from '@/lib/api/errors';
 import { containsMatcher } from '@/lib/validation';
 import { deleteApplicationsForJob } from '@/modules/applications/application.service';
+import { findOwnedJobOrFail } from '@/modules/jobs/job.ownership';
 import type {
   BrowseJobsQuery,
   CreateJobInput,
   HrJobsQuery,
   UpdateJobInput,
 } from '@/modules/jobs/job.schema';
-import {
-  Job,
-  toPublicJob,
-  type JobAttributes,
-  type JobDocument,
-  type PublicJob,
-} from '@/modules/jobs/job.model';
+import { Job, toPublicJob, type JobAttributes, type PublicJob } from '@/modules/jobs/job.model';
 import type { UserRole } from '@/modules/users/user.model';
+
+export { findOwnedJobOrFail };
 
 export type PaginatedJobs = { jobs: PublicJob[]; total: number };
 
@@ -26,27 +23,6 @@ export async function createJob(
 ): Promise<PublicJob> {
   const job = await Job.create({ ...input, postedBy });
   return toPublicJob(job);
-}
-
-/**
- * Loads a job and asserts the caller owns it.
- *
- * A missing job is a 404 and someone else's job is a 403 — the distinction is
- * intentional and matches the brief. It does leak the existence of an id to
- * another HR user, which is an acceptable trade for a clearer error.
- */
-export async function findOwnedJobOrFail(
-  jobId: string,
-  ownerId: Types.ObjectId,
-): Promise<JobDocument> {
-  const job = await Job.findById(jobId);
-  if (!job) throw new NotFoundError('We could not find that listing.');
-
-  if (!job.postedBy.equals(ownerId)) {
-    throw new ForbiddenError('You can only change listings you posted.');
-  }
-
-  return job;
 }
 
 export async function updateJob(

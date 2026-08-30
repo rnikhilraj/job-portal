@@ -410,6 +410,15 @@ registered. Both credential endpoints are rate limited.
 **Sessions.** HS256 JWTs signed with `JWT_SECRET` (rejected at under 32 characters), carried in a
 cookie that is `httpOnly`, `SameSite=lax`, `Secure` in production, and scoped to `/`.
 
+**Writes must come from this origin.** `withRoute()` runs `assertSameOrigin()` before it touches
+the database, so any POST, PATCH, PUT or DELETE carrying an `Origin` that is not this host is
+refused with a 403. This sits underneath the cookie's `SameSite=lax`, which is the primary CSRF
+control; the second layer exists for a browser that predates SameSite, a bug in its enforcement,
+or a future change here that loosens the cookie and forgets what it was buying. A *missing*
+`Origin` is allowed on purpose — browsers attach one to every cross-origin write and page
+JavaScript cannot override it, so a request without one came from curl or a server, neither of
+which carries the victim's cookies.
+
 **The post-sign-in redirect cannot leave this origin.** `src/middleware.ts` sends an anonymous
 visitor to `/login?next=<where they were going>`, and that parameter is set by whoever wrote the
 link. It is validated by `safeRedirectPath()` before the browser is sent anywhere, so a crafted
@@ -541,11 +550,19 @@ markup into another user's page.
 
 ```bash
 npm install       # once
-npm test          # 495 tests across 28 suites (unit + api + component projects)
+npm test          # 509 tests across 30 suites (unit + api + component projects)
 npm run test:coverage
 npx jest tests/applications.test.ts     # a single suite
 npx jest -t 'applying twice'            # a single test by name
+
+npm run test:e2e     # 17 Playwright tests in a real browser (needs the stack up)
+npm run test:e2e:report                 # open the last HTML report
 ```
+
+The Playwright suite runs against a **running stack** rather than starting its own server, so
+`docker compose up -d` first. It is deliberately small and asserts only what cannot be checked
+below the browser — a client-side navigation actually happening, a redirect landing on the origin
+it claims, a role gate resolving before the page paints.
 
 Tests import each App Router handler directly and invoke it with a real `NextRequest`, against an
 ephemeral in-memory MongoDB and a temporary uploads directory. Cookies are genuinely signed JWTs
@@ -566,6 +583,8 @@ hermetic.
 | `unit/middleware.test.ts` | redirect behaviour, and that it is not an access control |
 | `unit/api-envelope.test.ts` | error-to-status mapping, no internal leakage |
 | `unit/query-helpers.test.ts` | URL/pagination helpers |
+| `unit/csrf.test.ts` | the same-origin gate on writes: hostile, look-alike, absent and sandboxed Origins |
+| `unit/import-cycles.test.ts` | that `src/` has no import cycle, and that the applications domain stays off `job.service` |
 | `unit/safe-redirect.test.ts` | that a `?next=` destination cannot leave this origin — scheme-relative, backslash and `javascript:` forms included |
 | `unit/client-bundle-boundary.test.ts` | that no client component can reach Mongoose, bcrypt or the JWT key |
 | `health.test.ts` | the probe's envelope, its connection-state reporting, and that it needs no session |
@@ -598,8 +617,12 @@ app *looks* rests on reading served HTML and compiled CSS. See
 [Known limitations](#known-limitations).
 
 Every gate runs on push and pull request via `.github/workflows/ci.yml`, which
-has two jobs: one running typecheck, lint, tests and build, and one booting the
-Compose stack from scratch to prove the README's single-command claim.
+has two jobs. `verify` runs a dependency audit, typecheck, lint, the Jest suite
+with coverage, and the production build. `docker` boots the Compose stack from
+scratch to prove the README's single-command claim, runs the Playwright suite
+against it, and scans the built image with Trivy for HIGH and CRITICAL CVEs.
+`.github/dependabot.yml` keeps npm, the Actions and the base image current so
+those two scanners have less to find.
 
 Config lives in `eslint.config.mjs` (ESLint 9 flat config), `jest.config.mjs`
 (three projects — `unit` for suites needing no database, `api` for Node plus an
@@ -760,15 +783,15 @@ a fourth position, because that is what actually happened.
 | Validation | zod 3 — the same schemas run on the client and the server |
 | Auth | jose 5 (HS256 JWT) in httpOnly cookies, bcryptjs 2 for password hashing |
 | Styling | Tailwind CSS 3, Archivo + IBM Plex Sans via next/font (self-hosted) |
-| Testing | Jest 30 with in-process route handlers and mongodb-memory-server 10 |
-| Tooling | ESLint 9 (flat config), Docker Compose v2, GitHub Actions CI |
+| Testing | Jest 30 with in-process route handlers and mongodb-memory-server 10; Playwright 1.62 for the browser suite |
+| Tooling | ESLint 9 (flat config), Prettier 3, Docker Compose v2, GitHub Actions CI, Trivy, Dependabot |
 
 zod schemas are the single source of truth: the client imports the same module the API validates
 with, so the two cannot drift. Because those schemas are shared, each domain keeps its enums and
 wire types in a dependency-free `*.constants.ts` file that the model, the schema and the client
 component all import — otherwise importing a schema would drag Mongoose into the browser bundle.
-`tests/client-bundle-boundary.test.ts` walks the real import graph and fails if that ever
-regresses.
+`tests/unit/client-bundle-boundary.test.ts` walks the real import graph and fails if that ever
+regresses, and `tests/unit/import-cycles.test.ts` walks the same graph for cycles.
 
 ---
 
@@ -788,9 +811,11 @@ Things deliberately left out or simplified, and what they would take to fix.
   in middleware, set on the CSP header and passed to Next — worth doing, and not
   done here because `src/middleware.ts` is deliberately kept to cookie presence
   and nothing else.
-- **No CSRF token.** Mutations are protected by `SameSite=lax` cookies, which stops cross-site
-  form posts in current browsers, but a double-submit token or an Origin check would be stronger
-  defence in depth.
+- **CSRF defence is `SameSite=lax` plus an Origin check, not a synchroniser token.** Both layers
+  are in place — the cookie attribute, and `assertSameOrigin()` refusing any write whose `Origin`
+  is not this host. A per-session token would add little on top of those two and would have to be
+  threaded through every form; it is the right next step only if the cookie is ever loosened to
+  `SameSite=none`.
 - **No refresh tokens or server-side session revocation.** A JWT stays valid until it expires;
   logging out only clears the cookie. Deleting or demoting an account does take effect
   immediately, because the role is re-read from the database on every request.
@@ -804,10 +829,6 @@ Things deliberately left out or simplified, and what they would take to fix.
   storage (S3 or equivalent) with signed, short-lived URLs is the production shape.
 - **Search uses escaped regular expressions**, which cannot use an index and will not scale to a
   large collection. A MongoDB text index or a dedicated search service would replace it.
-- **`job.service` and `application.service` import each other.** Deleting a job cascades to its
-  applications, and reading applicants needs the job's owner, so the two services reference one
-  another. It resolves only because ESM hoists the bindings. Extracting the shared ownership
-  check into its own module would break the cycle properly.
 - **Applicant name search runs two queries** rather than one aggregation with `$lookup`. It is
   scoped to the applicants for that listing, so it is bounded, but it is not the most efficient
   shape.
@@ -836,10 +857,14 @@ Things deliberately left out or simplified, and what they would take to fix.
 - **`Secure` cookies over `http://localhost`** work because browsers treat localhost as a
   trustworthy origin. Deploying to any other host over plain HTTP would break sign-in — put the
   app behind TLS.
-- **No automated browser tests.** There are component tests now, running against jsdom, but
-  nothing drives a real browser. Every claim about how the app *looks* — responsive behaviour
-  at each breakpoint, motion, focus rings — was verified by reading served HTML and compiled
-  CSS, not by looking at it. Playwright would close that gap and is the most valuable test
-  work left.
+- **The browser tests assert behaviour, not appearance.** Playwright drives sign-in, the role
+  gates, navigation and the redirect guard in a real Chromium, but nothing asserts on *rendering*:
+  responsive behaviour at each breakpoint, motion and focus rings were verified by reading served
+  HTML and compiled CSS, not by looking at them. Visual regression snapshots and a second engine
+  are the remaining gap.
+- **The e2e suite shares the login rate limit.** Every browser test arrives from one IP, and login
+  allows ten attempts per fifteen minutes, so the specs reuse a saved session rather than signing
+  in repeatedly. Adding several specs that each sign in for real will eventually trip a correct
+  429 that looks like a failure. `docker compose restart app` clears the counters.
 - **Seeded credentials are documented in this file and default in `.env.example`.** That is
   deliberate for review purposes and must not be carried into a real deployment.

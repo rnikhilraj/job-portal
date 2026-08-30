@@ -57,3 +57,23 @@ export function safeRedirectPath(raw: string | null | undefined): string | null 
   // value handed to the router is normalised and carries no credentials.
   return `${url.pathname}${url.search}${url.hash}`;
 }
+
+/**
+ * Builds the href for the link between the two auth pages, carrying the pending
+ * destination across.
+ *
+ * Without this, someone deep-linked to a role, bounced to `/login?next=/jobs/abc`
+ * and choosing "Sign up" instead would silently lose where they were going —
+ * the two forms would honour `next` inconsistently, which is worse than neither
+ * honouring it. The value is validated on the way out as well as on the way in,
+ * so a hostile `next` is dropped here rather than propagated between pages.
+ */
+export function authHrefWithNext(
+  basePath: '/login' | '/signup',
+  rawNext: string | null | undefined,
+): string {
+  const destination = safeRedirectPath(rawNext);
+  if (!destination) return basePath;
+
+  return `${basePath}?next=${encodeURIComponent(destination)}`;
+}

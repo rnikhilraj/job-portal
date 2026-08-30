@@ -16,7 +16,7 @@ import type {
   MyApplicationsQuery,
 } from '@/modules/applications/application.schema';
 import { Job, type JobType } from '@/modules/jobs/job.model';
-import { findOwnedJobOrFail } from '@/modules/jobs/job.service';
+import { findOwnedJobOrFail } from '@/modules/jobs/job.ownership';
 import { User, type UserDocument } from '@/modules/users/user.model';
 
 /** What a candidate sees on "My applications". */

@@ -1,0 +1,27 @@
+# Keeps the three things this repo pins current: npm dependencies, the GitHub
+# Actions in ci.yml, and the base image in the Dockerfile. Without this, the
+# `npm audit` and Trivy gates added to CI would eventually fail on something
+# nobody was watching for, which is a worse way to learn about a CVE than a
+# pull request that arrives the week it is published.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      # One PR for the routine patch churn; anything major still arrives alone,
+      # because a major is a change to review rather than a bump to merge.
+      minor-and-patch:
+        update-types: ['minor', 'patch']
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+
+  - package-ecosystem: docker
+    directory: /
+    schedule:
+      interval: weekly

@@ -2,6 +2,8 @@ import Link from 'next/link';
 import { Fragment, Suspense } from 'react';
 
 import { StatusChip } from '@/components/pipeline';
+import { toQueryRecord, type RawSearchParams } from '@/lib/query';
+import { authHrefWithNext } from '@/lib/safe-redirect';
 import type { ApplicationStatus } from '@/modules/applications/application.constants';
 
 import { LoginForm } from './login-form';
@@ -15,7 +17,14 @@ export const metadata = { title: 'Log in' };
  */
 const FORWARD_STAGES: ApplicationStatus[] = ['APPLIED', 'REVIEWED', 'SHORTLISTED'];
 
-export default function LoginPage() {
+export default async function LoginPage({
+  searchParams,
+}: {
+  searchParams: Promise<RawSearchParams>;
+}) {
+  // Carried across so choosing "Sign up" from here does not lose the destination.
+  const nextParam = toQueryRecord(await searchParams).next;
+
   return (
     <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,25rem)] lg:items-center lg:gap-16">
       {/*
@@ -38,7 +47,7 @@ export default function LoginPage() {
 
           <p className="mt-6 border-t border-mist-200 pt-5 text-sm text-ink-muted">
             First time here?{' '}
-            <Link href="/signup" className="link">
+            <Link href={authHrefWithNext('/signup', nextParam)} className="link">
               Sign up
             </Link>
           </p>

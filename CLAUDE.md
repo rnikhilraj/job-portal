@@ -11,7 +11,8 @@ npm run typecheck        # tsc --noEmit
 npm run lint             # eslint, zero warnings tolerated
 npm run format           # prettier --write, the repo's one formatting authority
 npm run format:check     # fails on drift; what CI would run
-npm test                 # all suites, both Jest projects
+npm test                 # all suites, all three Jest projects
+npm run test:e2e         # Playwright, in a real browser — needs the stack running
 npm run test:coverage    # adds coverage + enforces thresholds
 npm run seed             # idempotent demo data, for local dev only
 ```
@@ -44,6 +45,19 @@ mongodb-memory-server's own 10s limit, so a suite that does nothing but read
 files off disk fails with `Instance failed to start`. If a new suite touches no
 model, no factory and no handler, put it in `tests/unit/` — it will run in
 milliseconds and cannot fail for a reason unrelated to its assertions.
+
+### End-to-end tests
+
+`npm run test:e2e` runs Playwright against a **running stack** — `docker compose
+up -d` first; there is no `webServer` block, deliberately, because starting a
+second copy of the app on top of the Compose one is how an e2e suite starts
+failing for its own reasons. Only chromium is installed.
+
+**Watch the login rate limit.** Every spec arrives from one IP and login allows
+ten attempts per fifteen minutes. The suite signs in twice in a setup project
+and reuses the saved session; specs that sign in for real are limited to the
+ones testing sign-in. Add several more and you will hit a correct 429 that reads
+as a test failure. `docker compose restart app` clears the in-memory counters.
 
 ### Docker
 
@@ -79,9 +93,17 @@ before drawing any conclusion from a red run.
 `src/app/api/` holds only thin HTTP adapters: parse, authorize, delegate, respond.
 Business logic in a route handler is a smell — move it into the service.
 
-### The two rules that are easy to break
+### The three rules that are easy to break
 
-**1. `*.constants.ts` exists to keep Mongoose out of the browser.** Client
+**1. No import cycles, and `job.ownership.ts` is why.** `job.service` cascades a
+delete into `application.service`, and `application.service` needs the listing's
+owner. Those two facts used to make the modules mutually dependent — it worked
+only because ESM hoists function declarations. The shared check now lives in
+`src/modules/jobs/job.ownership.ts`; import it from there rather than reaching
+across. `tests/unit/import-cycles.test.ts` walks the graph and fails on any
+cycle, naming the loop.
+
+**2. `*.constants.ts` exists to keep Mongoose out of the browser.** Client
 components share zod schemas with the server, and those schemas need each
 domain's enums. If an enum is imported from `job.model.ts`, Mongoose comes with
 it — that regression once shipped a 576 kB driver chunk to every job page. So
@@ -95,7 +117,7 @@ covered if it is listed or reachable from something listed, so one whose sole
 importer is a *server* component is guarded by nothing — that is how
 `delete-job-button.tsx` sat outside the walk.
 
-**2. `isSearchable` is the single source of truth for recruiter visibility.**
+**3. `isSearchable` is the single source of truth for recruiter visibility.**
 Every recruiter-facing read starts from `optedInCandidateFilter()`, and
 `toDiscoverableCandidate()` *throws* rather than redacting if handed a candidate
 who has not opted in. Nothing else may expose a candidate's contact details or
@@ -109,8 +131,13 @@ go through the API routes. Nothing makes an HTTP request to its own API.
 
 ### Error handling
 
-`withRoute()` (`src/lib/api/route.ts`) wraps every handler: it connects to Mongo,
-catches once, and is the only place a thrown error becomes a status code.
+`withRoute()` (`src/lib/api/route.ts`) wraps every handler: it runs the
+same-origin check on writes, connects to Mongo, catches once, and is the only
+place a thrown error becomes a status code. The CSRF check lives there rather
+than per-route for the same reason the error mapping does — a control that must
+be remembered on each route is one that will be forgotten on the route that
+needed it. A *missing* `Origin` is allowed by design; see the comment in
+`src/lib/api/csrf.ts` before tightening it.
 `ZodError → 400` with per-field details, the `AppError` subclasses → their own
 status, Mongo `E11000 → 409`, anything else → a logged, generic 500. Throw an
 `AppError`; never build an error response by hand.

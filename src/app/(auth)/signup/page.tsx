@@ -1,4 +1,8 @@
 import Link from 'next/link';
+import { Suspense } from 'react';
+
+import { toQueryRecord, type RawSearchParams } from '@/lib/query';
+import { authHrefWithNext } from '@/lib/safe-redirect';
 
 import { SignupForm } from './signup-form';
 
@@ -16,7 +20,14 @@ const ACCOUNT_POINTS = [
   'A profile with your headline and skills. Hiring teams can find it only if you switch that on — it is off until you do.',
 ];
 
-export default function SignupPage() {
+export default async function SignupPage({
+  searchParams,
+}: {
+  searchParams: Promise<RawSearchParams>;
+}) {
+  // Carried across so choosing "Log in" from here does not lose the destination.
+  const nextParam = toQueryRecord(await searchParams).next;
+
   return (
     <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,25rem)] lg:items-center lg:gap-16">
       {/* Form first in the DOM, right-hand column at desktop — see login/page.tsx. */}
@@ -28,11 +39,14 @@ export default function SignupPage() {
             here.
           </p>
 
-          <SignupForm />
+          {/* useSearchParams needs a boundary, exactly as on the login page. */}
+          <Suspense fallback={<p className="mt-6 text-sm text-ink-muted">Loading…</p>}>
+            <SignupForm />
+          </Suspense>
 
           <p className="mt-6 border-t border-mist-200 pt-5 text-sm text-ink-muted">
             Been here before?{' '}
-            <Link href="/login" className="link">
+            <Link href={authHrefWithNext('/login', nextParam)} className="link">
               Log in
             </Link>
           </p>

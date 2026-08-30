@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import { ZodError } from 'zod';
 
+import { assertSameOrigin } from '@/lib/api/csrf';
 import { AppError } from '@/lib/api/errors';
 import { fail } from '@/lib/api/respond';
 import { connectToDatabase } from '@/lib/db';
@@ -33,10 +34,15 @@ function flattenZodError(error: ZodError): Record<string, string[]> {
 }
 
 /**
- * Wraps a route handler with the behaviour every endpoint needs: a database
- * connection, one try/catch, and a single place where an exception becomes an
- * HTTP status. Internal failures are logged server-side and returned as a
- * generic 500 so stack traces and driver messages never reach the client.
+ * Wraps a route handler with the behaviour every endpoint needs: a same-origin
+ * check on writes, a database connection, one try/catch, and a single place
+ * where an exception becomes an HTTP status. Internal failures are logged
+ * server-side and returned as a generic 500 so stack traces and driver messages
+ * never reach the client.
+ *
+ * The CSRF check lives here rather than in each handler for the same reason the
+ * error mapping does: a control that has to be remembered per route is one that
+ * will eventually be forgotten on the route that needed it.
  */
 export function withRoute<P extends RouteParams = RouteParams>(
   handler: Handler<P>,
@@ -49,6 +55,10 @@ export function withRoute<P extends RouteParams = RouteParams>(
     context: RouteContext<P>,
   ): Promise<NextResponse> {
     try {
+      // Before anything else, and before the database is touched: a forged
+      // cross-site write should cost nothing to reject.
+      assertSameOrigin(request);
+
       if (connectDb) {
         await connectToDatabase();
       }

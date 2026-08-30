@@ -17,3 +17,7 @@ uploads
 Dockerfile
 docker-compose.yml
 .dockerignore
+e2e
+playwright.config.ts
+test-results
+playwright-report

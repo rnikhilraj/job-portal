@@ -1,16 +1,26 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
 
 import { Alert } from '@/components/alert';
 import { TextField } from '@/components/text-field';
 import { ApiRequestError, postJson } from '@/lib/http';
+import { safeRedirectPath } from '@/lib/safe-redirect';
 import { signupSchema } from '@/modules/auth/auth.schema';
 import type { PublicUser } from '@/modules/users/user.constants';
 
+/** Signup always creates a candidate, so there is one default destination. */
+const DEFAULT_DESTINATION = '/jobs';
+
 export function SignupForm() {
   const router = useRouter();
+  // Signup honours `next` for the same reason login does: someone deep-linked
+  // to a role, sent to the auth pages and choosing to create an account rather
+  // than sign in, should still land where they were going. Validated through
+  // the same helper — an unchecked value here would be the identical bug.
+  const searchParams = useSearchParams();
+  const nextPath = safeRedirectPath(searchParams.get('next'));
 
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -33,7 +43,7 @@ export function SignupForm() {
 
     try {
       await postJson<PublicUser>('/api/auth/signup', parsed.data);
-      router.replace('/jobs');
+      router.replace(nextPath ?? DEFAULT_DESTINATION);
       router.refresh();
     } catch (error) {
       if (error instanceof ApiRequestError) {
