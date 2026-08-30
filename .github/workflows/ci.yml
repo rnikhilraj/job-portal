@@ -132,7 +132,7 @@ jobs:
       # which are noise rather than an action.
       - name: Scan the image for known vulnerabilities
         if: '!cancelled()'
-        uses: aquasecurity/trivy-action@0.28.0
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: job-portal-app
           format: table
