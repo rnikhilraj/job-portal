@@ -1,0 +1,11 @@
+# Revisions that changed formatting only. `git blame` should look past them to
+# the commit that actually wrote each line.
+#
+# Enable locally with:
+#   git config blame.ignoreRevsFile .git-blame-ignore-revs
+# GitHub reads this file by name and applies it automatically.
+
+# chore: pin the formatting, and write down three traps
+# Prettier's first pass over the repo: 48 files normalised to the style
+# .prettierrc pins. No behaviour changed.
+4350d5722758dce276a7e8b1fd20762ca60f1209
